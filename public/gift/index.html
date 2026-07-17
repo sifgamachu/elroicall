@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift a Call — El Roi Call</title>
+<meta name="description" content="Send someone you love a free call on El Roi Call — a biblical voice who lived what they're living will talk and pray with them.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-soft:#D9BC6E;--ink:#0A0A0B;--ink2:#121214;--cream:#F4EFE4;--mute:#8A8578}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.serif{font-family:'Cormorant Garamond',serif}
+.card{max-width:520px;width:100%}
+.eyebrow{letter-spacing:.34em;text-transform:uppercase;font-size:.66rem;color:var(--gold);text-align:center}
+h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:2.6rem;text-align:center;margin:16px 0 10px;letter-spacing:.02em}
+.lead{color:var(--mute);text-align:center;margin-bottom:36px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem}
+label{display:block;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:22px 0 8px}
+input,textarea{width:100%;background:var(--ink2);border:1px solid rgba(244,239,228,.14);color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;font-size:1rem;padding:15px;outline:none;transition:border-color .3s}
+input:focus,textarea:focus{border-color:rgba(201,168,76,.5)}
+textarea{min-height:90px;resize:vertical}
+.hint{font-size:.78rem;color:var(--mute);margin-top:6px}
+button{margin-top:30px;width:100%;background:var(--gold);color:var(--ink);border:none;padding:17px;letter-spacing:.2em;text-transform:uppercase;font-size:.74rem;font-family:'Jost',sans-serif;font-weight:500;cursor:pointer;transition:opacity .3s}
+button:hover{opacity:.88}
+button:disabled{opacity:.4;cursor:default}
+#result{margin-top:28px;display:none}
+.link-box{background:var(--ink2);border:1px solid rgba(201,168,76,.3);padding:18px;font-size:.9rem;color:var(--gold-soft);word-break:break-all;text-align:center}
+.share-copy{background:rgba(201,168,76,.06);border-left:2px solid var(--gold);padding:16px 18px;margin-top:16px;font-size:.92rem;color:var(--cream);line-height:1.6}
+.copy-btn{margin-top:14px;background:transparent;border:1px solid rgba(201,168,76,.4);color:var(--gold)}
+.back{display:block;text-align:center;margin-top:28px;color:var(--mute);text-decoration:none;font-size:.8rem;letter-spacing:.1em}
+.back:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">A gift of being heard</div>
+  <h1 class="serif">Gift a Call</h1>
+  <p class="lead">Someone you love is carrying something heavy.<br>Give them one free call — no cost to them, no catch.</p>
+
+  <div id="form">
+    <label>Your name <span style="color:var(--mute);text-transform:none;letter-spacing:0">(so they know it's from you)</span></label>
+    <input id="giver" placeholder="e.g. Sarah" maxlength="60">
+
+    <label>Their phone number <span style="color:var(--mute);text-transform:none;letter-spacing:0">(optional — or just share the link yourself)</span></label>
+    <input id="recipient" placeholder="+1 555 123 4567" inputmode="tel">
+    <p class="hint">If you add it, we'll prepare the line so it greets them by your gift the moment they call.</p>
+
+    <label>A short note <span style="color:var(--mute);text-transform:none;letter-spacing:0">(optional)</span></label>
+    <textarea id="message" placeholder="Thinking of you. Thought this might help." maxlength="400"></textarea>
+
+    <button onclick="createGift()" id="btn">Create the gift</button>
+  </div>
+
+  <div id="result">
+    <div class="eyebrow" style="margin-bottom:14px">Your gift is ready — share it</div>
+    <div class="link-box" id="linkBox"></div>
+    <div class="share-copy" id="shareCopy"></div>
+    <button class="copy-btn" onclick="copyShare()">Copy the message</button>
+  </div>
+
+  <a class="back" href="/">← Back to El Roi Call</a>
+</div>
+
+<script>
+const API='https://mkocnufwmsfchivfbhuf.supabase.co/functions/v1/gift';
+async function createGift(){
+  const btn=document.getElementById('btn');
+  const giver=document.getElementById('giver').value.trim();
+  const recipient=document.getElementById('recipient').value.trim();
+  const message=document.getElementById('message').value.trim();
+  if(!giver){document.getElementById('giver').focus();return}
+  btn.disabled=true;btn.textContent='Preparing…';
+  try{
+    const r=await fetch(API+'/create',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({giver_name:giver,recipient_phone:recipient||undefined,message:message||undefined})});
+    const d=await r.json();
+    if(d.ok){
+      document.getElementById('form').style.display='none';
+      document.getElementById('result').style.display='block';
+      document.getElementById('linkBox').textContent=d.link;
+      document.getElementById('shareCopy').textContent=d.sms_suggestion;
+      window._share=d.sms_suggestion;
+    }else{btn.disabled=false;btn.textContent='Create the gift';alert('Something went wrong — please try again.')}
+  }catch(e){btn.disabled=false;btn.textContent='Create the gift';alert('Connection hiccup — please try again.')}
+}
+function copyShare(){navigator.clipboard.writeText(window._share||'').then(()=>{
+  event.target.textContent='Copied ✓';setTimeout(()=>event.target.textContent='Copy the message',2000)})}
+</script>
+</body>
+</html>

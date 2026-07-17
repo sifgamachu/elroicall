@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Someone sent you a call — El Roi Call</title>
+<meta name="description" content="Someone who cares about you gave you a free call on El Roi Call.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-soft:#D9BC6E;--ink:#0A0A0B;--ink2:#121214;--cream:#F4EFE4;--mute:#8A8578}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.serif{font-family:'Cormorant Garamond',serif}
+.card{max-width:500px;width:100%}
+.well{width:110px;height:110px;border-radius:50%;border:1px solid rgba(201,168,76,.3);margin:0 auto 30px;position:relative}
+.well::before{content:"";position:absolute;inset:22px;border-radius:50%;border:1px solid rgba(201,168,76,.18)}
+.well::after{content:"";position:absolute;inset:44px;border-radius:50%;border:1px solid rgba(201,168,76,.12)}
+.eyebrow{letter-spacing:.32em;text-transform:uppercase;font-size:.64rem;color:var(--gold)}
+h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:2.3rem;margin:16px 0 14px;letter-spacing:.02em}
+.note{background:rgba(201,168,76,.06);border-left:2px solid var(--gold);padding:16px 20px;margin:24px 0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.15rem;color:var(--cream);text-align:left}
+.lead{color:var(--mute);margin-bottom:8px}
+label{display:block;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:30px 0 8px}
+input{width:100%;background:var(--ink2);border:1px solid rgba(244,239,228,.14);color:var(--cream);font-family:'Jost',sans-serif;font-size:1.05rem;padding:16px;outline:none;text-align:center}
+input:focus{border-color:rgba(201,168,76,.5)}
+button{margin-top:24px;width:100%;background:var(--gold);color:var(--ink);border:none;padding:18px;letter-spacing:.2em;text-transform:uppercase;font-size:.74rem;font-weight:500;cursor:pointer;font-family:'Jost',sans-serif;transition:opacity .3s}
+button:hover{opacity:.88}
+button:disabled{opacity:.4}
+#done{display:none}
+.big-num{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--gold-soft);margin:18px 0;letter-spacing:.05em}
+.crisis{font-size:.76rem;color:var(--mute);margin-top:30px;line-height:1.7}
+.state{color:var(--mute);font-style:italic;font-family:'Cormorant Garamond',serif;font-size:1.1rem}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="well"></div>
+  <div id="loading" class="state">Opening your gift…</div>
+
+  <div id="gift" style="display:none">
+    <div class="eyebrow">Someone who loves you sent this</div>
+    <h1 class="serif" id="headline">You've been given a call.</h1>
+    <div class="note" id="noteBox" style="display:none"></div>
+    <p class="lead">El Roi Call is a line where you speak with a biblical voice who lived what you're living — Job for grief, Esther for fear, Peter for failure. They'll talk with you, and pray with you. This call is free.</p>
+    <label>Enter your number so the line knows you're coming</label>
+    <input id="phone" placeholder="+1 555 123 4567" inputmode="tel">
+    <button onclick="claim()" id="btn">Claim my free call</button>
+    <p class="crisis">If you're in crisis or thinking of harming yourself, please call or text 988 right now. You matter, and help is real.</p>
+  </div>
+
+  <div id="done">
+    <div class="eyebrow">Your call is ready</div>
+    <h1 class="serif">Whenever you're ready.</h1>
+    <p class="lead">Call this number from the phone you just entered. The line already knows you're coming — no account, no cost.</p>
+    <div class="big-num">1-8XX-GOD-SEES</div>
+    <p class="lead" style="font-size:.9rem">You can call now, or in the middle of the night when you need it most. It'll be waiting.</p>
+  </div>
+
+  <div id="bad" style="display:none">
+    <div class="eyebrow">This gift</div>
+    <h1 class="serif" id="badMsg">couldn't be found.</h1>
+    <p class="lead">The link may be mistyped or already used. Ask whoever sent it to share a fresh one, or visit El Roi Call yourself.</p>
+    <button onclick="location.href='/'">Visit El Roi Call</button>
+  </div>
+</div>
+
+<script>
+const API='https://mkocnufwmsfchivfbhuf.supabase.co/functions/v1/gift';
+const code=new URLSearchParams(location.search).get('c')||location.pathname.split('/').filter(Boolean).pop();
+async function load(){
+  if(!code||code==='g'){showBad("couldn't be found.");return}
+  try{
+    const r=await fetch(API+'/'+code);const d=await r.json();
+    document.getElementById('loading').style.display='none';
+    if(!d.ok){showBad("couldn't be found.");return}
+    if(d.status==='used'){showBad('has already been used.');return}
+    if(d.expired){showBad('has expired.');return}
+    if(d.giver_name)document.getElementById('headline').textContent=d.giver_name+' sent you a call.';
+    if(d.message){const n=document.getElementById('noteBox');n.textContent='“'+d.message+'”';n.style.display='block'}
+    document.getElementById('gift').style.display='block';
+  }catch(e){showBad("couldn't be opened just now.")}
+}
+function showBad(msg){document.getElementById('loading').style.display='none';document.getElementById('badMsg').textContent=msg;document.getElementById('bad').style.display='block'}
+async function claim(){
+  const btn=document.getElementById('btn');const phone=document.getElementById('phone').value.trim();
+  if(!phone){document.getElementById('phone').focus();return}
+  btn.disabled=true;btn.textContent='Preparing your line…';
+  try{
+    const r=await fetch(API+'/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,phone})});
+    const d=await r.json();
+    if(d.ok){document.getElementById('gift').style.display='none';document.getElementById('done').style.display='block'}
+    else{btn.disabled=false;btn.textContent='Claim my free call';alert(d.error==='already_used'?'This gift was already claimed.':'Something went wrong — please try again.')}
+  }catch(e){btn.disabled=false;btn.textContent='Claim my free call';alert('Connection hiccup — please try again.')}
+}
+load();
+</script>
+</body>
+</html>
