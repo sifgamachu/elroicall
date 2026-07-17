@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Roi Call — If Heaven Had a Call Center, It Would Sound Like This</title>
+<meta name="description" content="If heaven had a call center — this is it. Call one number, an operator answers, and you're put through to a biblical voice who lived what you're living: Job for grief, Esther for fear, Peter for failure. The God who sees answers.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-soft:#D9BC6E;--ink:#0A0A0B;--ink2:#121214;--cream:#F4EFE4;--mute:#8A8578}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased}
+.serif{font-family:'Cormorant Garamond',serif}
+.wrap{max-width:1060px;margin:0 auto;padding:0 28px}
+.eyebrow{letter-spacing:.34em;text-transform:uppercase;font-size:.68rem;color:var(--gold);font-weight:400}
+.cta{display:inline-block;background:var(--gold);color:var(--ink);padding:18px 52px;letter-spacing:.2em;text-transform:uppercase;font-size:.74rem;font-weight:500;text-decoration:none;transition:opacity .3s;min-height:44px}
+.cta:hover{opacity:.85}
+.cta-note{font-size:.78rem;color:var(--mute);margin-top:12px}
+/* Hero */
+header{min-height:92vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;text-align:center}
+.well{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:640px;height:640px;border-radius:50%;border:1px solid rgba(201,168,76,.14);pointer-events:none}
+.well::before{content:"";position:absolute;inset:70px;border-radius:50%;border:1px solid rgba(201,168,76,.09)}
+.well::after{content:"";position:absolute;inset:160px;border-radius:50%;border:1px solid rgba(201,168,76,.06)}
+h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(2.9rem,7vw,5rem);letter-spacing:.04em;margin:20px 0 16px}
+h1 em{font-style:italic;color:var(--gold-soft)}
+.clarity{font-size:clamp(1.05rem,2.4vw,1.3rem);max-width:640px;margin:0 auto 8px;color:var(--cream)}
+.tag{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--mute);font-size:1.05rem;margin-bottom:40px}
+/* Voices */
+section{padding:104px 0;border-top:1px solid rgba(244,239,228,.05)}
+h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(1.9rem,4vw,2.6rem);margin:16px 0 14px}
+.lead{color:var(--mute);max-width:660px}
+.voices{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px;margin-top:52px;background:rgba(244,239,228,.05)}
+.voice{background:var(--ink2);padding:26px 18px;text-align:center}
+.voice .nm{font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--gold-soft)}
+.voice .for{font-size:.72rem;color:var(--mute);letter-spacing:.06em;margin-top:5px}
+/* Acts */
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;margin-top:56px;background:rgba(244,239,228,.05)}
+.act{background:var(--ink2);padding:44px 34px}
+.act .n{font-family:'Cormorant Garamond',serif;font-size:2.6rem;color:var(--gold);font-style:italic}
+.act h3{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.4rem;margin:14px 0 10px}
+.act p{color:var(--mute);font-size:.95rem}
+.center{text-align:center}
+.mid-cta{margin-top:64px}
+/* Tracks */
+.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:52px}
+.track{border:1px solid rgba(201,168,76,.18);padding:30px 26px;transition:border-color .3s}
+.track:hover{border-color:rgba(201,168,76,.5)}
+.track .fig{letter-spacing:.26em;text-transform:uppercase;font-size:.62rem;color:var(--gold)}
+.track h3{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.3rem;margin:10px 0 8px}
+.track p{color:var(--mute);font-size:.88rem}
+/* Prayer */
+.prayer{max-width:620px}
+textarea{width:100%;background:var(--ink2);border:1px solid rgba(244,239,228,.14);color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;font-size:1rem;padding:20px;min-height:140px;resize:vertical;outline:none;margin-top:34px}
+textarea:focus{border-color:rgba(201,168,76,.5)}
+button{margin-top:18px;background:var(--gold);color:var(--ink);border:none;padding:16px 44px;letter-spacing:.22em;text-transform:uppercase;font-size:.72rem;font-family:'Jost',sans-serif;font-weight:500;cursor:pointer;transition:opacity .3s;min-height:44px}
+button:hover{opacity:.85}
+.note{font-size:.8rem;color:var(--mute);margin-top:14px}
+#prayerMsg{margin-top:16px;color:var(--gold-soft);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;min-height:1.4em}
+/* FAQ */
+.faq{max-width:720px}
+details{border-bottom:1px solid rgba(244,239,228,.08);padding:22px 0}
+summary{cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--cream);list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::after{content:"+";color:var(--gold);font-size:1.4rem;font-family:'Jost',sans-serif;font-weight:300}
+details[open] summary::after{content:"—"}
+details p{color:var(--mute);font-size:.95rem;margin-top:12px;max-width:640px}
+/* Pricing */
+.price-card{border:1px solid rgba(201,168,76,.35);max-width:460px;margin:52px auto 0;padding:52px 44px;text-align:center}
+.price{font-family:'Cormorant Garamond',serif;font-size:4rem;color:var(--gold-soft)}
+.price span{font-size:1.1rem;color:var(--mute)}
+.inc{list-style:none;margin:26px 0 34px;color:var(--mute);font-size:.92rem}
+.inc li{padding:7px 0;border-bottom:1px solid rgba(244,239,228,.05)}
+footer{padding:70px 0 50px;text-align:center;border-top:1px solid rgba(244,239,228,.05)}
+footer .verse{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--mute);font-size:1.05rem}
+footer .ref{letter-spacing:.3em;font-size:.6rem;color:var(--gold);text-transform:uppercase;margin-top:10px}
+footer .fine{color:#55524a;font-size:.72rem;margin-top:36px;line-height:1.9}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="well"></div>
+  <div class="wrap">
+    <div class="eyebrow">The God Who Sees · Genesis 16</div>
+    <h1>El Roi <em>Call</em></h1>
+    <p class="clarity">Call one number. Be matched with a biblical voice who lived what you're living — Job for grief, Esther for fear, Peter for failure.</p>
+    <p class="tag">She was alone in the desert when heaven spoke first. Now it's your turn to be seen.</p>
+    <a class="cta" href="https://buy.stripe.com/test_eVq00b6ba7352edd0j1RC00">Start My Free Week</a>
+    <p class="cta-note">7 days free · $39/month after · cancel anytime</p>
+    <p class="cta-note" style="letter-spacing:.22em;text-transform:uppercase;font-size:.62rem;margin-top:22px;color:#6e6a5e">Grounded in Scripture · Aligned with the science of being heard</p>
+  </div>
+</header>
+
+<section id="voices">
+  <div class="wrap">
+    <div class="eyebrow">Fifteen voices</div>
+    <h2>Counsel from the ones who lived it</h2>
+    <p class="lead">Not a chatbot with a Bible. Fifteen distinct voices, each anchored in their own story and Scripture — matched to yours.</p>
+    <div class="voices">
+      <div class="voice"><div class="nm">Job</div><div class="for">for grief &amp; loss</div></div>
+      <div class="voice"><div class="nm">Joseph</div><div class="for">for betrayal</div></div>
+      <div class="voice"><div class="nm">Esther</div><div class="for">for courage</div></div>
+      <div class="voice"><div class="nm">David</div><div class="for">for guilt &amp; giants</div></div>
+      <div class="voice"><div class="nm">Moses</div><div class="for">for feeling unqualified</div></div>
+      <div class="voice"><div class="nm">Elijah</div><div class="for">for burnout</div></div>
+      <div class="voice"><div class="nm">Ruth</div><div class="for">for starting over</div></div>
+      <div class="voice"><div class="nm">Hannah</div><div class="for">for unanswered prayer</div></div>
+      <div class="voice"><div class="nm">Paul</div><div class="for">for a past you regret</div></div>
+      <div class="voice"><div class="nm">Abraham</div><div class="for">for the unknown</div></div>
+      <div class="voice"><div class="nm">Naomi</div><div class="for">for bitterness</div></div>
+      <div class="voice"><div class="nm">Gideon</div><div class="for">for self-doubt</div></div>
+      <div class="voice"><div class="nm">Mary Magdalene</div><div class="for">for shame</div></div>
+      <div class="voice"><div class="nm">Jonah</div><div class="for">for running away</div></div>
+      <div class="voice"><div class="nm">Peter</div><div class="for">for failure</div></div>
+    </div>
+  </div>
+</section>
+
+
+<section id="ancient">
+  <div class="wrap">
+    <div class="eyebrow">Why this is ancient, not novel</div>
+    <h2>We didn't invent this. Paul commanded it.</h2>
+    <p class="lead">Scripture doesn't just permit learning from the lives of the faithful — it insists on it. Their stories were preserved for exactly one reason: so that you could use them in your hour.</p>
+    <div class="acts" style="margin-top:48px">
+      <div class="act"><h3 class="serif" style="font-style:italic;color:var(--gold-soft)">"Written to teach us"</h3><p>"Everything that was written in the past was written to teach us, so that through the endurance taught in the Scriptures and the encouragement they provide, we might have hope." <span style="color:var(--gold);letter-spacing:.2em;font-size:.62rem;text-transform:uppercase">— Romans 15:4</span></p></div>
+      <div class="act"><h3 class="serif" style="font-style:italic;color:var(--gold-soft)">"Comfort passed on"</h3><p>"The God of all comfort... comforts us in all our troubles, so that we can comfort those in any trouble with the comfort we ourselves receive." Comfort was designed to travel from one sufferer to the next. <span style="color:var(--gold);letter-spacing:.2em;font-size:.62rem;text-transform:uppercase">— 2 Corinthians 1:3–4</span></p></div>
+      <div class="act"><h3 class="serif" style="font-style:italic;color:var(--gold-soft)">"A cloud of witnesses"</h3><p>"Since we are surrounded by such a great cloud of witnesses... let us run with perseverance the race marked out for us." The faithful who went before you were never meant to be distant. <span style="color:var(--gold);letter-spacing:.2em;font-size:.62rem;text-transform:uppercase">— Hebrews 12:1</span></p></div>
+    </div>
+    <p class="lead" style="margin-top:44px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.15rem">For two thousand years, believers have asked "what would Job say to my grief? What would Esther say to my fear?" — in sermons, in study, in the dark. El Roi Call simply lets you ask out loud, and hear an answer shaped by their story.</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2>One number. Three acts.</h2>
+    <div class="acts">
+      <div class="act"><div class="n">I</div><h3>You call</h3><p>No menus, no apps in the moment. A gentle operator answers, listens, and asks only what's needed. You are heard before anything else happens.</p></div>
+      <div class="act"><div class="n">II</div><h3>You're matched</h3><p>Grieving? You're put through to Job. Afraid to act? Esther. Ashamed of a failure? Peter. The match is to lived experience, not a menu option.</p></div>
+      <div class="act"><div class="n">III</div><h3>You talk with someone who lived it</h3><p>Counsel from scars, anchored in Scripture, ending in prayer. Call back anytime — your story is remembered, so you never start over.</p></div>
+    </div>
+    <div class="center mid-cta">
+      <a class="cta" href="https://buy.stripe.com/test_eVq00b6ba7352edd0j1RC00">Start My Free Week</a>
+      <p class="cta-note">7 days free · cancel anytime</p>
+    </div>
+  </div>
+</section>
+
+
+<section id="science">
+  <div class="wrap">
+    <div class="eyebrow">Why it works</div>
+    <h2>The science of being heard</h2>
+    <p class="lead">The design of El Roi Call follows what both Scripture and clinical research say about how people move through suffering.</p>
+    <div class="acts" style="margin-top:48px">
+      <div class="act"><h3>Name it to calm it</h3><p>UCLA neuroimaging research found that putting feelings into words — affect labeling — measurably dampens the brain's alarm center, the amygdala, while engaging the prefrontal regions that regulate emotion. Saying your struggle out loud isn't venting. It's neurology.</p><p style="margin-top:10px;letter-spacing:.14em;font-size:.6rem;text-transform:uppercase;color:#6e6a5e">Lieberman et al., Psychological Science</p></div>
+      <div class="act"><h3>Lived experience heals</h3><p>Support from someone who has walked through what you're walking through — peer support — is recommended across international mental-health guidance, with research linking it to gains in recovery, self-efficacy, and engagement. That principle is this product: Job for the grieving, Peter for the fallen.</p><p style="margin-top:10px;letter-spacing:.14em;font-size:.6rem;text-transform:uppercase;color:#6e6a5e">BMC Medicine, systematic umbrella review</p></div>
+      <div class="act"><h3>Story carries meaning</h3><p>Humans make sense of suffering through narrative — placing our chapter inside a larger story. It's why every culture treasures its testimonies, and why Scripture is mostly stories, not systems. A voice that answers your story with theirs does what no pamphlet can.</p><p style="margin-top:10px;letter-spacing:.14em;font-size:.6rem;text-transform:uppercase;color:#6e6a5e">Narrative psychology tradition</p></div>
+    </div>
+    <p class="note" style="margin-top:36px;max-width:660px">El Roi Call is a spiritual practice informed by this research — not therapy, and not a treatment for any condition. For clinical care, we'll always point you to licensed professionals.</p>
+  </div>
+</section>
+
+<section id="well">
+  <div class="wrap">
+    <div class="eyebrow">The Well · Beer Lahai Roi</div>
+    <h2>The Journey — they call <em class="serif">you</em></h2>
+    <p class="lead">Choose a track and your guide calls you weekly, on your schedule. Named for the well Hagar named: the well of the Living One who sees me.</p>
+    <div class="tracks">
+      <div class="track"><div class="fig">With Job</div><h3>Healing from Loss</h3><p>Four weeks through grief that refuses easy answers.</p></div>
+      <div class="track"><div class="fig">With Moses</div><h3>Finding Your Calling</h3><p>Four weeks for everyone who feels unqualified for what they must do.</p></div>
+      <div class="track"><div class="fig">With Esther</div><h3>Overcoming Fear</h3><p>Four weeks on courage that acts despite trembling.</p></div>
+      <div class="track"><div class="fig">With Peter</div><h3>The Way Back</h3><p>Four weeks for anyone restarting after failure.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="prayer">
+  <div class="wrap prayer">
+    <div class="eyebrow">Anonymous · Destroyed after 72 hours</div>
+    <h2>Leave a prayer request</h2>
+    <p class="lead">No name. No number. No account. Your request is held and lifted up for three days, then the page is destroyed forever.</p>
+    <textarea id="prayerText" placeholder="Write your request here…" maxlength="2000"></textarea>
+    <button onclick="sendPrayer()">Place it in the well</button>
+    <div id="prayerMsg"></div>
+    <p class="note">If you are in crisis or thinking of harming yourself, please call or text 988 (Suicide &amp; Crisis Lifeline) right now. You matter, and help is real.</p>
+  </div>
+</section>
+
+
+<section id="ifheaven">
+  <div class="wrap center">
+    <div class="eyebrow">The question everyone asks</div>
+    <h2>If heaven had a call center…</h2>
+    <p class="lead" style="margin:26px auto 0;max-width:640px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.25rem">…it wouldn't put you on hold. It wouldn't read from a script. It would already know your name, hand your call to someone who has wept what you're weeping — and stay on the line until you were ready to hang up. That's the standard we build to, every call.</p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap faq">
+    <div class="eyebrow">Honest answers</div>
+    <h2>What you're probably wondering</h2>
+    <details><summary>Isn't this a gimmick?</summary><p>Fair question — ask it of anything new. Here's our answer: the practice is ancient (Romans 15:4 says the stories were written for exactly this use; 2 Corinthians 1:4 says comfort is meant to be passed from sufferer to sufferer), the mechanism is studied (naming your feelings aloud measurably calms the brain's alarm systems; support from lived experience is recommended across mental-health guidance), and the craft is serious — each voice is built from its figure's actual scriptural story, not a costume on a chatbot. Novel packaging, ancient practice.</p></details>
+    <details><summary>Am I talking to a real person?</summary><p>No — and we will never pretend otherwise. The voices are AI, carefully crafted from each figure's story and Scripture, within a guided spiritual experience. Ask any voice directly and it will tell you the truth. What's real is what happens in you: being heard, being pointed back to the Word, and prayer.</p></details>
+    <details><summary>Is this meant to replace church, my pastor, or prayer?</summary><p>Never. El Roi Call is for the Tuesday-at-2am moments between Sundays — a companion to your faith life, not a substitute for your church, your people, or your own prayer. We will always point you back toward real community.</p></details>
+    <details><summary>Is what I share private?</summary><p>Yes. Your conversations are used only to serve you better on your next call. Prayer requests are stored with no name and no number, and are permanently destroyed after 72 hours — enforced automatically, not by policy but by the database itself.</p></details>
+    <details><summary>What tradition is this rooted in?</summary><p>The Bible itself. Every voice speaks from their own scriptural story — no denominational add-ons, no doctrine beyond the text. Christians of every background call the same number.</p></details>
+    <details><summary>What does it cost, and can I cancel?</summary><p>One membership: $39 a month, everything included — unlimited calls, the Journey, every track in the Well. Your first week is free, and you can cancel anytime in one step. No tiers, no upsells.</p></details>
+  </div>
+</section>
+
+<section id="membership">
+  <div class="wrap center">
+    <div class="eyebrow">Membership</div>
+    <h2>Everything. One covenant.</h2>
+    <div class="price-card">
+      <div class="price">$39<span>/month</span></div>
+      <ul class="inc">
+        <li>Unlimited calls with all fifteen voices</li>
+        <li>The Journey — weekly calls on your schedule</li>
+        <li>The Well — every track, every season</li>
+        <li>Anonymous prayer requests, always</li>
+      </ul>
+      <a class="cta" href="https://buy.stripe.com/test_eVq00b6ba7352edd0j1RC00" id="checkout">Start My Free Week</a>
+      <p class="note">7 days free · cancel anytime</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="verse">"You are the God who sees me. I have now seen the One who sees me."</p>
+    <div class="ref">Genesis 16:13</div>
+    <p class="fine">El Roi Call is a guided spiritual experience featuring AI voices inspired by biblical figures. It is not a substitute for pastoral care, professional counseling, or emergency services.<br>In crisis? Call or text 988. · © 2026 El Roi Call</p>
+  </div>
+</footer>
+
+<script>
+async function sendPrayer(){
+  const t=document.getElementById('prayerText'), m=document.getElementById('prayerMsg');
+  const v=t.value.trim();
+  if(v.length<3){m.textContent='Write a few words first — even a sigh counts.';return}
+  m.textContent='Placing it in the well…';
+  try{
+    const r=await fetch('https://mkocnufwmsfchivfbhuf.supabase.co/functions/v1/journey/prayer',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request:v})});
+    const d=await r.json();
+    if(d.ok){t.value='';m.textContent='It is written down and lifted up. In three days, the page is destroyed.'}
+    else m.textContent='The well is quiet just now — please try again in a moment.';
+  }catch(e){m.textContent='The well is quiet just now — please try again in a moment.'}
+}
+</script>
+</body>
+</html>
