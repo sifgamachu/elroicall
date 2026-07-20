@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="theme-color" content="#0A0A0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tell us what you're carrying — El Roi Call</title>
 <meta name="description" content="Before anything else, tell us what you're going through. We'll connect you with the voice who lived it. Your first call is free.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +13,8 @@
 body{background:var(--ink);color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px}
 .serif{font-family:'Cormorant Garamond',serif}
 .card{max-width:560px;width:100%}
-.well{width:96px;height:96px;border-radius:50%;border:1px solid rgba(201,168,76,.28);margin:0 auto 26px;position:relative}
+.well{width:96px;height:96px;border-radius:50%;border:1px solid rgba(201,168,76,.28);margin:0 auto 26px;position:relative;background:radial-gradient(circle at center,rgba(201,168,76,.06),transparent 60%);animation:wellBreath 12s ease-in-out infinite}
+@keyframes wellBreath{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
 .well::before{content:"";position:absolute;inset:20px;border-radius:50%;border:1px solid rgba(201,168,76,.16)}
 .well::after{content:"";position:absolute;inset:40px;border-radius:50%;border:1px solid rgba(201,168,76,.1)}
 .eyebrow{letter-spacing:.32em;text-transform:uppercase;font-size:.64rem;color:var(--gold);text-align:center}
@@ -23,18 +25,34 @@ textarea:focus{border-color:rgba(201,168,76,.5)}
 input{width:100%;background:var(--ink2);border:1px solid rgba(244,239,228,.14);color:var(--cream);font-family:'Jost',sans-serif;font-size:1.05rem;padding:16px;outline:none;text-align:center;margin-top:18px}
 input:focus{border-color:rgba(201,168,76,.5)}
 button{margin-top:24px;width:100%;background:var(--gold);color:var(--ink);border:none;padding:17px;letter-spacing:.2em;text-transform:uppercase;font-size:.74rem;font-family:'Jost',sans-serif;font-weight:500;cursor:pointer;transition:opacity .3s}
-button:hover{opacity:.88}button:disabled{opacity:.4}
+button:hover{opacity:1;background:var(--gold-soft)}button:active{transform:translateY(1px)}button:disabled{opacity:.4}
 .crisis{font-size:.76rem;color:var(--mute);margin-top:26px;line-height:1.7;text-align:center}
 /* reflection stage */
 #reflect{display:none;text-align:center}
+#reflect .eyebrow{animation:rise .7s cubic-bezier(.22,.61,.36,1) both}
+#reflect .reflection{animation:rise .8s .15s cubic-bezier(.22,.61,.36,1) both}
+#reflect .matched{animation:rise .8s .4s cubic-bezier(.22,.61,.36,1) both}
+#reflect .free-badge,#reflect .lead,#reflect input,#reflect button,#reflect .crisis{animation:rise .8s .55s cubic-bezier(.22,.61,.36,1) both}
+#done{animation:rise .8s cubic-bezier(.22,.61,.36,1) both}
 .reflection{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.5rem;color:var(--gold-soft);line-height:1.5;margin:24px 0 8px}
 .matched{color:var(--mute);margin-bottom:8px}
 .matched b{color:var(--cream);font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:1.2rem}
 .free-badge{display:inline-block;border:1px solid rgba(201,168,76,.4);color:var(--gold);letter-spacing:.18em;text-transform:uppercase;font-size:.6rem;padding:8px 18px;margin:22px 0 6px}
 #thinking{display:none;text-align:center;color:var(--mute);font-style:italic;font-family:'Cormorant Garamond',serif;font-size:1.15rem;margin-top:30px}
+.dots i{font-style:normal;animation:dot 1.6s ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:.25s}.dots i:nth-child(3){animation-delay:.5s}
+@keyframes dot{0%,100%{opacity:.2}40%{opacity:1}}
 .back{display:block;text-align:center;margin-top:26px;color:var(--mute);text-decoration:none;font-size:.8rem;letter-spacing:.1em}
 .back:hover{color:var(--gold)}
 .big-num{font-family:'Cormorant Garamond',serif;font-size:1.9rem;color:var(--gold-soft);margin:16px 0;letter-spacing:.05em}
+
+/* — finish layer — */
+::selection{background:rgba(201,168,76,.28);color:#F4EFE4}
+:focus-visible{outline:1px solid rgba(201,168,76,.65);outline-offset:3px}
+html{scroll-behavior:smooth}
+h1,h2,h3{text-wrap:balance}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -50,7 +68,7 @@ button:hover{opacity:.88}button:disabled{opacity:.4}
     <p class="crisis">If you're in crisis or thinking of harming yourself, please call or text 988 right now. You matter, and help is real.</p>
   </div>
 
-  <div id="thinking">Listening…</div>
+  <div id="thinking">Listening<span class="dots"><i>.</i><i>.</i><i>.</i></span></div>
 
   <div id="reflect">
     <div class="eyebrow">We hear you</div>

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="theme-color" content="#0A0A0B">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gift a Call — El Roi Call</title>
 <meta name="description" content="Send someone you love a free call on El Roi Call — a biblical voice who lived what they're living will talk and pray with them.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +22,8 @@ input:focus,textarea:focus{border-color:rgba(201,168,76,.5)}
 textarea{min-height:90px;resize:vertical}
 .hint{font-size:.78rem;color:var(--mute);margin-top:6px}
 button{margin-top:30px;width:100%;background:var(--gold);color:var(--ink);border:none;padding:17px;letter-spacing:.2em;text-transform:uppercase;font-size:.74rem;font-family:'Jost',sans-serif;font-weight:500;cursor:pointer;transition:opacity .3s}
-button:hover{opacity:.88}
+button:hover{opacity:1;background:var(--gold-soft)}
+button:active{transform:translateY(1px)}
 button:disabled{opacity:.4;cursor:default}
 #result{margin-top:28px;display:none}
 .link-box{background:var(--ink2);border:1px solid rgba(201,168,76,.3);padding:18px;font-size:.9rem;color:var(--gold-soft);word-break:break-all;text-align:center}
@@ -29,6 +31,14 @@ button:disabled{opacity:.4;cursor:default}
 .copy-btn{margin-top:14px;background:transparent;border:1px solid rgba(201,168,76,.4);color:var(--gold)}
 .back{display:block;text-align:center;margin-top:28px;color:var(--mute);text-decoration:none;font-size:.8rem;letter-spacing:.1em}
 .back:hover{color:var(--gold)}
+
+/* — finish layer — */
+::selection{background:rgba(201,168,76,.28);color:#F4EFE4}
+:focus-visible{outline:1px solid rgba(201,168,76,.65);outline-offset:3px}
+html{scroll-behavior:smooth}
+h1,h2,h3{text-wrap:balance}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
