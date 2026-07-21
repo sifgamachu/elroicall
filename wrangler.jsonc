@@ -1,6 +1,8 @@
 {
-  // El Roi Call — static site served as Worker assets
+  // El Roi Call — static site + indexing pinger worker
   "name": "elroicall",
   "compatibility_date": "2026-07-01",
-  "assets": { "directory": "./public" }
+  "main": "src/worker.js",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "triggers": { "crons": ["0 6 * * *"] }
 }
