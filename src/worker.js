@@ -12,6 +12,7 @@ const URLS = [
   `https://${HOST}/about/`,
   `https://${HOST}/begin/`,
   `https://${HOST}/gift/`,
+  `https://${HOST}/account/`,
   `https://${HOST}/privacy/`,
   `https://${HOST}/terms/`,
 ];

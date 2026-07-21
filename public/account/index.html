@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Member Sign-In — El Roi Call · If Heaven Had a Call Center</title>
+<meta name="description" content="Sign in to El Roi Call to choose your daily calls and Bible studies: the Journey through the whole Bible in a year, the Pulpit Walk sermon series through all 1,189 chapters, daily inspiration, and your call history.">
+<link rel="canonical" href="https://elroicall.com/account/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://elroicall.com/account/">
+<meta property="og:site_name" content="El Roi Call">
+<meta property="og:title" content="Member Sign-In — El Roi Call">
+<meta property="og:description" content="Choose your daily calls and Bible studies, set your time, and walk the whole Bible — Genesis to Revelation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-soft:#D9BC6E;--ink:#0A0A0B;--ink2:#121214;--cream:#F4EFE4;--mute:#8A8578}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:48px 22px 80px}
+a{color:var(--gold);text-decoration:none}
+.brand{text-align:center;margin-bottom:8px}
+.brand a{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--cream);letter-spacing:.04em}
+.brand .see{color:var(--gold)}
+.eyebrow{color:var(--gold);letter-spacing:.28em;text-transform:uppercase;font-size:.7rem;text-align:center;margin:26px 0 10px}
+h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:2rem;text-align:center;margin-bottom:6px}
+.sub{color:var(--mute);text-align:center;font-size:.95rem;max-width:440px;margin:0 auto 34px;line-height:1.6}
+.card{background:var(--ink2);border:1px solid #26262a;border-radius:14px;padding:26px;margin-bottom:18px}
+.card h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.3rem;margin-bottom:14px;color:var(--gold-soft)}
+label{display:block;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:14px 0 6px}
+input,select{width:100%;background:#0E0E10;border:1px solid #2c2c31;border-radius:9px;color:var(--cream);font-family:'Jost',sans-serif;font-weight:300;font-size:1rem;padding:12px 14px;outline:none}
+input:focus,select:focus{border-color:var(--gold)}
+.btn{display:inline-block;width:100%;text-align:center;background:var(--gold);color:var(--ink);border:none;border-radius:9px;font-family:'Jost',sans-serif;font-weight:500;font-size:.95rem;letter-spacing:.06em;padding:13px 18px;margin-top:18px;cursor:pointer;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.btn[disabled]{opacity:.45;cursor:default}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.hide{display:none}
+.msg{margin-top:12px;font-size:.9rem;line-height:1.5}
+.msg.ok{color:var(--gold-soft)}.msg.err{color:#c96a5a}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+@media(max-width:520px){.modes{grid-template-columns:1fr}}
+.mode{border:1px solid #2c2c31;border-radius:11px;padding:14px;cursor:pointer;transition:border-color .15s}
+.mode:hover{border-color:var(--mute)}
+.mode.sel{border-color:var(--gold);background:#141310}
+.mode .t{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--cream)}
+.mode .d{color:var(--mute);font-size:.8rem;line-height:1.5;margin-top:4px}
+.consent{display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-size:.82rem;color:var(--mute);line-height:1.55}
+.consent input{width:auto;margin-top:3px}
+.pill{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:999px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;margin-left:8px;vertical-align:middle}
+.bar{height:6px;background:#232327;border-radius:99px;margin:12px 0 6px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-soft));border-radius:99px}
+.hist{border-top:1px solid #232327;padding:12px 0;font-size:.9rem}
+.hist:first-of-type{border-top:none}
+.hist .d{color:var(--mute);font-size:.78rem;margin-bottom:3px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.link{background:none;border:none;color:var(--mute);font-family:'Jost',sans-serif;font-size:.85rem;cursor:pointer}
+.link:hover{color:var(--gold)}
+.callout{border:1px solid #2c2c31;border-left:3px solid var(--gold);border-radius:8px;padding:12px 14px;font-size:.85rem;color:var(--mute);line-height:1.55;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><a href="/">El Roi <span class="see">Call</span></a></div>
+  <div class="eyebrow">Member Portal</div>
+
+  <!-- ── SIGN IN ── -->
+  <div id="v-signin">
+    <h1>The house knows your name.</h1>
+    <p class="sub">Sign in to choose your daily calls and Bible studies, set your time, and watch your walk through the whole Bible — Genesis to Revelation.</p>
+    <div class="card">
+      <h2>Sign in by email</h2>
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+      <button class="btn" id="b-signin">Send Me a Sign-In Link</button>
+      <div class="msg" id="m-signin"></div>
+    </div>
+    <p class="sub" style="margin-top:8px">No password to remember — we email you a door.</p>
+  </div>
+
+  <!-- ── CHECK EMAIL ── -->
+  <div id="v-sent" class="hide">
+    <h1>Check your email.</h1>
+    <p class="sub">A sign-in link is on its way. Open it on this device and you'll land right back here, signed in.</p>
+  </div>
+
+  <!-- ── DASHBOARD ── -->
+  <div id="v-dash" class="hide">
+    <div class="top">
+      <h1 style="text-align:left;font-size:1.7rem">Welcome home.</h1>
+      <button class="link" id="b-signout">Sign out</button>
+    </div>
+    <p class="sub" style="text-align:left;margin:0 0 24px" id="d-email"></p>
+
+    <!-- phone -->
+    <div class="card" id="c-phone">
+      <h2>Your phone <span class="pill hide" id="p-verified">Verified</span></h2>
+      <div id="ph-set">
+        <p style="color:var(--mute);font-size:.9rem;line-height:1.6">The Daily Well calls <em>you</em> — so we verify the number is yours. Enter it, and we'll place a short call speaking a four-digit code.</p>
+        <label for="phone">Phone number</label>
+        <input id="phone" type="tel" placeholder="(555) 555-5555" autocomplete="tel">
+        <button class="btn" id="b-phone">Call Me With a Code</button>
+        <div class="msg" id="m-phone"></div>
+      </div>
+      <div id="ph-verify" class="hide">
+        <p style="color:var(--mute);font-size:.9rem">Your phone is ringing. Enter the four-digit code the voice speaks:</p>
+        <label for="code">Verification code</label>
+        <input id="code" inputmode="numeric" maxlength="4" placeholder="0000" style="letter-spacing:.5em;text-align:center;font-size:1.4rem">
+        <button class="btn" id="b-verify">Verify</button>
+        <button class="btn ghost" id="b-rephone">Use a Different Number</button>
+        <div class="msg" id="m-verify"></div>
+      </div>
+      <div id="ph-done" class="hide">
+        <p style="font-size:1.05rem" id="d-phone"></p>
+        <button class="link" id="b-changephone" style="margin-top:8px">Change number</button>
+      </div>
+    </div>
+
+    <!-- schedule -->
+    <div class="card" id="c-sched">
+      <h2>The Daily Well — your scheduled calls</h2>
+      <p style="color:var(--mute);font-size:.9rem;line-height:1.6;margin-bottom:6px">Choose what the house brings you, and when. One schedule, changeable any time — here or by simply asking on a call.</p>
+      <div class="modes" id="modes">
+        <div class="mode" data-mode="journey"><div class="t">The Journey</div><div class="d">The whole Bible in one year — Genesis to Revelation, your exact chapters brought to you day by day.</div></div>
+        <div class="mode" data-mode="sermon"><div class="t">The Pulpit Walk</div><div class="d">A preached message every visit, straight through all 1,189 chapters of Scripture. Nothing skipped.</div></div>
+        <div class="mode" data-mode="inspiration"><div class="t">Daily Inspiration</div><div class="d">A story, a scripture, a charge for your day, and a prayer — a friend calling, not a broadcast.</div></div>
+        <div class="mode" data-mode="random"><div class="t">Surprise Me</div><div class="d">A different voice and a different word every time, from corners of Scripture no app would touch.</div></div>
+      </div>
+      <div class="row">
+        <div><label for="hour">Hour</label><select id="hour"></select></div>
+        <div><label for="minute">Minute</label><select id="minute"><option value="0">:00</option><option value="15">:15</option><option value="30">:30</option><option value="45">:45</option></select></div>
+      </div>
+      <div class="row">
+        <div><label for="tz">Timezone</label><select id="tz">
+          <option value="America/New_York">Eastern</option><option value="America/Chicago">Central</option>
+          <option value="America/Denver">Mountain</option><option value="America/Phoenix">Arizona</option>
+          <option value="America/Los_Angeles">Pacific</option><option value="America/Anchorage">Alaska</option>
+          <option value="Pacific/Honolulu">Hawaii</option></select></div>
+        <div><label for="days">Days</label><select id="days">
+          <option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekends">Weekends</option></select></div>
+      </div>
+      <label for="fname">Your first name (the voices will use it)</label>
+      <input id="fname" placeholder="First name" autocomplete="given-name">
+      <div class="consent"><input type="checkbox" id="consent"><span>I agree that El Roi Call may place automated calls to my number at my chosen time. Standard carrier rates may apply. I can change or stop these calls anytime — here, or just by asking on any call.</span></div>
+      <button class="btn" id="b-save">Save My Schedule</button>
+      <button class="btn ghost hide" id="b-cancel">Pause My Scheduled Calls</button>
+      <div class="msg" id="m-sched"></div>
+    </div>
+
+    <!-- progress -->
+    <div class="card hide" id="c-prog">
+      <h2>Your walk</h2>
+      <p id="prog-label" style="font-size:1.05rem"></p>
+      <div class="bar"><i id="prog-bar" style="width:0%"></i></div>
+      <p id="prog-next" style="color:var(--mute);font-size:.9rem"></p>
+    </div>
+
+    <!-- history -->
+    <div class="card hide" id="c-hist">
+      <h2>Recent calls</h2>
+      <div id="hist"></div>
+    </div>
+
+    <p class="sub" style="margin-top:10px">The line itself is always open: <a href="tel:+18556197337"><strong>1-855-619-SEES</strong></a></p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = "https://mkocnufwmsfchivfbhuf.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rb2NudWZ3bXNmY2hpdmZiaHVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMjcyNjUsImV4cCI6MjA5OTgwMzI2NX0.6SQI1J1ojAiKkfPzZZVh-3UyPlaaqv-Gxw4qYP9FPxs";
+const API = SUPA_URL + "/functions/v1/portal";
+const supa = window.supabase.createClient(SUPA_URL, ANON);
+const $ = (id) => document.getElementById(id);
+const show = (id, on=true) => $(id).classList.toggle("hide", !on);
+let session = null, me = null, selMode = "inspiration";
+
+// hour options
+for (let h=0; h<24; h++) {
+  const o = document.createElement("option"); o.value = h;
+  const t = h%12===0?12:h%12; o.textContent = `${t}:00 ${h<12?"AM":"PM"}`;
+  if (h===8) o.selected = true; $("hour").appendChild(o);
+}
+
+document.querySelectorAll(".mode").forEach(m => m.onclick = () => {
+  document.querySelectorAll(".mode").forEach(x => x.classList.remove("sel"));
+  m.classList.add("sel"); selMode = m.dataset.mode;
+});
+document.querySelector('.mode[data-mode="inspiration"]').classList.add("sel");
+
+async function api(path, body) {
+  const r = await fetch(API + path, {
+    method: body ? "POST" : "GET",
+    headers: { "Authorization": "Bearer " + session.access_token, "apikey": ANON, "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return { status: r.status, data: await r.json().catch(() => ({})) };
+}
+
+function msg(id, text, ok) { const e=$(id); e.textContent=text; e.className="msg "+(ok?"ok":"err"); }
+
+async function loadDash() {
+  const { data } = await api("/me");
+  me = data;
+  $("d-email").textContent = me.email || "";
+  // phone states
+  const pending = me.phone && !me.phone_verified;
+  show("ph-set", !me.phone);
+  show("ph-verify", !!pending);
+  show("ph-done", !!(me.phone && me.phone_verified));
+  show("p-verified", !!me.phone_verified);
+  if (me.phone) $("d-phone").textContent = me.phone;
+  if (pending && !me.verify_ready) msg("m-verify","Verification calling is being connected on our side — check back soon, your number is saved.", true);
+  // schedule
+  if (me.schedule) {
+    $("hour").value = me.schedule.hour_local;
+    $("minute").value = me.schedule.minute_local;
+    $("tz").value = me.schedule.tz;
+    $("days").value = me.schedule.days;
+    selMode = me.schedule.mode;
+    document.querySelectorAll(".mode").forEach(x => x.classList.toggle("sel", x.dataset.mode===selMode));
+    show("b-cancel", me.schedule.active);
+    if (me.schedule.active) msg("m-sched","Your schedule is active. The house will call.", true);
+    else msg("m-sched","Your calls are paused. Save to resume.", true);
+  }
+  // progress
+  if (me.progress) {
+    show("c-prog"); $("prog-label").textContent = me.progress.label;
+    $("prog-next").textContent = me.progress.next;
+    $("prog-bar").style.width = Math.max(1, me.progress.pct) + "%";
+  } else show("c-prog", false);
+  // history
+  if (me.history && me.history.length) {
+    show("c-hist");
+    $("hist").innerHTML = me.history.map(h =>
+      `<div class="hist"><div class="d">${(h.created_at||"").slice(0,10)} · spoke with <strong style="color:var(--gold-soft)">${h.figure_name||""}</strong></div><div>${(h.summary||"").slice(0,160)}</div></div>`).join("");
+  }
+  show("v-signin", false); show("v-sent", false); show("v-dash");
+}
+
+$("b-signin").onclick = async () => {
+  const email = $("email").value.trim();
+  if (!email) return msg("m-signin","Enter your email address.");
+  $("b-signin").disabled = true;
+  const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: "https://elroicall.com/account/" } });
+  $("b-signin").disabled = false;
+  if (error) return msg("m-signin", error.message);
+  show("v-signin", false); show("v-sent");
+};
+
+$("b-phone").onclick = async () => {
+  const phone = $("phone").value.trim();
+  if (!phone) return msg("m-phone","Enter your phone number.");
+  $("b-phone").disabled = true;
+  const { status, data } = await api("/phone", { phone });
+  $("b-phone").disabled = false;
+  if (status===409) return msg("m-phone","That number is linked to another account.");
+  if (status!==200) return msg("m-phone","That doesn't look like a valid number.");
+  show("ph-set", false); show("ph-verify");
+  if (data.verify==="calling") msg("m-verify","Your phone is ringing…", true);
+  else if (data.verify==="pending_twilio") msg("m-verify","Number saved. Verification calling is being connected on our side — check back soon.", true);
+  else msg("m-verify","We couldn't reach that number just now. Try again in a moment.");
+};
+
+$("b-verify").onclick = async () => {
+  const { status, data } = await api("/verify", { code: $("code").value.trim() });
+  if (status===200 && data.phone_verified) { msg("m-verify","Verified. Welcome home.", true); await loadDash(); }
+  else if (data.error==="expired") msg("m-verify","That code expired — request a new call.");
+  else msg("m-verify","That code doesn't match. Listen once more and try again.");
+};
+
+$("b-rephone").onclick = () => { show("ph-verify", false); show("ph-set"); };
+$("b-changephone").onclick = () => { show("ph-done", false); show("ph-set"); };
+
+$("b-save").onclick = async () => {
+  if (!me.phone_verified) return msg("m-sched","Verify your phone first — the calls go to it.");
+  if (!$("consent").checked) return msg("m-sched","Please check the consent box — it matters legally and we take it seriously.");
+  $("b-save").disabled = true;
+  const { status } = await api("/schedule", {
+    hour_local: +$("hour").value, minute_local: +$("minute").value,
+    timezone: $("tz").value, days: $("days").value, mode: selMode,
+    caller_name: $("fname").value.trim(), consent: true,
+  });
+  $("b-save").disabled = false;
+  if (status===200) { msg("m-sched","Saved. The house will call you, just as you asked.", true); await loadDash(); }
+  else msg("m-sched","Couldn't save just now — try again.");
+};
+
+$("b-cancel").onclick = async () => {
+  await api("/cancel", {}); msg("m-sched","Paused. Any time you want the well to call again, save a new schedule.", true);
+  await loadDash();
+};
+
+$("b-signout").onclick = async () => { await supa.auth.signOut(); location.reload(); };
+
+(async () => {
+  const { data } = await supa.auth.getSession();
+  session = data.session;
+  supa.auth.onAuthStateChange((_e, s) => { if (s && !session) { session = s; loadDash(); } else session = s; });
+  if (session) loadDash();
+})();
+</script>
+</body>
+</html>
