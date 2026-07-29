@@ -72,6 +72,9 @@ input:focus,select:focus{border-color:var(--gold)}
 .actions{display:flex;gap:12px;margin-bottom:16px}
 .actions a{flex:1;text-align:center;border:1px solid var(--gold);border-radius:11px;padding:14px;color:var(--gold);letter-spacing:.05em;font-size:.92rem}
 .actions a:hover{background:#141310}
+.trk{border-top:1px solid #232327;padding:14px 0}
+.trk:first-child{border-top:none}
+.trk .d{color:var(--mute);font-size:.8rem;margin-top:2px}
 .center{text-align:center}
 </style>
 </head>
@@ -126,6 +129,12 @@ input:focus,select:focus{border-color:var(--gold)}
       <div class="stat"><div class="n" id="s-pct">—</div><div class="l">Of the Word</div></div>
     </div>
 
+    <!-- tracks -->
+    <div class="card hide" id="c-tracks">
+      <h2>Your tracks</h2>
+      <div id="tracks"></div>
+    </div>
+
     <!-- bible wall -->
     <div class="card" id="c-wall">
       <h2>Your walk through the Word</h2>
@@ -169,11 +178,11 @@ input:focus,select:focus{border-color:var(--gold)}
     <!-- schedule -->
     <div class="card" id="c-sched">
       <h2>Your calls &amp; Bible studies</h2>
-      <p class="sub" style="margin-bottom:6px">Choose what the house brings you, and when. One schedule, changeable any time — here or by simply asking on a call.</p>
+      <p class="sub" style="margin-bottom:6px">Hold several tracks at once — a sermon at seven, the Journey at noon, a check-in at eight. Pick a track, pick its time, save. Saving one track never disturbs the others.</p>
       <div class="modes" id="modes">
         <div class="mode" data-mode="journey"><div class="t">The Journey</div><div class="d">The whole Bible in one year — Genesis to Revelation, your exact chapters brought to you day by day.</div></div>
         <div class="mode" data-mode="sermon"><div class="t">The Pulpit Walk</div><div class="d">A preached message every visit, straight through all 1,189 chapters of Scripture. Nothing skipped.</div></div>
-        <div class="mode" data-mode="inspiration"><div class="t">Daily Inspiration</div><div class="d">A story, a scripture, a charge for your day, and a prayer — a friend calling, not a broadcast.</div></div>
+        <div class="mode" data-mode="inspiration"><div class="t">Daily Check-In</div><div class="d">A story, a scripture, a charge for your day, and a prayer — a friend calling, not a broadcast.</div></div>
         <div class="mode" data-mode="random"><div class="t">Surprise Me</div><div class="d">A different voice and a different word every time, from corners of Scripture no app would touch.</div></div>
       </div>
       <div class="row">
@@ -192,8 +201,8 @@ input:focus,select:focus{border-color:var(--gold)}
       <label for="fname">Your first name (the voices will use it)</label>
       <input id="fname" placeholder="First name" autocomplete="given-name">
       <div class="consent"><input type="checkbox" id="consent"><span>I agree that El Roi Call may place automated calls to my number at my chosen time and send occasional progress text messages (reply STOP anytime). Standard carrier rates may apply. I can change or stop these calls anytime — here, or just by asking on any call.</span></div>
-      <button class="btn" id="b-save">Save My Schedule</button>
-      <button class="btn ghost hide" id="b-cancel">Pause My Scheduled Calls</button>
+      <button class="btn" id="b-save">Save This Track</button>
+      <button class="btn ghost hide" id="b-cancel">Pause All Tracks</button>
       <div class="msg" id="m-sched"></div>
     </div>
 
@@ -257,7 +266,10 @@ function paintWall(chaptersDone) {
 
 // ── next-call countdown ──
 const TZ_NAMES = {"America/New_York":"Eastern","America/Chicago":"Central","America/Denver":"Mountain","America/Phoenix":"Arizona","America/Los_Angeles":"Pacific","America/Anchorage":"Alaska","Pacific/Honolulu":"Hawaii"};
-function nextCallText(s) {
+function fmtTime(s) {
+  return `${s.hour_local%12===0?12:s.hour_local%12}:${String(s.minute_local).padStart(2,"0")} ${s.hour_local<12?"AM":"PM"} ${TZ_NAMES[s.tz]||""}`;
+}
+function nextCallInfo(s) {
   try {
     const now = new Date();
     const tzNow = new Date(now.toLocaleString("en-US",{timeZone:s.tz}));
@@ -270,11 +282,10 @@ function nextCallText(s) {
       if (s.days==="weekends" && !wknd) continue;
       const ms = (cand.getTime()+offset) - now.getTime();
       const hrs = Math.floor(ms/3600000), mins = Math.round((ms%3600000)/60000);
-      const t = `${s.hour_local%12===0?12:s.hour_local%12}:${String(s.minute_local).padStart(2,"0")} ${s.hour_local<12?"AM":"PM"} ${TZ_NAMES[s.tz]||""}`;
-      return `Next call in ${hrs>0?hrs+"h ":""}${mins}m — ${t}, ${s.days}.`;
+      return { ms, text: `Next call in ${hrs>0?hrs+"h ":""}${mins}m — ${fmtTime(s)}, ${s.days}.` };
     }
   } catch(e) {}
-  return "";
+  return null;
 }
 
 async function loadDash() {
@@ -294,40 +305,62 @@ async function loadDash() {
   if (me.phone) $("d-phone").textContent = me.phone;
   if (pending && !me.verify_ready) msg("m-verify","Verification calling is being connected on our side — check back soon, your number is saved.", true);
 
-  // hero + stats + wall
-  const s = me.schedule, p = me.progress;
-  const chaptersDone = p ? (p.chapters_done||0) : 0;
+  // hero + stats + wall + tracks (multi-track)
+  const modeNames = {journey:"The Journey",sermon:"The Pulpit Walk",inspiration:"Daily Check-In",random:"Surprise Me"};
+  const tracks = me.schedules || [];
+  const act = tracks.filter(t => t.active);
+  const canonTracks = act.filter(t => t.progress);
+  const wallTrack = canonTracks.slice().sort((a,b) => b.progress.chapters_done - a.progress.chapters_done)[0] || null;
+  const chaptersDone = wallTrack ? wallTrack.progress.chapters_done : 0;
   const booksDone = paintWall(chaptersDone);
-  $("s-days").textContent = s ? (s.journey_day||0) : 0;
+  $("s-days").textContent = act.length ? Math.max(...act.map(t => t.journey_day||0)) : 0;
   $("s-calls").textContent = me.total_calls||0;
   $("s-books").textContent = booksDone + "/66";
-  $("s-pct").textContent = (p ? p.pct : 0) + "%";
+  $("s-pct").textContent = (wallTrack ? wallTrack.progress.pct : 0) + "%";
+  if (wallTrack) document.querySelector("#c-wall .sub").textContent =
+    `Sixty-six books, Genesis to Revelation — following your ${modeNames[wallTrack.mode]}. Gold lights as you complete each one.`;
 
-  if (s && s.active) {
-    const modeNames = {journey:"The Journey",sermon:"The Pulpit Walk",inspiration:"Daily Inspiration",random:"Surprise Me"};
-    $("hero-eyebrow").textContent = modeNames[s.mode] || "Today at the Well";
-    $("hero-word").textContent = p ? p.next.replace("Next reading: ","").replace("Next sermon: ","") : "A word is being prepared for you.";
-    $("hero-cd").textContent = (p ? p.label + " · " : "") + nextCallText(s);
+  let soonest = null, soonestMs = Infinity;
+  act.forEach(t => { const r = nextCallInfo(t); if (r && r.ms < soonestMs) { soonest = {t, r}; soonestMs = r.ms; } });
+  if (soonest) {
+    const {t, r} = soonest;
+    $("hero-eyebrow").textContent = modeNames[t.mode] || "Today at the Well";
+    $("hero-word").textContent = t.progress ? t.progress.next : (t.mode==="random" ? "A surprise from the well." : "A word for your day.");
+    $("hero-cd").textContent = (t.progress ? t.progress.label + " · " : "") + r.text;
     show("b-cancel");
-    msg("m-sched","Your schedule is active. The house will call.", true);
-  } else if (s) {
+    msg("m-sched", act.length>1 ? `${act.length} tracks active. The house will call.` : "Your track is active. The house will call.", true);
+  } else if (tracks.length) {
     $("hero-eyebrow").textContent = "The Well Is Paused";
     $("hero-word").textContent = "Your calls are paused.";
-    $("hero-cd").textContent = "Save a schedule below to resume your walk.";
+    $("hero-cd").textContent = "Save a track below to resume your walk.";
     show("b-cancel", false);
-    msg("m-sched","Your calls are paused. Save to resume.", true);
+    msg("m-sched","Your calls are paused. Save a track to resume.", true);
   } else {
     $("hero-eyebrow").textContent = "Begin Your Walk";
-    $("hero-word").textContent = "Choose your track below.";
-    $("hero-cd").textContent = "The Journey, the Pulpit Walk, daily inspiration, or a surprise — the house calls you.";
+    $("hero-word").textContent = "Choose your first track below.";
+    $("hero-cd").textContent = "A sermon at dawn, the Journey at noon, a check-in at night — hold as many as you like.";
   }
 
-  // schedule form prefill
-  if (s) {
-    $("hour").value = s.hour_local; $("minute").value = s.minute_local;
-    $("tz").value = s.tz; $("days").value = s.days;
-    if (s.caller_name) $("fname").value = s.caller_name;
-    selMode = s.mode;
+  // tracks card
+  show("c-tracks", tracks.length > 0);
+  $("tracks").innerHTML = tracks.map(t => {
+    const prog = t.progress ? `<div class="bar"><i style="width:${t.progress.pct}%"></i></div><div class="d">${t.progress.label} · next: ${t.progress.next}</div>` : "";
+    const status = t.active ? `${fmtTime(t)} · ${t.days}` : "paused — save this track to resume";
+    const pauseBtn = t.active ? `<button class="link" data-pause="${t.mode}">Pause</button>` : "";
+    return `<div class="trk"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><strong style="color:var(--gold-soft)">${modeNames[t.mode]||t.mode}</strong><div class="d">${status}</div></div>${pauseBtn}</div>${prog}</div>`;
+  }).join("");
+  document.querySelectorAll("[data-pause]").forEach(b => b.onclick = async () => {
+    await api("/cancel", { mode: b.dataset.pause }); await loadDash();
+    msg("m-sched","That track is paused. The others stand untouched.", true);
+  });
+
+  // schedule form prefill (from the soonest active track, else the first)
+  const pre = soonest ? soonest.t : tracks[0];
+  if (pre) {
+    $("hour").value = pre.hour_local; $("minute").value = pre.minute_local;
+    $("tz").value = pre.tz; $("days").value = pre.days;
+    if (pre.caller_name) $("fname").value = pre.caller_name;
+    selMode = pre.mode;
     document.querySelectorAll(".mode").forEach(x => x.classList.toggle("sel", x.dataset.mode===selMode));
   }
 
@@ -380,12 +413,12 @@ $("b-save").onclick = async () => {
     caller_name: $("fname").value.trim(), consent: true,
   });
   $("b-save").disabled = false;
-  if (status===200) { msg("m-sched","Saved. The house will call you, just as you asked.", true); await loadDash(); }
+  if (status===200) { msg("m-sched","Saved. That track is set — the house will call you, just as you asked.", true); await loadDash(); }
   else msg("m-sched","Couldn't save just now — try again.");
 };
 $("b-cancel").onclick = async () => {
   await api("/cancel", {}); await loadDash();
-  msg("m-sched","Paused. Any time you want the well to call again, save a new schedule.", true);
+  msg("m-sched","All tracks paused. Any time you want the well to call again, save a track.", true);
 };
 $("b-signout").onclick = async () => { await supa.auth.signOut(); location.reload(); };
 
