@@ -27,8 +27,44 @@ async function pingIndexNow() {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    // Temporary utility: transcribe an audio file with Workers AI Whisper.
+    // GET /_transcribe?t=<token>&u=<raw.githubusercontent url>. Cached; safe to poll.
+    if (url.pathname === "/_transcribe" && url.searchParams.get("t") === TOKEN) {
+      const u = url.searchParams.get("u") || "";
+      if (!u.startsWith("https://raw.githubusercontent.com/")) return new Response("bad source", { status: 400 });
+      const cache = caches.default;
+      const cacheKey = new Request("https://elroicall.com/_transcribe_result?u=" + encodeURIComponent(u));
+      const hit = await cache.match(cacheKey);
+      if (hit) return hit;
+      const work = (async () => {
+        const audio = await (await fetch(u)).arrayBuffer();
+        let out;
+        try {
+          out = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(audio)] });
+        } catch (e1) {
+          try {
+            let b = ""; const bytes = new Uint8Array(audio);
+            for (let i = 0; i < bytes.length; i += 0x8000) b += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+            out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio: btoa(b) });
+          } catch (e2) {
+            out = { error: String(e1).slice(0, 300) + " || " + String(e2).slice(0, 300) };
+          }
+        }
+        const resp = new Response(JSON.stringify({ done: true, text: out.text ?? null, vtt: out.vtt ?? null, error: out.error ?? null }), {
+          headers: { "content-type": "application/json", "cache-control": "max-age=3600" },
+        });
+        await cache.put(cacheKey, resp.clone());
+        return resp;
+      })();
+      ctx.waitUntil(work.catch(() => {}));
+      const timer = new Promise((r) => setTimeout(() => r(null), 20000));
+      const first = await Promise.race([work, timer]);
+      if (first) return first;
+      return new Response(JSON.stringify({ pending: true }), { headers: { "content-type": "application/json" } });
+    }
+
     if (url.pathname === "/_indexnow" && url.searchParams.get("t") === TOKEN) {
       const status = await pingIndexNow();
       return new Response(JSON.stringify({ ok: status === 200 || status === 202, urls: URLS.length, indexnow_status: status }), {
