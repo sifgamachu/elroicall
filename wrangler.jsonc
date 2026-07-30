@@ -9,6 +9,5 @@
     "not_found_handling": "single-page-application"
   },
   "ai": { "binding": "AI" },
-  "build": { "command": "npm install --no-audit --no-fund && npm run build" },
   "triggers": { "crons": ["0 6 * * *"] }
 }
