@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* dawn parchment editorial — morning has broken */
+    --ink: 42 48% 95%;         /* warm cream — first light on parchment */
+    --ink-2: 40 42% 91%;       /* deeper cream for section bands */
+    --ink-3: 38 36% 85%;       /* card hover, wells of shade */
+    --parchment: 27 32% 17%;   /* deep umber — ink on the page */
+    --parchment-dim: 28 16% 40%;
+    --gold: 36 62% 42%;        /* bronze gold — readable on cream */
+    --gold-bright: 38 84% 52%; /* amber radiance — the gaze that sees */
+    --glory: 38 72% 36%;       /* deep glory gold for display text */
+
+    --background: var(--ink);
+    --foreground: var(--parchment);
+    --card: var(--ink-2);
+    --card-foreground: var(--parchment);
+    --popover: var(--ink-2);
+    --popover-foreground: var(--parchment);
+    --primary: var(--gold);
+    --primary-foreground: 228 40% 8%;
+    --secondary: var(--ink-3);
+    --secondary-foreground: var(--parchment);
+    --muted: var(--ink-3);
+    --muted-foreground: var(--parchment-dim);
+    --accent: var(--ink-3);
+    --accent-foreground: var(--parchment);
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 42 40% 34%;
+    --input: 42 40% 34%;
+    --ring: var(--gold-bright);
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    background-color: #f7f1e4;
+  }
+  ::selection {
+    background: hsl(var(--gold-bright) / 0.35);
+    color: #2b2117;
+  }
+  /* the night inside the dawn — dark bands keep light text */
+  .night-band {
+    --parchment: 38 45% 88%;
+    --parchment-dim: 36 24% 65%;
+  }
+}
+
+@layer utilities {
+  .font-serif-display {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+  }
+  .text-gold {
+    color: hsl(var(--gold));
+  }
+  .text-gold-bright {
+    color: hsl(var(--gold-bright));
+  }
+  .text-glory {
+    color: hsl(var(--glory));
+  }
+  .text-parchment {
+    color: hsl(var(--parchment));
+  }
+  .text-parchment-dim {
+    color: hsl(var(--parchment-dim));
+  }
+  .bg-ink {
+    background-color: hsl(var(--ink));
+  }
+  .bg-ink-2 {
+    background-color: hsl(var(--ink-2));
+  }
+  .bg-ink-3 {
+    background-color: hsl(var(--ink-3));
+  }
+  .border-gold-faint {
+    border-color: hsl(var(--gold) / 0.18);
+  }
+  .border-gold-soft {
+    border-color: hsl(var(--gold) / 0.35);
+  }
+  .eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.42em] text-gold;
+  }
+  /* film grain overlay */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+  }
+  .ring-slow {
+    animation: ring-pulse 9s ease-in-out infinite;
+  }
+  .ring-slower {
+    animation: ring-pulse 13s ease-in-out infinite reverse;
+  }
+  .marquee-track {
+    animation: marquee 46s linear infinite;
+  }
+}
+
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.06); opacity: 0.9; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes aurora-a {
+  0%, 100% { transform: translate(-10%, -6%) rotate(0deg) scale(1); }
+  50% { transform: translate(8%, 6%) rotate(8deg) scale(1.15); }
+}
+
+@keyframes aurora-b {
+  0%, 100% { transform: translate(10%, 4%) rotate(0deg) scale(1.1); }
+  50% { transform: translate(-8%, -8%) rotate(-6deg) scale(0.95); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.04); }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+
+@keyframes caret-blink {
+  0%, 45% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@layer utilities {
+  .aurora-a { animation: aurora-a 24s ease-in-out infinite; }
+  .aurora-b { animation: aurora-b 30s ease-in-out infinite; }
+  .breathe { animation: breathe 7s ease-in-out infinite; }
+  .text-shimmer {
+    background: linear-gradient(
+      100deg,
+      hsl(var(--parchment)) 30%,
+      hsl(var(--gold-bright)) 50%,
+      hsl(var(--parchment)) 70%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 7s linear infinite;
+  }
+  .caret::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-left: 3px;
+    vertical-align: -0.1em;
+    background: hsl(var(--gold-bright));
+    animation: caret-blink 1.1s steps(1) infinite;
+  }
+}

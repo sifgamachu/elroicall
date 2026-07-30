@@ -1,9 +1,14 @@
 {
-  // El Roi Call — static site + indexing pinger worker
+  // El Roi Call — React site + worker (indexing pinger, transcribe utility)
   "name": "elroicall",
   "compatibility_date": "2026-07-01",
-  "main": "src/worker.js",
-  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "main": "worker/index.js",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
   "ai": { "binding": "AI" },
+  "build": { "command": "npm install --no-audit --no-fund && npm run build" },
   "triggers": { "crons": ["0 6 * * *"] }
 }
