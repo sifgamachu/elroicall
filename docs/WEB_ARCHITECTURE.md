@@ -17,7 +17,7 @@ Voice/telephony migration is intentionally deferred. The web application continu
 | `/gift` | React | Gift creation |
 | `/g/:code` | React | Private gift redemption |
 | `/about` | React | Why El Roi exists / product principles |
-| `/account` | React | Authenticated member space |
+| `/account` | React | Passwordless member room, phone verification, journey scheduling, history |
 | `/login`, `/portal` | React redirect | Compatibility aliases into `/account` |
 | `/privacy/` | Static legal document | Privacy policy |
 | `/terms/` | Static legal document | Terms of service |
@@ -36,16 +36,18 @@ app/
       Gift.tsx
       GiftRedeem.tsx
       About.tsx
-      Member.tsx
+      MemberRoom.tsx
       NotFound.tsx
     components/
       ProductShell.tsx
       RouteMeta.tsx
+      MemberControls.tsx
       ...homepage experience components
     hooks/
       use-document-meta.ts
     lib/
       api.ts
+      portal.ts
       phone.ts
       supabase.ts
       witnesses.ts
@@ -81,9 +83,22 @@ The homepage remains more cinematic, but it shares the same visual tokens and pr
 
 ### API client
 
-`src/lib/api.ts` is the single location for browser-visible API endpoints and JSON request behavior.
+`src/lib/api.ts` is the single location for browser-visible service endpoints and shared JSON request behavior.
 
 UI components must not create new hard-coded Supabase Function URLs.
+
+### Member portal contract
+
+`src/lib/portal.ts` is the typed adapter for the current member backend.
+
+It owns:
+
+- member/profile reads
+- active journey shape
+- progress/history types
+- authorized GET/POST behavior for portal functions
+
+`MemberRoom.tsx` owns the member information hierarchy and authentication state. `MemberControls.tsx` owns phone verification, recurring-call consent, schedule writes, and pause actions. This keeps operational controls out of the core Today/history view.
 
 ### Authentication
 
@@ -119,13 +134,14 @@ Default information hierarchy:
 5. **Recent conversations** — brief recognizable summaries, not a transcript dump
 6. **Phone / consent / scheduling controls** — operational settings after the human context
 
-The current React member page reads the existing `/portal/me` contract and uses Supabase passwordless email auth. Phone verification and schedule-write controls are the next member migration slice.
+The React member page uses Supabase passwordless email auth and the existing portal backend contract. Phone verification, verification-code handling, recurring schedule creation, explicit automated-call consent, and journey pause controls are all inside the same React member experience.
 
 ## State and privacy rules
 
 - Sensitive burden text stays local until consent is checked.
 - Gift recipients consent before phone claim.
 - Prayer requests require privacy acknowledgment before submission.
+- Automated member call schedules cannot be submitted without an already verified phone and explicit consent in the UI; server-side consent persistence remains a backend requirement.
 - Normal product analytics must never receive raw burden text, prayer text, transcript text, raw phone numbers, or email addresses.
 - Raw conversation retention should not be treated as the member experience. The preferred UX is recognizable summaries plus explicit memory controls.
 
@@ -185,14 +201,14 @@ The existing out-of-sync package lock and committed `dist/` model remain tracked
 
 ## Next web slices
 
-1. Finish member phone verification + scheduling inside `Member.tsx` or extracted member components.
-2. Extract repeated form/action/trust primitives from Begin/Gift/Member into the design system.
-3. Add route-level error boundaries and structured loading states.
-4. Add Playwright E2E for Home → Begin, Gift → Redeem, Account sign-in, and 404.
-5. Add privacy-safe product-event client.
-6. Prerender or edge-render public route metadata.
-7. Remove unused legacy component/dependency surface once no active route imports it.
-8. Regenerate lockfile and move CI back to `npm ci`.
+1. Extract repeated form/action/trust primitives from Begin/Gift/Member into the design system.
+2. Add route-level error boundaries and structured loading states.
+3. Add Playwright E2E for Home → Begin, Gift → Redeem, Account sign-in/verification/schedule, and 404.
+4. Add privacy-safe product-event client.
+5. Prerender or edge-render public route metadata.
+6. Remove unused legacy component/dependency surface once no active route imports it.
+7. Regenerate lockfile and move CI back to `npm ci`.
+8. Add explicit user-facing memory controls once backend retention/memory semantics are finalized.
 
 ## Non-goal for this phase
 
