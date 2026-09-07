@@ -17,6 +17,9 @@ coverage/
 playwright-report/
 test-results/
 
+# Generated voice audition audio
+app/public/audio/auditions/
+
 # Logs
 *.log
 npm-debug.log*
