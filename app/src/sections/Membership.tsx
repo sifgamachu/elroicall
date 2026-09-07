@@ -4,10 +4,10 @@ import { Check, Phone } from "lucide-react";
 import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
 
 const BENEFITS = [
-  "Unlimited guided calls across the Cloud of Witnesses",
-  "The Daily Well — scheduled calls at the hour you choose",
+  "The same El Roi Guide across every call — a voice you can come to recognize",
+  "The Daily Well — scheduled conversations at the hour you choose",
   "The Journey, Pulpit Walk, Daily Check-In, and Surprise Me",
-  "Your Bible progress, saved journeys, and call history",
+  "Your Bible progress, saved stories, and conversation history",
 ];
 
 export default function Membership() {
@@ -23,10 +23,10 @@ export default function Membership() {
           eyebrow="After the first call"
           title={
             <>
-              If it helps, <span className="italic text-gold-bright">keep the line open.</span>
+              If the conversation matters, <span className="italic text-gold-bright">come back to the same voice.</span>
             </>
           }
-          copy="Your first guided call is free with no card. Membership is optional — it turns El Roi Call from a single moment into a recurring spiritual rhythm."
+          copy="The long-term product is not a catalog of characters. It is a relationship with one consistent AI guide that can remember your chosen journeys and keep opening Scripture with you over time."
         />
 
         <Reveal delay={0.2}>
@@ -37,7 +37,7 @@ export default function Membership() {
                 <span className="align-top text-4xl">$</span>39
                 <span className="ml-2 text-xl italic text-parchment-dim">/month</span>
               </p>
-              <p className="mt-3 text-[12px] font-light text-parchment-dim">7-day membership trial before the first membership charge</p>
+              <p className="mt-3 text-[12px] font-light text-parchment-dim">Current test offer · 7-day membership trial before the first membership charge</p>
             </div>
 
             <ul className="mt-9">
@@ -49,12 +49,12 @@ export default function Membership() {
               ))}
             </ul>
 
-            <div className="mt-8 rounded-none border border-gold-faint bg-black/15 p-5">
-              <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-gold">The simple path</p>
+            <div className="mt-8 border border-gold-faint bg-black/15 p-5">
+              <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-gold">We prove the experience first</p>
               <div className="mt-4 grid gap-3 text-[13px] font-light text-parchment-dim sm:grid-cols-3">
                 <div><strong className="block font-serif-display text-lg font-medium text-parchment">1</strong>Free first call<br />No card</div>
-                <div><strong className="block font-serif-display text-lg font-medium text-parchment">2</strong>Choose membership<br />only if you want it</div>
-                <div><strong className="block font-serif-display text-lg font-medium text-parchment">3</strong>7-day trial<br />then $39/month</div>
+                <div><strong className="block font-serif-display text-lg font-medium text-parchment">2</strong>Decide whether<br />you want to return</div>
+                <div><strong className="block font-serif-display text-lg font-medium text-parchment">3</strong>Membership is<br />a separate choice</div>
               </div>
             </div>
 
@@ -64,7 +64,7 @@ export default function Membership() {
               whileTap={{ scale: 0.98 }}
               className="group relative mt-8 block overflow-hidden bg-[hsl(var(--gold))] px-8 py-4 text-center text-[12px] font-semibold uppercase tracking-[0.25em] text-[#1a1409] transition-shadow duration-300 hover:shadow-[0_0_60px_-8px_hsl(var(--gold)/0.65)]"
             >
-              Start with the free call
+              Meet the guide first
             </motion.a>
 
             <a
@@ -76,7 +76,7 @@ export default function Membership() {
             </a>
 
             <p className="mt-7 text-center text-[11px] font-light leading-relaxed text-parchment-dim/80">
-              Membership terms, billing timing, and cancellation details are shown before subscription. The free first call is separate from the membership trial.
+              Because El Roi Call is pre-launch, pricing and membership packaging should be validated before broad release. Billing terms are shown before any subscription is created.
             </p>
           </div>
         </Reveal>
