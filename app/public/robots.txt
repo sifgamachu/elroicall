@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /account
+Disallow: /login
+Disallow: /portal
+Disallow: /g
+Disallow: /_indexnow
 
 Sitemap: https://elroicall.com/sitemap.xml

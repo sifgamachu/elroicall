@@ -22,12 +22,11 @@ export default function TwoAM() {
 
   return (
     <section className="night-band relative overflow-hidden border-y border-gold-faint bg-[#151009]">
-      {/* clock glow */}
       <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2">
         <div className="h-[28rem] w-[42rem] rounded-full bg-[hsl(var(--gold)/0.06)] blur-[110px]" />
       </div>
 
-      <div className="relative mx-auto max-w-3xl px-6 py-28 text-center sm:py-36">
+      <div className="relative mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
         <Reveal>
           <motion.p
             className="font-mono text-sm tracking-[0.5em] text-gold"
@@ -38,7 +37,7 @@ export default function TwoAM() {
           </motion.p>
           {late && (
             <p className="mt-3 text-[11px] font-light tracking-[0.2em] text-parchment-dim">
-              THAT'S YOUR TIME. THE LINE IS OPEN NOW.
+              YOU DO NOT HAVE TO WAIT UNTIL MORNING TO BEGIN.
             </p>
           )}
         </Reveal>
@@ -49,53 +48,48 @@ export default function TwoAM() {
               <>
                 You came back.
                 <br />
-                <span className="italic text-gold-bright">That's usually how it starts.</span>
+                <span className="italic text-gold-bright">Maybe something still needs words.</span>
               </>
             ) : (
               <>
-                Everyone else is asleep.
+                Some things get louder
                 <br />
-                <span className="italic text-gold-bright">The ceiling knows the feeling.</span>
+                <span className="italic text-gold-bright">when everyone else is asleep.</span>
               </>
             )}
           </h2>
         </Reveal>
 
         <Reveal delay={0.22}>
-          <p className="mx-auto mt-10 max-w-xl text-[15.5px] font-light leading-[2] text-parchment-dim">
-            You've scrolled everything. You've stared at the dark. The people
-            who love you mean well — but they haven't lived{" "}
-            <em className="font-serif-display text-parchment">this</em>, and
-            you can hear it in their answers. And church feels four days away.
+          <p className="mx-auto mt-9 max-w-xl text-[15.5px] font-light leading-[2] text-parchment-dim">
+            Maybe you are replaying the conversation. Maybe the grief is new. Maybe you are trying to make a decision and every answer sounds thin. You do not need to turn that into a sermon before you can say it out loud.
           </p>
         </Reveal>
 
         <Reveal delay={0.3}>
-          <p className="font-serif-display mx-auto mt-10 max-w-xl text-2xl font-light italic leading-[1.8] text-parchment sm:text-[1.7rem]">
-            This is the hour El Roi Call was built for.
-            <br />
-            Not the Sunday version of you — the 2am one.
+          <p className="font-serif-display mx-auto mt-9 max-w-xl text-2xl font-light italic leading-[1.8] text-parchment sm:text-[1.7rem]">
+            Start with the sentence you have been carrying around all night.
           </p>
         </Reveal>
 
         <Reveal delay={0.38}>
-          <div className="mt-12 inline-flex flex-col items-center gap-3">
+          <div className="mt-11 inline-flex flex-col items-center gap-3">
             <motion.a
-              href={PHONE_TEL}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="border border-gold-soft px-9 py-3.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-bright transition-all duration-300 hover:bg-[hsl(var(--gold))] hover:text-[#1a1409]"
+              href="/begin/"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-[hsl(var(--gold))] px-9 py-3.5 text-[11px] font-semibold uppercase tracking-[0.26em] text-[#1a1409] transition-all duration-300 hover:bg-[hsl(var(--gold-bright))]"
             >
-              The line is open now
+              Tell us what tonight feels like
             </motion.a>
             <a
               href={PHONE_TEL}
               className="font-serif-display text-xl font-light tracking-[0.14em] text-parchment transition-colors hover:text-gold-bright"
             >
-              {PHONE_DISPLAY}
+              Or call {PHONE_DISPLAY}
             </a>
             <p className="text-[11px] font-light tracking-wide text-parchment-dim">
-              No hold music. No menu. A voice answers.
+              Free first guided call · no card
             </p>
           </div>
         </Reveal>

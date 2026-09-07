@@ -1,1 +1,37 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+
+# Cloudflare / Wrangler local state
+.wrangler/
+
+# Build and test output
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Generated voice audition audio
+app/public/audio/auditions/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.swp

@@ -1,35 +1,50 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Star } from "lucide-react";
+import { ArrowRight, BookOpen, Star } from "lucide-react";
 import { WITNESSES, NEEDS, type Witness, type Need } from "@/lib/witnesses";
-import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
-import Magnetic from "@/components/Magnetic";
 
-/**
- * The Cloud of Witnesses.
- *
- * "Surrounded by so great a cloud of witnesses" — every voice Scripture
- * gives us, scattered as stars across the heavens. Filter the sky by the
- * burden you carry; each witness is a star that brightens as you near it.
- * Choose one and they are drawn down out of the sky to speak.
- *
- * This is Genesis 16:13 made visible: a God whose power spun these
- * stars — and whose care sees the single one you reach for.
- */
+const NEED_LABEL: Record<Need, string> = {
+  grief: "Grief & loss",
+  fear: "Fear & anxiety",
+  shame: "Shame & failure",
+  burnout: "Exhaustion",
+  unanswered: "Waiting & unanswered prayer",
+  unqualified: "Feeling unqualified",
+  "starting over": "Starting over",
+  unseen: "Feeling unseen",
+  calling: "Direction & calling",
+};
+
+const NEED_THEME: Record<Need, string> = {
+  grief: "Loss, lament, questions, endurance, and the slow work of carrying what cannot simply be fixed.",
+  fear: "Courage that does not require pretending fear is gone, especially when a real decision is in front of you.",
+  shame: "Failure, accountability, grace, restoration, and the possibility that your worst moment is not your whole identity.",
+  burnout: "Human limits, rest, care, quiet, and the difference between faithfulness and carrying everything alone.",
+  unanswered: "Waiting, doubt, long prayer, uncertainty, and staying honest when the answer is not yet clear.",
+  unqualified: "Calling alongside weakness, hesitation, age, insecurity, and the question of what faithfulness looks like before confidence arrives.",
+  "starting over": "Loss, new ground, ordinary next steps, provision, and beginnings that do not announce themselves as miracles at first.",
+  unseen: "Being overlooked, displaced, forgotten, or powerless — and the biblical insistence that dignity is not erased by other people's blindness.",
+  calling: "Burden, responsibility, discernment, courage, planning, and how concern becomes a thoughtful next step.",
+};
+
+function readSavedStories() {
+  if (typeof window === "undefined") return [] as string[];
+  try {
+    const parsed = JSON.parse(localStorage.getItem("elroi-kept-stars") ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [] as string[];
+  }
+}
+
 export default function CloudOfWitnesses() {
   const reduced = useReducedMotion();
   const [need, setNeed] = useState<Need | "all">("all");
   const [selected, setSelected] = useState<Witness | null>(null);
+  const [keptNames, setKeptNames] = useState<string[]>(readSavedStories);
 
-  // keeping stars — the visitor gathers their sky, remembered on this device
-  const [keptNames, setKeptNames] = useState<string[]>([]);
-  useEffect(() => {
-    try {
-      setKeptNames(JSON.parse(localStorage.getItem("elroi-kept-stars") ?? "[]"));
-    } catch {
-      /* private mode — the sky resets */
-    }
-  }, []);
+  const kept = useMemo(() => new Set(keptNames), [keptNames]);
+
   const toggleKept = (name: string) => {
     setKeptNames((prev) => {
       const next = prev.includes(name)
@@ -43,164 +58,137 @@ export default function CloudOfWitnesses() {
       return next;
     });
   };
-  const kept = useMemo(() => new Set(keptNames), [keptNames]);
 
-  const sky = useMemo(() => {
-    const list = need === "all" ? WITNESSES : WITNESSES.filter((w) => w.need === need);
-    // deterministic scatter so the sky is stable between renders
-    return list.map((w, i) => {
-      const seed = (w.name.length * 37 + i * 61) % 100;
-      const seed2 = (w.name.charCodeAt(0) * 53 + i * 29) % 100;
-      return {
-        w,
-        x: 6 + (seed / 100) * 88,
-        y: 8 + (seed2 / 100) * 66,
-        big: i % 5 === 0,
-      };
-    });
+  const visible = useMemo(() => {
+    if (need === "all") return WITNESSES.slice(0, 12);
+    return WITNESSES.filter((w) => w.need === need);
   }, [need]);
 
-  return (
-    <section id="witnesses" className="relative overflow-hidden border-y border-gold-faint bg-[#ece6d6]">
-      {/* the heavens — brighter toward the top, like dawn gathering */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,hsl(var(--gold-bright)/0.1),transparent_60%)]" />
+  const activeSelected =
+    selected && (need === "all" || selected.need === need) ? selected : null;
 
-      <div className="relative mx-auto max-w-6xl px-6 py-28 sm:py-36">
-        <div className="text-center">
-          <p className="eyebrow">Hebrews 12:1</p>
-          <h2 className="font-serif-display mt-6 text-4xl font-light leading-tight tracking-tight text-parchment sm:text-6xl">
-            So great a{" "}
-            <span className="italic text-gold-bright">cloud of witnesses</span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-[15px] font-light leading-relaxed text-parchment-dim">
-            Not a handful. <em className="font-serif-display text-parchment">Every voice Scripture gives us</em> —
-            patriarchs and prophets, the women God saw, the broken He raised —
-            each a star in His sky. Reach in. Find the one who lived what you're living.
-          </p>
+  return (
+    <section id="witnesses" className="relative overflow-hidden border-y border-gold-faint bg-[#e9e2d3] text-[#17130d]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_75%_45%_at_50%_0%,rgba(201,168,76,0.24),transparent_70%)]" />
+      <div className="pointer-events-none absolute -right-24 top-24 h-80 w-80 rounded-full border border-[#b69a54]/20" />
+      <div className="pointer-events-none absolute -right-4 top-44 h-40 w-40 rounded-full border border-[#b69a54]/25" />
+
+      <div className="relative mx-auto max-w-6xl px-6 py-24 sm:py-32">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#8d6e27]">Hebrews 12:1 · The Cloud of Witnesses</p>
+            <h2 className="font-serif-display mt-5 text-4xl font-light leading-[1.08] tracking-tight text-[#1b1710] sm:text-6xl">
+              You are not the first person
+              <span className="block italic text-[#8d6e27]">to stand on this ground.</span>
+            </h2>
+          </div>
+          <div className="max-w-xl lg:justify-self-end">
+            <p className="text-[15px] font-light leading-[1.85] text-[#5f584b]">
+              Scripture is full of people who grieved, failed, waited, hid, doubted, started over, and kept moving. These are not AI characters. They are the stories El Roi Guide can open with you when your life touches similar ground.
+            </p>
+            <p className="mt-3 text-[11px] font-medium leading-relaxed text-[#776d5d]">
+              One guide voice. Many biblical witnesses. No impersonation.
+            </p>
+          </div>
         </div>
 
-        {/* search the sky by burden */}
-        <div className="mt-12 flex flex-wrap justify-center gap-2.5">
-          <FilterPill label="The whole sky" active={need === "all"} onClick={() => setNeed("all")} reduced={reduced} />
+        <div className="mt-12 flex gap-2 overflow-x-auto pb-3 sm:flex-wrap sm:overflow-visible">
+          <FilterPill label="Start anywhere" active={need === "all"} onClick={() => setNeed("all")} reduced={reduced} />
           {NEEDS.map((n) => (
-            <FilterPill key={n} label={n} active={need === n} onClick={() => setNeed(n)} reduced={reduced} />
+            <FilterPill key={n} label={NEED_LABEL[n]} active={need === n} onClick={() => setNeed(n)} reduced={reduced} />
           ))}
         </div>
 
-        {/* the constellation */}
-        <div className="relative mt-10 h-[30rem] overflow-hidden rounded-2xl border border-gold-faint bg-gradient-to-b from-[#cfdae6] to-[#f0e7d0] sm:h-[34rem]">
-          {/* faint star dust */}
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_40%,hsl(var(--gold-bright)/0.05),transparent_70%)]" />
-
-          <AnimatePresence mode="popLayout">
-            {sky.map(({ w, x, y, big }) => {
-              const isSel =
-                selected?.name === w.name && selected?.need === w.need;
-              return (
-                <motion.button
-                  key={`${w.name}-${w.need}`}
-                  layout
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  onClick={() => setSelected(isSel ? null : w)}
-                  className="group absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${x}%`, top: `${y}%` }}
-                  aria-label={`Hear ${w.name}`}
-                >
-                  {/* the star */}
-                  <span
-                    className={`block rounded-full transition-all duration-500 ${
-                      isSel
-                        ? "h-3 w-3 bg-[hsl(var(--glory))] shadow-[0_0_26px_5px_hsl(var(--gold-bright)/0.65)]"
-                        : big
-                          ? "h-2 w-2 bg-[hsl(var(--glory)/0.9)] shadow-[0_0_12px_2px_hsl(var(--gold)/0.4)] group-hover:bg-[hsl(var(--gold))] group-hover:shadow-[0_0_20px_4px_hsl(var(--gold-bright)/0.55)]"
-                          : "h-1.5 w-1.5 bg-[hsl(var(--glory)/0.6)] group-hover:bg-[hsl(var(--gold))] group-hover:shadow-[0_0_16px_3px_hsl(var(--gold-bright)/0.5)]"
-                    }`}
-                  />
-                  {/* the name, rising on approach */}
-                  <span
-                    className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap font-serif-display text-[13px] italic transition-all duration-300 ${
-                      isSel
-                        ? "text-glory opacity-100"
-                        : "text-parchment-dim opacity-0 group-hover:opacity-100"
-                    }`}
-                  >
-                    {w.name}
-                  </span>
-                </motion.button>
-              );
-            })}
-          </AnimatePresence>
-
-          {/* the drawn-down witness */}
-          <AnimatePresence>
-            {selected && (
-              <motion.div
-                key={`${selected.name}-${selected.need}`}
-                initial={reduced ? { opacity: 0 } : { opacity: 0, y: 30, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={reduced ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.97 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-x-0 bottom-0 z-10 border-t border-gold-soft bg-[#fbf6ea]/95 px-6 py-6 backdrop-blur-md sm:px-10"
+        <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((w, i) => {
+            const storyNeed = w.need as Need;
+            const isSelected = activeSelected?.name === w.name && activeSelected?.need === w.need;
+            return (
+              <motion.button
+                key={`${w.name}-${w.need}`}
+                type="button"
+                onClick={() => setSelected(isSelected ? null : w)}
+                initial={reduced ? false : { opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.45, delay: Math.min(i * 0.035, 0.25) }}
+                className={`group relative min-h-44 border p-6 text-left transition-all duration-300 ${
+                  isSelected
+                    ? "border-[#9d7b31] bg-[#fffaf0] shadow-[0_22px_70px_-42px_rgba(73,50,13,.55)]"
+                    : "border-[#c9b98f]/55 bg-[#f4ecdc]/70 hover:-translate-y-0.5 hover:border-[#a98b49] hover:bg-[#fbf4e7]"
+                }`}
               >
-                <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:text-left">
-                  <div className="shrink-0">
-                    <p className="font-serif-display text-3xl font-light italic text-glory drop-shadow-[0_0_20px_hsl(var(--gold-bright)/0.5)]">
-                      {selected.name}
-                    </p>
-                    <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.3em] text-gold">
-                      {selected.ref}
-                    </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#8d6e27]">{NEED_LABEL[storyNeed]}</p>
+                    <h3 className="font-serif-display mt-2 text-3xl font-medium text-[#1d1810]">{w.name}</h3>
                   </div>
-                  <p className="font-serif-display flex-1 text-[15px] font-light italic leading-relaxed text-parchment sm:text-base">
-                    "{selected.line}"
-                  </p>
-                  <div className="flex shrink-0 flex-col items-center gap-2.5 sm:items-end">
-                    <Magnetic strength={0.25}>
-                      <motion.a
-                        href={PHONE_TEL}
-                        whileTap={{ scale: 0.95 }}
-                        className="inline-flex items-center gap-2 bg-[hsl(var(--gold-bright))] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0a0c14] transition-shadow duration-300 hover:shadow-[0_0_40px_-4px_hsl(var(--gold-bright)/0.7)]"
-                      >
-                        Call {selected.name.split(" ")[0]}
-                      </motion.a>
-                    </Magnetic>
-                    {/* keep this star — gathered into the Inner Room */}
-                    <button
-                      onClick={() => toggleKept(selected.name)}
-                      className={`inline-flex items-center gap-2 border px-4 py-2 text-[10px] font-medium uppercase tracking-[0.22em] transition-all duration-300 ${
-                        kept.has(selected.name)
-                          ? "border-[hsl(var(--gold-bright)/0.6)] bg-[hsl(var(--gold-bright)/0.12)] text-gold-bright"
-                          : "border-gold-faint text-parchment-dim hover:border-gold-soft hover:text-parchment"
-                      }`}
-                    >
-                      <Star
-                        className="h-3 w-3"
-                        strokeWidth={1.5}
-                        fill={
-                          kept.has(selected.name)
-                            ? "hsl(var(--gold-bright))"
-                            : "none"
-                        }
-                      />
-                      {kept.has(selected.name) ? "In your sky" : "Keep this star"}
-                    </button>
-                  </div>
+                  <BookOpen className="h-4 w-4 shrink-0 text-[#9f8141]" strokeWidth={1.4} />
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.18em] text-[#7c7160]">{w.ref}</p>
+                <p className="mt-4 line-clamp-3 text-[13px] font-light leading-[1.65] text-[#5b5142]">{NEED_THEME[storyNeed]}</p>
+                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8d6e27] opacity-70 transition-opacity group-hover:opacity-100">
+                  {isSelected ? "Close story" : "See why this story matters"}
+                </p>
+              </motion.button>
+            );
+          })}
         </div>
 
-        <p className="mt-8 text-center text-[13px] font-light text-parchment-dim">
-          {WITNESSES.length} witnesses and more — the whole of Scripture leaning toward you.
-          <br />
-          <span className="font-serif-display italic text-parchment">
-            One number. {PHONE_DISPLAY}. He sees the one you choose.
-          </span>
-        </p>
+        {need === "all" && (
+          <p className="mt-5 text-center text-[11px] font-light text-[#756b5c]">
+            Showing a few starting points. Choose a feeling above to see the stories connected to it.
+          </p>
+        )}
+
+        <AnimatePresence mode="wait">
+          {activeSelected && (
+            <motion.div
+              key={`${activeSelected.name}-${activeSelected.need}`}
+              initial={reduced ? { opacity: 0 } : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.45 }}
+              className="mt-8 border border-[#ad9255]/55 bg-[#fffaf0] p-7 shadow-[0_28px_90px_-55px_rgba(72,47,8,.7)] sm:p-9"
+            >
+              <div className="grid gap-7 md:grid-cols-[0.78fr_1.22fr] md:items-center">
+                <div>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[#8d6e27]">A biblical witness to sit with</p>
+                  <h3 className="font-serif-display mt-3 text-5xl font-light italic text-[#2b2113]">{activeSelected.name}</h3>
+                  <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.24em] text-[#7f7463]">{activeSelected.ref}</p>
+                  <button
+                    type="button"
+                    onClick={() => toggleKept(activeSelected.name)}
+                    className={`mt-6 inline-flex items-center gap-2 border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+                      kept.has(activeSelected.name)
+                        ? "border-[#8d6e27] bg-[#efe1bc] text-[#5f481b]"
+                        : "border-[#c8b98f] text-[#746342] hover:border-[#8d6e27]"
+                    }`}
+                  >
+                    <Star className="h-3 w-3" fill={kept.has(activeSelected.name) ? "currentColor" : "none"} />
+                    {kept.has(activeSelected.name) ? "Saved on this device" : "Save this story"}
+                  </button>
+                </div>
+
+                <div>
+                  <p className="font-serif-display text-2xl font-light leading-[1.65] text-[#403526] sm:text-[1.65rem]">
+                    The guide can open {activeSelected.name}'s story around {NEED_LABEL[activeSelected.need as Need].toLowerCase()} — then bring the conversation back to what is happening in your life now.
+                  </p>
+                  <p className="mt-5 text-[13px] font-light leading-[1.75] text-[#716656]">
+                    {NEED_THEME[activeSelected.need as Need]} The guide narrates in one consistent AI voice and distinguishes Scripture from its own reflection.
+                  </p>
+                  <a
+                    href={`/begin/?need=${encodeURIComponent(activeSelected.need)}`}
+                    className="group mt-7 inline-flex items-center gap-3 bg-[#9d7b31] px-6 py-3.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#fffaf0] transition-all hover:bg-[#826322]"
+                  >
+                    Let the guide take me here
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
@@ -219,13 +207,14 @@ function FilterPill({
 }) {
   return (
     <motion.button
+      type="button"
       onClick={onClick}
-      whileHover={reduced ? undefined : { y: -2 }}
-      whileTap={reduced ? undefined : { scale: 0.96 }}
-      className={`rounded-full border px-4 py-2 text-[12px] font-light capitalize tracking-wide transition-all duration-400 ${
+      whileHover={reduced ? undefined : { y: -1 }}
+      whileTap={reduced ? undefined : { scale: 0.98 }}
+      className={`shrink-0 rounded-full border px-4 py-2.5 text-[11px] font-medium tracking-wide transition-all ${
         active
-          ? "border-[hsl(var(--gold-bright))] bg-[hsl(var(--gold-bright)/0.14)] text-parchment shadow-[0_0_30px_-6px_hsl(var(--gold-bright)/0.5)]"
-          : "border-gold-faint bg-white/40 text-parchment-dim hover:border-gold-soft hover:text-parchment"
+          ? "border-[#8d6e27] bg-[#8d6e27] text-[#fffaf0]"
+          : "border-[#bba875]/70 bg-[#f6eedf]/60 text-[#685b47] hover:border-[#8d6e27] hover:bg-[#fff8eb]"
       }`}
     >
       {label}

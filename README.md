@@ -1,18 +1,32 @@
-# El Roi Call — If Heaven Had a Call Center
+# El Roi Call — The God Who Sees
 
-**[elroicall.com](https://elroicall.com)** · Call **1-855-619-SEES** (1-855-619-7337)
+**[elroicall.com](https://elroicall.com)** · **1-855-619-SEES** (1-855-619-7337)
 
-If heaven had a call center, it wouldn't put you on hold. El Roi Call is a spiritual
-guidance phone line named for *El Roi* — "the God who sees me," the name Hagar gave
-God in Genesis 16. Call one number, an operator answers, and you're put through to a
-biblical voice who lived what you're living: Job for grief, Esther for fear, Peter
-for failure, Ruth for loss — forty voices, and the whole cloud of witnesses behind them.
+El Roi Call is a voice-first biblical reflection experience named for *El Roi* — “the God who sees me,” the name Hagar gives God in Genesis 16.
 
-If heaven had a phone, no voice on this line would ever pretend to be someone you've
-lost — that door stays shut, out of reverence. But grief shouldn't be carried alone.
-And if heaven had a telephone, it would answer before it rang: *"Before they call,
-I will answer"* (Isaiah 65:24). This number is just the nearest door.
+The product is being rebuilt around one simple experience:
 
-**[Start with a free call →](https://elroicall.com/begin/)** · **[Gift a call to someone →](https://elroicall.com/gift/)**
+1. A person starts with what they are actually carrying.
+2. **El Roi Guide**, one recognizable AI voice, listens before explaining.
+3. When a story from Scripture fits, the guide opens it — Job for grief, Hagar for feeling unseen, Esther for fear, Ruth for starting again, Peter for failure, and many more.
+4. The guide narrates and discusses the biblical story in its own voice. It does **not** impersonate the biblical person or claim to speak for God.
+5. The conversation returns to the caller, Scripture, reflection, and prayer.
 
-A product of Teregna LLC, Maryland.
+The first guided call is designed to be free and require no card. El Roi Call is not therapy, clergy, medical care, or crisis support.
+
+## V2 direction
+
+The repository’s `enhancement/human-connection-foundation` branch is the pre-launch rebuild. The target live voice architecture is one OpenAI Realtime guide over the El Roi phone line, with Twilio providing telephony/SIP and a smaller, privacy-first backend supporting consent, biblical story packets, journeys, memory controls, and safety.
+
+See:
+
+- `docs/ARCHITECTURE_V2.md`
+- `docs/VOICE_GUIDE.md`
+- `docs/OPENAI_VOICE_MIGRATION.md`
+- `docs/PRELAUNCH_PRODUCT_DECISIONS.md`
+- `app/contracts/voice.ts`
+- `app/contracts/safety.ts`
+
+**[Meet the guide →](https://elroicall.com/begin/)** · **[Gift a call →](https://elroicall.com/gift/)**
+
+A product of Teregna LLC.

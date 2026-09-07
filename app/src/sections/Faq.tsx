@@ -8,28 +8,32 @@ import {
 
 const FAQS = [
   {
-    q: "Isn't this a gimmick?",
-    a: "No — and we will never pretend otherwise. The voices are AI, carefully crafted from each figure's story and Scripture, within a guided spiritual experience. Ask any voice directly and it will tell you the truth. What's real is what happens in you: being heard, being pointed back to the Word, and prayer.",
+    q: "Who am I actually talking to?",
+    a: "One AI guide: El Roi Guide. The guide can bring Job, Esther, Hagar, Ruth, Peter, and other biblical stories into the conversation, but it never pretends to be those people. Think of the biblical figures as witnesses and stories; the AI is the guide helping you enter them.",
   },
   {
-    q: "Am I talking to a real person?",
-    a: "Never. El Roi Call is for the Tuesday-at-2am moments between Sundays — a companion to your faith life, not a substitute for your church, your people, or your own prayer. We will always point you back toward real community.",
+    q: "Why one voice instead of a different voice for every biblical person?",
+    a: "Because the relationship should be with a guide you can recognize, not with a collection of character performances. The same voice can slow down for grief, become steadier around fear, use more space when you're exhausted, and still remain recognizably the same companion every time you call.",
   },
   {
-    q: "Is this meant to replace church, my pastor, or prayer?",
-    a: "Never. El Roi Call is for the Tuesday-at-2am moments between Sundays — a companion to your faith life, not a substitute for your church, your people, or your own prayer. We will always point you back toward real community.",
+    q: "Does the AI speak for God?",
+    a: "No. El Roi Call is named for Hagar's words in Genesis 16, but the AI does not claim divine revelation, private knowledge from God, or guaranteed outcomes. It can read and discuss Scripture, offer reflection, and pray with you. Important spiritual decisions belong with Scripture, prayer, wisdom, and trusted human community.",
+  },
+  {
+    q: "Is this meant to replace church, my pastor, counseling, or prayer?",
+    a: "No. El Roi Call is for the moments when you want a thoughtful, Scripture-rooted conversation and no one is immediately available. It is not clergy, therapy, medical care, or crisis support, and it should keep pointing you back toward healthy human relationships and appropriate professional care when needed.",
   },
   {
     q: "Is what I share private?",
-    a: "Yes. Your conversations are used only to serve you better on your next call. Prayer requests are stored with no name and no number, and are permanently destroyed after 72 hours — enforced automatically, not by policy but by the database itself.",
+    a: "We limit how your information is used and do not sell the content of your conversations for advertising. Calls may be recorded and transcribed, and information may be processed by the providers described in the Privacy Policy. El Roi Call conversations are not legally privileged. We are also moving the backend and retention rules into version-controlled infrastructure so these promises can be technically verified.",
   },
   {
-    q: "What tradition is this rooted in?",
-    a: "The Bible itself. Every voice speaks from their own scriptural story — no denominational add-ons, no doctrine beyond the text. Christians of every background call the same number.",
+    q: "What happens if I'm in crisis?",
+    a: "The normal biblical-story experience should stop. The guide is designed to drop the immersive tone and respond plainly with immediate human and emergency resources. El Roi Call is not a crisis service and should never try to keep someone in a character or devotional experience when urgent help is needed.",
   },
   {
-    q: "What does it cost, and can I cancel?",
-    a: "One membership: $39 a month, everything included — unlimited calls, the Journey, every track in the Well. Your first week is free, and you can cancel anytime in one step. No tiers, no upsells.",
+    q: "What does it cost?",
+    a: "The first guided call is free and does not require a card. We are treating recurring membership as a separate decision after a person has experienced the core product. Any trial, recurring price, billing date, and cancellation terms should be shown clearly before someone subscribes.",
   },
 ];
 
@@ -39,11 +43,11 @@ export default function Faq() {
       <div className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
         <SectionHeading
           align="center"
-          eyebrow="Honest answers"
+          eyebrow="Trust before immersion"
           title={
             <>
-              What you're{" "}
-              <span className="italic text-gold-bright">probably wondering</span>
+              Know exactly{" "}
+              <span className="italic text-gold-bright">who is on the line.</span>
             </>
           }
         />

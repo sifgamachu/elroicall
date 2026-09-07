@@ -1,232 +1,178 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
-import { ArrowDown, Phone } from "lucide-react";
+import { ArrowDown, ArrowRight, Phone, ShieldCheck, Volume2 } from "lucide-react";
 import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
-import Magnetic from "@/components/Magnetic";
 
-const fade = (delay: number, y = 26) => ({
+const fade = (delay: number, y = 24) => ({
   initial: { opacity: 0, y },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 1.3, delay, ease: [0.22, 1, 0.36, 1] as const },
+  transition: { duration: 1.05, delay, ease: [0.22, 1, 0.36, 1] as const },
 });
 
-const STATES = [
-  "grieving.",
-  "afraid.",
-  "ashamed.",
-  "exhausted.",
-  "starting over.",
+const NEEDS = [
+  { label: "I'm grieving", value: "grief" },
+  { label: "I'm afraid", value: "fear" },
+  { label: "I can't let go of what I did", value: "shame" },
+  { label: "I'm running on empty", value: "burnout" },
+  { label: "I feel unseen", value: "unseen" },
+  { label: "I need direction", value: "calling" },
 ];
 
 export default function Hero() {
   const reduced = useReducedMotion();
   const ref = useRef<HTMLElement | null>(null);
 
-  // the whole hero drifts and dims as you scroll away — cinematic depth
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "32%"]);
-  const fadeOut = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const fadeOut = useTransform(scrollYProgress, [0, 0.88], [1, 0]);
 
   return (
     <section
       ref={ref}
       id="top"
-      className="relative flex min-h-svh items-center justify-center overflow-hidden"
+      className="relative flex min-h-svh items-center overflow-hidden border-b border-gold-faint"
     >
-      {/* the dawn breaking — God's power as light, rising from the top */}
-      <div className="pointer-events-none absolute inset-0">
-        {/* the great radiance — morning sun pouring over the page */}
-        <motion.div
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2.4, ease: "easeOut" }}
-          style={{
-            background:
-              "radial-gradient(ellipse 90% 60% at 50% -10%, hsl(38 84% 62% / 0.34), hsl(38 84% 62% / 0.12) 40%, transparent 70%)",
-          }}
-        />
-        {/* the parting — two veils of mist drawn aside like the sea */}
-        <motion.div
-          className="absolute inset-y-0 left-0 w-1/2"
-          initial={{ x: 0 }}
-          animate={reduced ? undefined : { x: "-6%" }}
-          transition={{ duration: 2.8, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(247,241,228,0.9), rgba(247,241,228,0.25) 75%, transparent)",
-          }}
-        />
-        <motion.div
-          className="absolute inset-y-0 right-0 w-1/2"
-          initial={{ x: 0 }}
-          animate={reduced ? undefined : { x: "6%" }}
-          transition={{ duration: 2.8, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            background:
-              "linear-gradient(-90deg, rgba(247,241,228,0.9), rgba(247,241,228,0.25) 75%, transparent)",
-          }}
-        />
-        {/* the shaft of light down the center — He sees */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 34% 60% at 50% 45%, hsl(40 90% 70% / 0.22), transparent 70%)",
-          }}
-        />
-      </div>
-
-      {/* backdrop — the desert well where Hagar was seen, drifting on scroll */}
       <motion.div style={reduced ? undefined : { y: bgY }} className="absolute inset-0">
         <motion.img
           src="/images/hero-desert.jpg"
-          alt="A stone well in the desert, struck by a single beam of dawn light"
-          className="h-full w-full scale-105 object-cover opacity-40"
-          initial={{ scale: 1.14 }}
+          alt="A stone well in the desert at dawn"
+          className="h-full w-full scale-105 object-cover opacity-36"
+          initial={{ scale: 1.1 }}
           animate={{ scale: 1.05 }}
           transition={{ duration: 7, ease: "easeOut" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#f7f1e4]/80 via-[#f7f1e4]/45 to-[#f7f1e4]/95" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,8,10,0.98)_0%,rgba(8,8,10,0.88)_45%,rgba(8,8,10,0.58)_74%,rgba(8,8,10,0.76)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_68%_55%_at_72%_20%,hsl(var(--gold-bright)/0.23),transparent_66%)]" />
       </motion.div>
 
-      {/* concentric rings — the signal of being seen */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="ring-slow h-[36rem] w-[36rem] rounded-full border border-[hsl(var(--gold-bright)/0.2)] sm:h-[46rem] sm:w-[46rem]" />
-      </div>
-      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="ring-slower h-[23rem] w-[23rem] rounded-full border border-[hsl(var(--gold-bright)/0.32)] sm:h-[31rem] sm:w-[31rem]" />
-      </div>
+      <div className="pointer-events-none absolute -right-20 top-10 h-[34rem] w-[34rem] rounded-full border border-[hsl(var(--gold-bright)/0.12)]" />
+      <div className="pointer-events-none absolute right-24 top-44 h-[18rem] w-[18rem] rounded-full border border-[hsl(var(--gold-bright)/0.2)]" />
 
-      {/* content — lifts and fades as you scroll past */}
       <motion.div
         style={reduced ? undefined : { y: contentY, opacity: fadeOut }}
-        className="relative z-10 mx-auto max-w-3xl px-6 pb-24 pt-32 text-center"
+        className="relative z-10 mx-auto grid w-full max-w-7xl gap-12 px-6 pb-24 pt-32 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-16 lg:px-10"
       >
-        <motion.p {...fade(0.1)} className="eyebrow">
-          Genesis 16:13
-        </motion.p>
+        <div className="max-w-2xl text-left">
+          <motion.p {...fade(0.08)} className="eyebrow">
+            El Roi Call · The God Who Sees
+          </motion.p>
 
-        {/* the verse — the whole foundation */}
-        <motion.p
-          {...fade(0.18)}
-          className="font-serif-display mx-auto mt-8 max-w-xl text-xl font-light italic leading-[1.8] text-parchment sm:text-2xl"
-        >
-          "You are the God who sees me."
-        </motion.p>
-        <motion.p
-          {...fade(0.24)}
-          className="font-serif-display mt-3 text-2xl font-light italic text-gold-bright sm:text-3xl"
-        >
-          "I have now seen the One who sees me."
-        </motion.p>
-
-        <motion.h1
-          {...fade(0.34)}
-          className="font-serif-display mt-10 text-7xl font-light leading-[0.92] tracking-tight text-parchment sm:text-9xl"
-        >
-          El Roi{" "}
-          <span className="italic text-shimmer">Call</span>
-        </motion.h1>
-
-        <motion.p
-          {...fade(0.42)}
-          className="mt-6 text-[11px] font-medium uppercase tracking-[0.42em] text-gold"
-        >
-          The God Who Sees
-        </motion.p>
-
-        {/* rotating emotional hook */}
-        <motion.div {...fade(0.48)} className="mt-10">
-          <p className="font-serif-display text-2xl font-light italic text-parchment/90 sm:text-3xl">
-            Tonight, someone is{" "}
-            <span className="relative inline-block text-center align-baseline">
-              <span className="invisible whitespace-nowrap">starting over.</span>
-              {STATES.map((label, i) => {
-                const CYCLE = 15;
-                const kf = [0, 1, 1, 0];
-                const times = [
-                  (i * 3) / CYCLE,
-                  (i * 3 + 0.4) / CYCLE,
-                  (i * 3 + 2.6) / CYCLE,
-                  (i * 3 + 3) / CYCLE,
-                ];
-                return (
-                  <motion.span
-                    key={label}
-                    className="absolute inset-x-0 top-0 whitespace-nowrap text-glory"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: kf }}
-                    transition={{
-                      duration: CYCLE,
-                      times,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    {label}
-                  </motion.span>
-                );
-              })}
-            </span>
-          </p>
-        </motion.div>
-
-        <motion.p
-          {...fade(0.56)}
-          className="mx-auto mt-7 max-w-xl text-base font-light leading-relaxed text-parchment sm:text-lg"
-        >
-          The God who spun the stars also stopped for one woman in the
-          desert. Call one number — and be met by a voice from the whole
-          of Scripture who lived what you're living.
-        </motion.p>
-
-        <motion.div {...fade(0.64)} className="mt-12 flex flex-col items-center">
-          <Magnetic strength={0.3}>
-            <motion.a
-              href={PHONE_TEL}
-              whileTap={{ scale: 0.96 }}
-              className="group relative inline-flex items-center gap-3 overflow-hidden bg-[hsl(var(--gold-bright))] px-11 py-[1.15rem] text-[12px] font-semibold uppercase tracking-[0.3em] text-[#0a0c14] transition-shadow duration-500 hover:shadow-[0_0_100px_-6px_hsl(var(--gold-bright)/0.9)]"
-            >
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-              <Phone className="relative h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
-              <span className="relative">Be Seen — First Call Free</span>
-            </motion.a>
-          </Magnetic>
-
-          <motion.a
-            href={PHONE_TEL}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="group mt-7 inline-flex items-center gap-2.5 text-parchment transition-colors hover:text-gold-bright"
+          <motion.h1
+            {...fade(0.16)}
+            className="font-serif-display mt-7 text-5xl font-light leading-[1.02] tracking-tight text-parchment sm:text-6xl lg:text-7xl"
           >
-            <span className="font-serif-display text-2xl font-light tracking-[0.12em] transition-all duration-300 group-hover:tracking-[0.16em] sm:text-3xl">
-              {PHONE_DISPLAY}
-            </span>
-          </motion.a>
-          <p className="mt-2.5 text-xs font-light tracking-wide text-parchment-dim">
-            Tap to call · no account, no card · 7 days free
-          </p>
-        </motion.div>
+            You do not need the right words.
+            <span className="block italic text-gold-bright">Start with the true ones.</span>
+          </motion.h1>
 
-        <motion.p
-          {...fade(0.74)}
-          className="mt-14 text-[10px] font-medium uppercase tracking-[0.35em] text-parchment-dim/60"
+          <motion.p
+            {...fade(0.24)}
+            className="mt-7 max-w-xl text-base font-light leading-[1.85] text-parchment-dim sm:text-lg"
+          >
+            One calm AI guide listens first. Then, when a story from Scripture fits what you're carrying,
+            the guide brings you into it — Job for grief, Hagar for feeling unseen, Esther for fear, Ruth for starting again.
+            Not a character performance. A conversation that keeps returning to you, Scripture, and prayer.
+          </motion.p>
+
+          <motion.blockquote
+            {...fade(0.32)}
+            className="mt-9 border-l border-gold-soft/60 pl-5 font-serif-display text-xl font-light italic leading-relaxed text-parchment/90"
+          >
+            “You are the God who sees me.”
+            <span className="mt-2 block font-sans text-[10px] not-italic uppercase tracking-[0.3em] text-gold">
+              Genesis 16:13
+            </span>
+          </motion.blockquote>
+
+          <motion.div {...fade(0.4)} className="mt-10 flex flex-wrap items-center gap-4">
+            <a
+              href="/begin/"
+              className="group inline-flex items-center gap-3 bg-[hsl(var(--gold-bright))] px-7 py-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#111015] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_60px_-22px_hsl(var(--gold-bright)/0.8)]"
+            >
+              Meet the guide
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </a>
+            <a
+              href={PHONE_TEL}
+              className="inline-flex items-center gap-2 border border-gold-faint px-6 py-4 text-[11px] font-medium uppercase tracking-[0.22em] text-parchment transition-colors hover:border-gold-soft hover:text-gold-bright"
+            >
+              <Phone className="h-4 w-4" />
+              Prefer to call
+            </a>
+          </motion.div>
+
+          <motion.div {...fade(0.48)} className="mt-7 flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-light text-parchment-dim">
+            <span className="inline-flex items-center gap-1.5"><Volume2 className="h-3 w-3 text-gold" />One familiar AI voice</span>
+            <span>·</span>
+            <span>Whole Scripture</span>
+            <span>·</span>
+            <span>First call free</span>
+            <span>·</span>
+            <span>No card</span>
+          </motion.div>
+        </div>
+
+        <motion.aside
+          {...fade(0.22, 18)}
+          className="relative mx-auto w-full max-w-xl border border-gold-soft/35 bg-[#111013]/90 p-6 shadow-[0_38px_120px_-48px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:p-8"
         >
-          He sees. He knows. He answers.
-        </motion.p>
+          <div className="absolute -left-px top-10 h-20 w-px bg-gold" />
+          <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-gold">
+            The guide starts by listening
+          </p>
+          <h2 className="font-serif-display mt-4 text-3xl font-light text-parchment sm:text-4xl">
+            What is closest to your life today?
+          </h2>
+          <p className="mt-3 text-[13px] font-light leading-relaxed text-parchment-dim">
+            Pick one if it helps. Or skip the labels and say it in your own words.
+          </p>
+
+          <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
+            {NEEDS.map((need) => (
+              <a
+                key={need.value}
+                href={`/begin/?need=${need.value}`}
+                className="group flex min-h-12 items-center justify-between border border-white/10 bg-white/[0.025] px-4 py-3 text-left text-[13px] font-light text-parchment transition-all hover:border-gold-soft/70 hover:bg-[hsl(var(--gold)/0.08)]"
+              >
+                <span>{need.label}</span>
+                <ArrowRight className="h-3.5 w-3.5 text-gold opacity-60 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
+              </a>
+            ))}
+          </div>
+
+          <a
+            href="/begin/"
+            className="mt-4 flex w-full items-center justify-center gap-2 border border-gold-soft/50 px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-gold-bright transition-colors hover:bg-[hsl(var(--gold)/0.08)]"
+          >
+            I'll say it in my own words
+          </a>
+
+          <div className="mt-7 border-t border-white/8 pt-5">
+            <div className="flex items-start gap-3 text-[11px] font-light leading-relaxed text-parchment-dim">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <p>
+                The same AI guide stays with you across scenarios. Biblical people are introduced as stories from Scripture — never impersonated as if they are literally on the line. El Roi Call is not therapy, clergy, medical care, or crisis support.
+              </p>
+            </div>
+            <a
+              href={PHONE_TEL}
+              className="font-serif-display mt-5 block text-center text-2xl font-light tracking-[0.09em] text-parchment transition-colors hover:text-gold-bright"
+            >
+              {PHONE_DISPLAY}
+            </a>
+          </div>
+        </motion.aside>
       </motion.div>
 
-      {/* scroll cue */}
       <motion.a
         href="#tonight"
-        aria-label="Scroll to begin"
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-parchment-dim/70 transition-colors hover:text-gold-bright"
-        animate={reduced ? undefined : { y: [0, 8, 0] }}
+        aria-label="Continue to find a biblical story"
+        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-parchment-dim/60 transition-colors hover:text-gold-bright"
+        animate={reduced ? undefined : { y: [0, 7, 0] }}
         transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
       >
         <ArrowDown className="h-5 w-5" />
