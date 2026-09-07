@@ -1,23 +1,12 @@
-import { useEffect } from "react";
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import RouteMeta from "@/components/RouteMeta";
 import About from "./pages/About";
 import Begin from "./pages/Begin";
 import Gift from "./pages/Gift";
 import GiftRedeem from "./pages/GiftRedeem";
 import Home from "./pages/Home";
+import Member from "./pages/Member";
 import NotFound from "./pages/NotFound";
-
-/**
- * The member portal is the last legacy standalone application while its
- * authentication/data contract is moved into the shared React app.
- */
-function ToAccount() {
-  useEffect(() => {
-    window.location.replace("/account/");
-  }, []);
-  return null;
-}
 
 export default function App() {
   return (
@@ -34,9 +23,10 @@ export default function App() {
         <Route path="/g/:code" element={<GiftRedeem />} />
         <Route path="/about" element={<About />} />
         <Route path="/about/" element={<About />} />
-        <Route path="/account" element={<ToAccount />} />
-        <Route path="/login" element={<ToAccount />} />
-        <Route path="/portal" element={<ToAccount />} />
+        <Route path="/account" element={<Member />} />
+        <Route path="/account/" element={<Member />} />
+        <Route path="/login" element={<Navigate to="/account" replace />} />
+        <Route path="/portal" element={<Navigate to="/account" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
