@@ -11,22 +11,22 @@ const TRACKS = [
   {
     guide: "Daily · One Year",
     title: "The Journey",
-    body: "Walk through the whole Bible over one year — Genesis to Revelation — with a scheduled voice experience that follows your progress.",
+    body: "Walk through the whole Bible over one year — Genesis to Revelation — with the same El Roi Guide following your progress.",
   },
   {
     guide: "Daily · Every Chapter",
     title: "The Pulpit Walk",
-    body: "Move through all 1,189 chapters of Scripture one chapter at a time, with a guided message built around the text for that day.",
+    body: "Move through all 1,189 chapters of Scripture one chapter at a time, with the same guide opening the text for that day.",
   },
   {
     guide: "Daily · A Check-In",
     title: "Daily Check-In",
-    body: "A shorter recurring call: one story, one scripture, one reflection for your day, and a prayer.",
+    body: "A shorter recurring conversation: one story, one scripture, one reflection for your day, and a prayer when you want one.",
   },
   {
     guide: "Daily · Unscripted",
     title: "Surprise Me",
-    body: "A different biblical story and theme each time, designed to take you beyond the passages you already know best.",
+    body: "The voice stays familiar. The biblical story and theme change, taking you beyond the passages you already know best.",
   },
 ];
 
@@ -71,7 +71,7 @@ function PrayerForm() {
           Your request is in the Well.
         </p>
         <p className="max-w-md text-[13px] font-light leading-relaxed text-parchment-dim">
-          This form does not ask for your name or phone number. El Roi Call's current policy is to remove prayer requests after 72 hours; retention and deletion details are described in the Privacy Policy.
+          This form did not ask for your name or phone number. Because El Roi Call is still pre-launch, the exact prayer-retention and deletion mechanism is being verified before we make a fixed deletion promise. See the Privacy Policy for the current status.
         </p>
       </div>
     );
@@ -147,7 +147,7 @@ export default function Well() {
               <span className="italic text-gold-bright">and keep walking.</span>
             </>
           }
-          copy="A meaningful call can be one moment. The Well turns it into a rhythm: choose a track, choose a time, and let Scripture meet you again tomorrow."
+          copy="A meaningful call can be one moment. The Well turns it into a rhythm: the same guide, a chosen track, a chosen time, and Scripture meeting you again tomorrow."
         />
 
         <div className="mt-16 grid gap-px overflow-hidden border border-gold-faint bg-[hsl(var(--gold)/0.12)] sm:grid-cols-2 lg:grid-cols-4">
