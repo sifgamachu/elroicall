@@ -1,37 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { BookOpen, CalendarClock, Gift, LogOut, Phone, ShieldCheck } from "lucide-react";
+import MemberControls from "@/components/MemberControls";
 import ProductShell from "@/components/ProductShell";
-import { PORTAL_API } from "@/lib/api";
 import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
-import { SUPABASE_ANON_KEY, supabase } from "@/lib/supabase";
-
-type Track = {
-  mode: string;
-  active: boolean;
-  journey_day?: number;
-  hour_local?: number;
-  minute_local?: number;
-  days?: string;
-  caller_name?: string;
-  progress?: { pct?: number; label?: string; next?: string };
-};
-
-type HistoryItem = {
-  created_at?: string;
-  figure_name?: string;
-  summary?: string;
-};
-
-type MemberData = {
-  email?: string;
-  caller_name?: string;
-  phone?: string;
-  phone_verified?: boolean;
-  total_calls?: number;
-  schedules?: Track[];
-  history?: HistoryItem[];
-};
+import {
+  getPortalMember,
+  type PortalMember,
+  type PortalTrack,
+} from "@/lib/portal";
+import { supabase } from "@/lib/supabase";
 
 const MODE_NAMES: Record<string, string> = {
   journey: "The Journey",
@@ -40,20 +18,7 @@ const MODE_NAMES: Record<string, string> = {
   random: "Surprise Me",
 };
 
-async function getMember(session: Session) {
-  const response = await fetch(`${PORTAL_API}/me`, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      apikey: SUPABASE_ANON_KEY,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) throw new Error(String(response.status));
-  return (await response.json()) as MemberData;
-}
-
-function formatTime(track: Track) {
+function formatTime(track: PortalTrack) {
   if (track.hour_local == null || track.minute_local == null) return "Time not set";
   const hour = track.hour_local % 12 || 12;
   const minute = String(track.minute_local).padStart(2, "0");
@@ -63,7 +28,7 @@ function formatTime(track: Track) {
 export default function MemberRoom() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [member, setMember] = useState<MemberData | null>(null);
+  const [member, setMember] = useState<PortalMember | null>(null);
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -94,7 +59,7 @@ export default function MemberRoom() {
     if (!session) return;
     let active = true;
 
-    void getMember(session)
+    void getPortalMember(session)
       .then((data) => {
         if (active) setMember(data);
       })
@@ -106,6 +71,16 @@ export default function MemberRoom() {
       active = false;
     };
   }, [session]);
+
+  const refreshMember = async () => {
+    if (!session) return;
+    setError("");
+    try {
+      setMember(await getPortalMember(session));
+    } catch {
+      setError("We could not refresh your room just now. Try again.");
+    }
+  };
 
   const memberLoading = Boolean(session && !member && !error);
   const activeTracks = useMemo(
@@ -218,7 +193,7 @@ export default function MemberRoom() {
 
         {memberLoading ? (
           <p className="font-serif-display py-12 text-center text-2xl font-light italic text-parchment-dim">Gathering your journey…</p>
-        ) : (
+        ) : member ? (
           <>
             <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
               <article className="border border-gold-soft/35 bg-[hsl(var(--gold)/0.055)] p-7 sm:p-9">
@@ -245,7 +220,7 @@ export default function MemberRoom() {
               </article>
 
               <div className="grid grid-cols-2 gap-3">
-                <Metric value={String(member?.total_calls ?? 0)} label="Calls" />
+                <Metric value={String(member.total_calls ?? 0)} label="Calls" />
                 <Metric value={String(daysWalked)} label="Days walked" />
                 <Metric value={`${Math.round(progress)}%`} label="Bible progress" />
                 <Metric value={String(activeTracks.length)} label="Active journeys" />
@@ -281,7 +256,7 @@ export default function MemberRoom() {
                   </article>
                 )) : (
                   <div className="border border-dashed border-white/12 p-6 text-[13px] font-light leading-[1.8] text-parchment-dim md:col-span-2">
-                    No recurring journey is active yet. Scheduling controls are the next member slice being moved into this shared app.
+                    No recurring journey is active yet. Choose one below when you want the line to reach back to you.
                   </div>
                 )}
               </div>
@@ -294,12 +269,12 @@ export default function MemberRoom() {
                   <div>
                     <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-gold">Your phone</p>
                     <h2 className="font-serif-display mt-2 text-2xl font-light text-parchment">
-                      {member?.phone || "No number connected"}
+                      {member.phone || "No number connected"}
                     </h2>
                     <p className="mt-2 text-[11px] font-light leading-relaxed text-parchment-dim">
-                      {member?.phone_verified
+                      {member.phone_verified
                         ? "Verified for member calling and scheduled experiences."
-                        : "Phone setup and verification are being moved into this React member flow next."}
+                        : "Verify a number below before you schedule recurring calls."}
                     </p>
                   </div>
                 </div>
@@ -314,7 +289,7 @@ export default function MemberRoom() {
                   <BookOpen className="mt-1 h-4 w-4 shrink-0 text-gold" />
                 </div>
                 <div className="mt-5 space-y-4">
-                  {(member?.history ?? []).slice(0, 4).map((item, index) => (
+                  {(member.history ?? []).slice(0, 4).map((item, index) => (
                     <div key={`${item.created_at}-${index}`} className="border-t border-white/[0.08] pt-4 first:border-t-0 first:pt-0">
                       <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-parchment-dim">
                         {(item.created_at ?? "").slice(0, 10)}
@@ -325,12 +300,19 @@ export default function MemberRoom() {
                       </p>
                     </div>
                   ))}
-                  {!member?.history?.length && (
+                  {!member.history?.length && (
                     <p className="text-[12px] font-light leading-relaxed text-parchment-dim">Your completed conversations will appear here as brief summaries you can recognize later.</p>
                   )}
                 </div>
               </article>
             </section>
+
+            <MemberControls
+              key={`${member.phone ?? "none"}-${member.phone_verified ? "verified" : "unverified"}-${member.schedules?.length ?? 0}`}
+              session={session}
+              member={member}
+              onRefresh={refreshMember}
+            />
 
             <section className="grid gap-3 sm:grid-cols-2">
               <a href="/gift/" className="inline-flex items-center justify-center gap-3 border border-gold-soft px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-bright hover:bg-[hsl(var(--gold)/0.08)]">
@@ -342,7 +324,7 @@ export default function MemberRoom() {
               </a>
             </section>
           </>
-        )}
+        ) : null}
 
         {error && <p className="text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
         <p className="text-center font-serif-display text-lg font-light italic text-parchment-dim">
