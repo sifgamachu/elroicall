@@ -4,10 +4,10 @@ import { Reveal, SectionHeading } from "@/components/reveal";
 import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
 
 const LINES = [
-  "I know what it is to lose everything…",
-  "…and to sit with questions that do not resolve quickly.",
-  "Job's story does not rush grief into a neat answer.",
-  "Tell me what this loss has been like for you.",
+  "Take your time. You do not have to make the grief easier for me to hear.",
+  "There is a story I want to take you to — Job. Not because his story explains your loss.",
+  "It matters because Scripture lets him hurt, question, and keep speaking to God without pretending the pain is small.",
+  "Before we go any further: what part of this loss feels hardest tonight?",
 ];
 
 export default function Presence() {
@@ -22,7 +22,7 @@ export default function Presence() {
     if (reduced || !inView || idx >= LINES.length - 1) return;
     const id = setTimeout(
       () => setIdx((i) => Math.min(i + 1, LINES.length - 1)),
-      3000,
+      3200,
     );
     return () => clearTimeout(id);
   }, [inView, idx, reduced]);
@@ -96,37 +96,44 @@ export default function Presence() {
       <div ref={wrapRef} className="relative mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
         <SectionHeading
           align="center"
-          eyebrow="Hear the feeling before you call"
+          eyebrow="The voice of El Roi Call"
           title={
             <>
-              A conversation should feel{" "}
-              <span className="italic text-gold-bright">human enough to enter.</span>
+              One voice you can{" "}
+              <span className="italic text-gold-bright">come to recognize.</span>
             </>
           }
-          copy="This is a short demonstration of the tone — an AI-guided voice inspired by Job's biblical story, not Job himself."
+          copy="The story changes. The guide does not. Its delivery becomes slower for grief, steadier for fear, gentler around shame, and more spacious when you're exhausted — while keeping the same recognizable voice and communication style."
         />
 
         <Reveal delay={0.15}>
           <div className="mt-12 border border-gold-faint bg-black/15 px-5 py-8 sm:px-9">
-            <p className="flex items-center justify-center gap-2.5 text-[10px] font-medium uppercase tracking-[0.32em] text-gold">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[9px] uppercase tracking-[0.24em] text-parchment-dim">
+              <span className="border border-gold-faint px-3 py-1.5 text-gold">Grief · slower</span>
+              <span className="border border-white/8 px-3 py-1.5">Fear · steady</span>
+              <span className="border border-white/8 px-3 py-1.5">Shame · nonjudgmental</span>
+              <span className="border border-white/8 px-3 py-1.5">Burnout · spacious</span>
+            </div>
+
+            <p className="mt-7 flex items-center justify-center gap-2.5 text-[10px] font-medium uppercase tracking-[0.32em] text-gold">
               <motion.span
                 animate={{ opacity: connected && !reduced ? [1, 0.35, 1] : 1 }}
                 transition={{ duration: 1.6, repeat: Infinity }}
                 className="h-2 w-2 rounded-full bg-[hsl(var(--gold-bright))]"
               />
-              {connected ? "Sample connected" : "Scroll into the sample"}
+              {connected ? "El Roi Guide · grief example" : "Scroll into the sample"}
             </p>
 
             <canvas ref={canvasRef} className="mt-7 h-24 w-full" aria-hidden="true" />
 
-            <div className="relative mt-7 min-h-[6.5rem]">
+            <div className="relative mt-7 min-h-[8rem]">
               {LINES.slice(0, idx + 1).map((line, i) => (
                 <motion.p
                   key={line}
                   initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: i === idx ? 1 : 0.3, y: 0 }}
+                  animate={{ opacity: i === idx ? 1 : 0.25, y: 0 }}
                   transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                  className={`font-serif-display text-2xl font-light italic leading-[1.65] text-parchment sm:text-3xl ${
+                  className={`font-serif-display text-2xl font-light leading-[1.6] text-parchment sm:text-3xl ${
                     i === idx ? "" : "absolute inset-x-0 top-0"
                   }`}
                 >
@@ -136,7 +143,7 @@ export default function Presence() {
             </div>
 
             <p className="mt-5 text-[10px] font-medium uppercase tracking-[0.28em] text-parchment-dim">
-              AI-guided sample · inspired by Job 1–42
+              AI-generated guide voice · Job is narrated, never impersonated
             </p>
           </div>
         </Reveal>
@@ -148,7 +155,7 @@ export default function Presence() {
             whileTap={{ scale: 0.98 }}
             className="inline-block bg-[hsl(var(--gold))] px-9 py-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#1a1409] transition-shadow duration-300 hover:shadow-[0_0_60px_-6px_hsl(var(--gold)/0.6)]"
           >
-            Start with what you're carrying
+            Meet the guide
           </motion.a>
           <p className="mt-4 text-xs font-light text-parchment-dim">
             First guided call free · no card · or call{" "}
