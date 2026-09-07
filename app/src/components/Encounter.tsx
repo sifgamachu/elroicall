@@ -16,6 +16,27 @@ const FEATURE: Record<Need, string> = {
   calling: "Nehemiah",
 };
 
+const STORY_INTRO: Record<Need, string> = {
+  grief:
+    "Job's story gives grief room to be grief. He loses what cannot be replaced, asks questions that do not resolve quickly, and refuses to hide the pain behind polished faith.",
+  fear:
+    "Esther enters a moment where silence feels safer and speaking may cost her everything. Her story is not about being fearless; it is about choosing courage while fear is still present.",
+  shame:
+    "Peter fails publicly at the moment he most wanted to be faithful. His story keeps going — through grief, accountability, restoration, and a future that is not reduced to his worst night.",
+  burnout:
+    "Elijah reaches a point where victory does not feel like victory anymore. His story makes space for exhaustion, food, sleep, quiet, and God's care before another assignment appears.",
+  unanswered:
+    "Hannah knows what it is to pray for a long time without seeing the answer she wants. Her story lets waiting remain painful without pretending silence means abandonment.",
+  unqualified:
+    "Moses has a list of reasons he should not be the one. His story does not erase weakness; it asks what becomes possible when calling and limitation are allowed to exist together.",
+  "starting over":
+    "Ruth begins again after loss, in a place that is not home, without a clear map of what comes next. Her story is built from small faithful steps rather than instant transformation.",
+  unseen:
+    "Hagar is pushed into the desert with little power and few choices. There she gives God the name at the center of El Roi Call: the God who sees me.",
+  calling:
+    "Nehemiah begins with a burden he cannot shake. Before he builds anything, he grieves, prays, pays attention, and turns concern into a thoughtful next step.",
+};
+
 const PILL_LABEL: Record<Need, string> = {
   grief: "I'm grieving",
   fear: "I'm afraid",
@@ -65,13 +86,13 @@ export default function Encounter() {
       />
 
       <div className="relative mx-auto max-w-5xl px-6 py-24 text-center sm:py-32">
-        <p className="eyebrow">You can start with one honest thing</p>
+        <p className="eyebrow">The guide listens before choosing a story</p>
         <h2 className="font-serif-display mt-6 text-4xl font-light leading-tight tracking-tight text-parchment sm:text-6xl">
           What feels <span className="italic text-gold-bright">heaviest</span> right now?
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-[15px] font-light leading-relaxed text-parchment-dim">
-          You do not need to know which biblical story fits. Choose what comes closest to your life today,
-          and we'll show you a story from Scripture that has walked through similar ground.
+          You do not have to know which person in the Bible fits your moment. Start with your life.
+          The same El Roi Guide can open a different story depending on what you need.
         </p>
 
         <div className="mt-12 flex flex-wrap items-stretch justify-center gap-3 sm:gap-4">
@@ -119,7 +140,7 @@ export default function Encounter() {
                 className="mx-auto max-w-3xl border border-gold-faint bg-[#131116]/80 px-6 py-8 shadow-[0_28px_90px_-50px_rgba(0,0,0,1)] backdrop-blur-md sm:px-10"
               >
                 <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-gold">
-                  A biblical story that may meet you here
+                  The guide might take you here
                 </p>
                 <p className="font-serif-display mt-3 text-5xl font-light italic text-glory sm:text-6xl">
                   {witness.name}
@@ -127,12 +148,12 @@ export default function Encounter() {
                 <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.28em] text-parchment-dim/70">
                   {witness.ref}
                 </p>
-                <p className="font-serif-display mx-auto mt-6 max-w-xl text-xl font-light italic leading-[1.75] text-parchment sm:text-2xl">
-                  “{witness.line}”
+                <p className="mx-auto mt-6 max-w-2xl text-[15px] font-light leading-[1.85] text-parchment sm:text-base">
+                  {STORY_INTRO[active]}
                 </p>
-                <p className="mx-auto mt-6 max-w-xl text-[12px] font-light leading-relaxed text-parchment-dim">
-                  This is an AI-guided voice inspired by {witness.name}'s scriptural story — not the actual biblical person.
-                  {count > 1 ? ` There are ${count - 1} other witnesses in Scripture connected to this need too.` : ""}
+                <p className="mx-auto mt-6 max-w-xl border-t border-white/8 pt-5 text-[12px] font-light leading-relaxed text-parchment-dim">
+                  El Roi Guide tells the story and reflects with you in its own consistent AI voice. It does not imitate {witness.name} or claim that {witness.name} is speaking.
+                  {count > 1 ? ` There are ${count - 1} other biblical stories connected to this need too.` : ""}
                 </p>
                 <div className="mt-8">
                   <Magnetic strength={0.24}>
@@ -141,11 +162,11 @@ export default function Encounter() {
                       whileTap={{ scale: 0.97 }}
                       className="group relative inline-flex items-center gap-3 overflow-hidden bg-[hsl(var(--gold-bright))] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0a0c14] transition-shadow duration-300 hover:shadow-[0_0_70px_-10px_hsl(var(--gold-bright)/0.8)]"
                     >
-                      <span className="relative">Continue with {witness.name}'s story</span>
+                      <span className="relative">Begin this conversation</span>
                     </motion.a>
                   </Magnetic>
                   <p className="mt-3 text-[11.5px] font-light text-parchment-dim/80">
-                    First call free · no card · or call {PHONE_DISPLAY}
+                    First call free · one guide voice · no card · or call {PHONE_DISPLAY}
                   </p>
                 </div>
               </motion.div>
@@ -161,7 +182,7 @@ export default function Encounter() {
                   Pick the sentence that feels closest. You can change your mind at any time.
                 </p>
                 <p className="mt-4 text-[12px] font-light leading-relaxed text-parchment-dim">
-                  There is no wrong answer here. The goal is not to label you — only to help you begin.
+                  There is no wrong answer here. The goal is not to label you — only to help the guide know where to begin.
                 </p>
               </motion.div>
             )}
