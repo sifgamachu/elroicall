@@ -1,0 +1,50 @@
+name: El Roi Call CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "enhancement/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify critical static flows exist
+        run: |
+          test -f ../dist/index.html
+          test -f ../dist/begin/index.html
+          test -f ../dist/gift/index.html
+          test -f ../dist/account/index.html
+          test -f ../dist/privacy/index.html
+          test -f ../dist/terms/index.html
