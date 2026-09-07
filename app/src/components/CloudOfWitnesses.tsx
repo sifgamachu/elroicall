@@ -15,6 +15,18 @@ const NEED_LABEL: Record<Need, string> = {
   calling: "Direction & calling",
 };
 
+const NEED_THEME: Record<Need, string> = {
+  grief: "Loss, lament, questions, endurance, and the slow work of carrying what cannot simply be fixed.",
+  fear: "Courage that does not require pretending fear is gone, especially when a real decision is in front of you.",
+  shame: "Failure, accountability, grace, restoration, and the possibility that your worst moment is not your whole identity.",
+  burnout: "Human limits, rest, care, quiet, and the difference between faithfulness and carrying everything alone.",
+  unanswered: "Waiting, doubt, long prayer, uncertainty, and staying honest when the answer is not yet clear.",
+  unqualified: "Calling alongside weakness, hesitation, age, insecurity, and the question of what faithfulness looks like before confidence arrives.",
+  "starting over": "Loss, new ground, ordinary next steps, provision, and beginnings that do not announce themselves as miracles at first.",
+  unseen: "Being overlooked, displaced, forgotten, or powerless — and the biblical insistence that dignity is not erased by other people's blindness.",
+  calling: "Burden, responsibility, discernment, courage, planning, and how concern becomes a thoughtful next step.",
+};
+
 function readSavedStories() {
   if (typeof window === "undefined") return [] as string[];
   try {
@@ -72,10 +84,10 @@ export default function CloudOfWitnesses() {
           </div>
           <div className="max-w-xl lg:justify-self-end">
             <p className="text-[15px] font-light leading-[1.85] text-[#5f584b]">
-              Scripture is full of people who grieved, failed, waited, hid, doubted, started over, and still found God in the middle of it. Choose what you are carrying and meet the stories that may help you reflect.
+              Scripture is full of people who grieved, failed, waited, hid, doubted, started over, and kept moving. These are not AI characters. They are the stories El Roi Guide can open with you when your life touches similar ground.
             </p>
             <p className="mt-3 text-[11px] font-medium leading-relaxed text-[#776d5d]">
-              El Roi Call uses AI-generated companions inspired by these stories. They are not the actual biblical people.
+              One guide voice. Many biblical witnesses. No impersonation.
             </p>
           </div>
         </div>
@@ -89,6 +101,7 @@ export default function CloudOfWitnesses() {
 
         <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((w, i) => {
+            const storyNeed = w.need as Need;
             const isSelected = activeSelected?.name === w.name && activeSelected?.need === w.need;
             return (
               <motion.button
@@ -107,15 +120,15 @@ export default function CloudOfWitnesses() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#8d6e27]">{NEED_LABEL[w.need as Need]}</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#8d6e27]">{NEED_LABEL[storyNeed]}</p>
                     <h3 className="font-serif-display mt-2 text-3xl font-medium text-[#1d1810]">{w.name}</h3>
                   </div>
                   <BookOpen className="h-4 w-4 shrink-0 text-[#9f8141]" strokeWidth={1.4} />
                 </div>
                 <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.18em] text-[#7c7160]">{w.ref}</p>
-                <p className="font-serif-display mt-4 line-clamp-3 text-[17px] font-light italic leading-[1.55] text-[#51483a]">“{w.line}”</p>
+                <p className="mt-4 line-clamp-3 text-[13px] font-light leading-[1.65] text-[#5b5142]">{NEED_THEME[storyNeed]}</p>
                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8d6e27] opacity-70 transition-opacity group-hover:opacity-100">
-                  {isSelected ? "Close story" : "Open this story"}
+                  {isSelected ? "Close story" : "See why this story matters"}
                 </p>
               </motion.button>
             );
@@ -140,7 +153,7 @@ export default function CloudOfWitnesses() {
             >
               <div className="grid gap-7 md:grid-cols-[0.78fr_1.22fr] md:items-center">
                 <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[#8d6e27]">A story to sit with</p>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[#8d6e27]">A biblical witness to sit with</p>
                   <h3 className="font-serif-display mt-3 text-5xl font-light italic text-[#2b2113]">{activeSelected.name}</h3>
                   <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.24em] text-[#7f7463]">{activeSelected.ref}</p>
                   <button
@@ -158,15 +171,17 @@ export default function CloudOfWitnesses() {
                 </div>
 
                 <div>
-                  <p className="font-serif-display text-2xl font-light italic leading-[1.7] text-[#403526] sm:text-[1.7rem]">“{activeSelected.line}”</p>
-                  <p className="mt-5 text-[12px] font-light leading-[1.75] text-[#716656]">
-                    The guided call is an AI-generated spiritual reflection inspired by {activeSelected.name}'s biblical story. It should point you back toward Scripture and real community, not replace them.
+                  <p className="font-serif-display text-2xl font-light leading-[1.65] text-[#403526] sm:text-[1.65rem]">
+                    The guide can open {activeSelected.name}'s story around {NEED_LABEL[activeSelected.need as Need].toLowerCase()} — then bring the conversation back to what is happening in your life now.
+                  </p>
+                  <p className="mt-5 text-[13px] font-light leading-[1.75] text-[#716656]">
+                    {NEED_THEME[activeSelected.need as Need]} The guide narrates in one consistent AI voice and distinguishes Scripture from its own reflection.
                   </p>
                   <a
                     href={`/begin/?need=${encodeURIComponent(activeSelected.need)}`}
                     className="group mt-7 inline-flex items-center gap-3 bg-[#9d7b31] px-6 py-3.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#fffaf0] transition-all hover:bg-[#826322]"
                   >
-                    Start with this kind of story
+                    Let the guide take me here
                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                   </a>
                 </div>
