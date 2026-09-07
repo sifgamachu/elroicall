@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router";
 import RouteMeta from "@/components/RouteMeta";
 import About from "./pages/About";
-import Begin from "./pages/Begin";
+import BeginWell from "./pages/BeginWell";
 import Gift from "./pages/Gift";
 import GiftRedeem from "./pages/GiftRedeem";
 import Home from "./pages/Home";
@@ -14,8 +14,8 @@ export default function App() {
       <RouteMeta />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/begin" element={<Begin />} />
-        <Route path="/begin/" element={<Begin />} />
+        <Route path="/begin" element={<BeginWell />} />
+        <Route path="/begin/" element={<BeginWell />} />
         <Route path="/gift" element={<Gift />} />
         <Route path="/gift/" element={<Gift />} />
         <Route path="/g" element={<GiftRedeem />} />
