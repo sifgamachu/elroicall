@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Route, Routes } from "react-router";
+import RouteMeta from "@/components/RouteMeta";
 import About from "./pages/About";
 import Begin from "./pages/Begin";
 import Gift from "./pages/Gift";
@@ -20,21 +21,24 @@ function ToAccount() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/begin" element={<Begin />} />
-      <Route path="/begin/" element={<Begin />} />
-      <Route path="/gift" element={<Gift />} />
-      <Route path="/gift/" element={<Gift />} />
-      <Route path="/g" element={<GiftRedeem />} />
-      <Route path="/g/" element={<GiftRedeem />} />
-      <Route path="/g/:code" element={<GiftRedeem />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/about/" element={<About />} />
-      <Route path="/account" element={<ToAccount />} />
-      <Route path="/login" element={<ToAccount />} />
-      <Route path="/portal" element={<ToAccount />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <RouteMeta />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/begin" element={<Begin />} />
+        <Route path="/begin/" element={<Begin />} />
+        <Route path="/gift" element={<Gift />} />
+        <Route path="/gift/" element={<Gift />} />
+        <Route path="/g" element={<GiftRedeem />} />
+        <Route path="/g/" element={<GiftRedeem />} />
+        <Route path="/g/:code" element={<GiftRedeem />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/about/" element={<About />} />
+        <Route path="/account" element={<ToAccount />} />
+        <Route path="/login" element={<ToAccount />} />
+        <Route path="/portal" element={<ToAccount />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 }
