@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "typecheck": "tsc -b --pretty false",
+    "check": "npm run lint && npm run typecheck && npm run build",
     "format": "prettier --write ."
   },
   "dependencies": {
