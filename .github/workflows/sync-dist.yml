@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "enhancement/**"
+      - "experience/**"
 
 permissions:
   contents: write
@@ -42,5 +43,8 @@ jobs:
             echo "dist is already current"
             exit 0
           fi
-          git commit -m "chore: sync built dist [skip ci] [skip dist]"
+          # [skip dist] prevents this workflow from recursively rebuilding,
+          # but deliberately does NOT skip CI or Cloudflare. Cloudflare must
+          # deploy the commit that actually contains the fresh production assets.
+          git commit -m "chore: sync built dist [skip dist]"
           git push origin "HEAD:${GITHUB_REF_NAME}"
