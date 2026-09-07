@@ -2,6 +2,7 @@
 // Assets are served directly by the platform. This worker handles:
 //   • daily IndexNow submission
 //   • an optional authenticated manual IndexNow trigger
+//   • baseline browser security/privacy headers
 //
 // Security note: no access tokens belong in this repository. If manual
 // triggering is needed, configure INDEXNOW_TRIGGER_TOKEN as a Worker secret.
@@ -14,6 +15,14 @@ const URLS = [
   `https://${HOST}/begin/`,
   `https://${HOST}/gift/`,
 ];
+
+const SECURITY_HEADERS = {
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "permissions-policy": "camera=(), geolocation=(), microphone=()",
+  "cross-origin-resource-policy": "same-site",
+};
 
 async function pingIndexNow() {
   const res = await fetch("https://api.indexnow.org/indexnow", {
@@ -36,6 +45,14 @@ function authorizedManualTrigger(request, env) {
   return request.headers.get("authorization") === `Bearer ${expected}`;
 }
 
+function withSecurityHeaders(response) {
+  const next = new Response(response.body, response);
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+    next.headers.set(name, value);
+  }
+  return next;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -44,24 +61,30 @@ export default {
       if (request.method !== "POST") {
         return new Response("method not allowed", {
           status: 405,
-          headers: { Allow: "POST" },
+          headers: { Allow: "POST", ...SECURITY_HEADERS },
         });
       }
 
       // Return 404 instead of advertising whether the endpoint exists.
       if (!authorizedManualTrigger(request, env)) {
-        return new Response("not found", { status: 404 });
+        return new Response("not found", {
+          status: 404,
+          headers: SECURITY_HEADERS,
+        });
       }
 
       const status = await pingIndexNow();
-      return Response.json({
-        ok: status === 200 || status === 202,
-        urls: URLS.length,
-        indexnow_status: status,
-      });
+      return Response.json(
+        {
+          ok: status === 200 || status === 202,
+          urls: URLS.length,
+          indexnow_status: status,
+        },
+        { headers: SECURITY_HEADERS },
+      );
     }
 
-    return env.ASSETS.fetch(request);
+    return withSecurityHeaders(await env.ASSETS.fetch(request));
   },
 
   async scheduled(_event, _env, ctx) {
