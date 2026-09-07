@@ -41,24 +41,25 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify application routing and remaining static surfaces
+      - name: Verify single-app routing architecture
         run: |
           test -f ../dist/index.html
-          test -f ../dist/account/index.html
           test -f ../dist/privacy/index.html
           test -f ../dist/terms/index.html
 
-          # Product routes now belong to the React SPA and must not be shadowed
-          # by duplicated standalone HTML files in the build output.
+          # All product routes belong to the React SPA. Standalone HTML must not
+          # shadow the React implementation in production.
           test ! -f ../dist/begin/index.html
           test ! -f ../dist/gift/index.html
           test ! -f ../dist/g/index.html
           test ! -f ../dist/about/index.html
+          test ! -f ../dist/account/index.html
 
           grep -q 'path="/begin' src/App.tsx
           grep -q 'path="/gift' src/App.tsx
           grep -q 'path="/g/:code"' src/App.tsx
           grep -q 'path="/about' src/App.tsx
+          grep -q 'path="/account' src/App.tsx
 
       - name: Detect package-lock drift
         continue-on-error: true
