@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, BookOpen, Star } from "lucide-react";
 import { WITNESSES, NEEDS, type Witness, type Need } from "@/lib/witnesses";
@@ -15,19 +15,21 @@ const NEED_LABEL: Record<Need, string> = {
   calling: "Direction & calling",
 };
 
+function readSavedStories() {
+  if (typeof window === "undefined") return [] as string[];
+  try {
+    const parsed = JSON.parse(localStorage.getItem("elroi-kept-stars") ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [] as string[];
+  }
+}
+
 export default function CloudOfWitnesses() {
   const reduced = useReducedMotion();
   const [need, setNeed] = useState<Need | "all">("all");
   const [selected, setSelected] = useState<Witness | null>(null);
-  const [keptNames, setKeptNames] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      setKeptNames(JSON.parse(localStorage.getItem("elroi-kept-stars") ?? "[]"));
-    } catch {
-      /* private mode — saved stories stay local and optional */
-    }
-  }, []);
+  const [keptNames, setKeptNames] = useState<string[]>(readSavedStories);
 
   const kept = useMemo(() => new Set(keptNames), [keptNames]);
 
@@ -50,9 +52,8 @@ export default function CloudOfWitnesses() {
     return WITNESSES.filter((w) => w.need === need);
   }, [need]);
 
-  useEffect(() => {
-    if (selected && need !== "all" && selected.need !== need) setSelected(null);
-  }, [need, selected]);
+  const activeSelected =
+    selected && (need === "all" || selected.need === need) ? selected : null;
 
   return (
     <section id="witnesses" className="relative overflow-hidden border-y border-gold-faint bg-[#e9e2d3] text-[#17130d]">
@@ -88,7 +89,7 @@ export default function CloudOfWitnesses() {
 
         <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((w, i) => {
-            const isSelected = selected?.name === w.name && selected?.need === w.need;
+            const isSelected = activeSelected?.name === w.name && activeSelected?.need === w.need;
             return (
               <motion.button
                 key={`${w.name}-${w.need}`}
@@ -128,9 +129,9 @@ export default function CloudOfWitnesses() {
         )}
 
         <AnimatePresence mode="wait">
-          {selected && (
+          {activeSelected && (
             <motion.div
-              key={`${selected.name}-${selected.need}`}
+              key={`${activeSelected.name}-${activeSelected.need}`}
               initial={reduced ? { opacity: 0 } : { opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
@@ -140,29 +141,29 @@ export default function CloudOfWitnesses() {
               <div className="grid gap-7 md:grid-cols-[0.78fr_1.22fr] md:items-center">
                 <div>
                   <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[#8d6e27]">A story to sit with</p>
-                  <h3 className="font-serif-display mt-3 text-5xl font-light italic text-[#2b2113]">{selected.name}</h3>
-                  <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.24em] text-[#7f7463]">{selected.ref}</p>
+                  <h3 className="font-serif-display mt-3 text-5xl font-light italic text-[#2b2113]">{activeSelected.name}</h3>
+                  <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.24em] text-[#7f7463]">{activeSelected.ref}</p>
                   <button
                     type="button"
-                    onClick={() => toggleKept(selected.name)}
+                    onClick={() => toggleKept(activeSelected.name)}
                     className={`mt-6 inline-flex items-center gap-2 border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
-                      kept.has(selected.name)
+                      kept.has(activeSelected.name)
                         ? "border-[#8d6e27] bg-[#efe1bc] text-[#5f481b]"
                         : "border-[#c8b98f] text-[#746342] hover:border-[#8d6e27]"
                     }`}
                   >
-                    <Star className="h-3 w-3" fill={kept.has(selected.name) ? "currentColor" : "none"} />
-                    {kept.has(selected.name) ? "Saved on this device" : "Save this story"}
+                    <Star className="h-3 w-3" fill={kept.has(activeSelected.name) ? "currentColor" : "none"} />
+                    {kept.has(activeSelected.name) ? "Saved on this device" : "Save this story"}
                   </button>
                 </div>
 
                 <div>
-                  <p className="font-serif-display text-2xl font-light italic leading-[1.7] text-[#403526] sm:text-[1.7rem]">“{selected.line}”</p>
+                  <p className="font-serif-display text-2xl font-light italic leading-[1.7] text-[#403526] sm:text-[1.7rem]">“{activeSelected.line}”</p>
                   <p className="mt-5 text-[12px] font-light leading-[1.75] text-[#716656]">
-                    The guided call is an AI-generated spiritual reflection inspired by {selected.name}'s biblical story. It should point you back toward Scripture and real community, not replace them.
+                    The guided call is an AI-generated spiritual reflection inspired by {activeSelected.name}'s biblical story. It should point you back toward Scripture and real community, not replace them.
                   </p>
                   <a
-                    href={`/begin/?need=${encodeURIComponent(selected.need)}`}
+                    href={`/begin/?need=${encodeURIComponent(activeSelected.need)}`}
                     className="group mt-7 inline-flex items-center gap-3 bg-[#9d7b31] px-6 py-3.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#fffaf0] transition-all hover:bg-[#826322]"
                   >
                     Start with this kind of story
