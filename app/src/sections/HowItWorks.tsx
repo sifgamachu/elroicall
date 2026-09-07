@@ -5,18 +5,18 @@ import { Reveal, SectionHeading } from "@/components/reveal";
 const ACTS = [
   {
     numeral: "I",
-    title: "Start with what is true",
-    body: "Tell us what you're carrying in your own words, or begin with a simple feeling like grief, fear, exhaustion, shame, waiting, or starting over. No polished testimony required.",
+    title: "You talk. The guide listens.",
+    body: "Start with what is actually happening — grief, fear, exhaustion, regret, waiting, loneliness, or something that does not fit a label. The first job of El Roi Guide is to understand before it explains.",
   },
   {
     numeral: "II",
-    title: "Meet a biblical story",
-    body: "El Roi Call reflects back what it heard and suggests a biblical figure whose scriptural story may speak to the moment — Job for grief, Esther for fear, Peter for failure, Hagar for feeling unseen, and many more.",
+    title: "A story opens.",
+    body: "When a biblical story fits, the same guide brings it into the conversation: Job's grief, Hagar's desert, Esther's fear, Peter's failure, Ruth's beginning again. The guide narrates; it never pretends to be the biblical person.",
   },
   {
     numeral: "III",
-    title: "Have the guided conversation",
-    body: "Your call uses an AI-generated voice inspired by that biblical story. It is not the actual biblical person, God, clergy, or therapy. The experience is designed for reflection, Scripture, conversation, and prayer.",
+    title: "The conversation comes back to you.",
+    body: "The guide connects the story to Scripture, asks one useful question at a time, and can pray with you when you want. One familiar AI voice stays consistent while the biblical story changes with the moment.",
   },
 ];
 
@@ -35,11 +35,11 @@ export default function HowItWorks() {
           eyebrow="How it works"
           title={
             <>
-              From what you're carrying{" "}
-              <span className="italic text-gold-bright">to a conversation.</span>
+              One guide. Many stories.{" "}
+              <span className="italic text-gold-bright">Your life stays at the center.</span>
             </>
           }
-          copy="The technology should never be the mystery. You should know what happens before you trust us with a real part of your life."
+          copy="No operator theater. No cast of AI characters. One recognizable guide listens and uses Scripture to help you reflect."
         />
 
         <div className="mt-20 grid items-start gap-14 lg:grid-cols-[1fr_0.85fr]">
@@ -85,10 +85,10 @@ export default function HowItWorks() {
             href="/begin/"
             className="inline-block bg-[hsl(var(--gold))] px-10 py-4 text-[12px] font-semibold uppercase tracking-[0.28em] text-[#1a1409] transition-all duration-300 hover:bg-[hsl(var(--gold-bright))]"
           >
-            Start your free first call
+            Meet El Roi Guide
           </a>
           <p className="mt-4 text-xs font-light text-parchment-dim">
-            No card for the first call · optional membership afterward
+            First call free · no card · one AI guide voice across every story
           </p>
         </Reveal>
       </div>
