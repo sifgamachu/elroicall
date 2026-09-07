@@ -5,7 +5,7 @@ import Begin from "./pages/Begin";
 import Gift from "./pages/Gift";
 import GiftRedeem from "./pages/GiftRedeem";
 import Home from "./pages/Home";
-import Member from "./pages/Member";
+import MemberRoom from "./pages/MemberRoom";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -23,8 +23,8 @@ export default function App() {
         <Route path="/g/:code" element={<GiftRedeem />} />
         <Route path="/about" element={<About />} />
         <Route path="/about/" element={<About />} />
-        <Route path="/account" element={<Member />} />
-        <Route path="/account/" element={<Member />} />
+        <Route path="/account" element={<MemberRoom />} />
+        <Route path="/account/" element={<MemberRoom />} />
         <Route path="/login" element={<Navigate to="/account" replace />} />
         <Route path="/portal" element={<Navigate to="/account" replace />} />
         <Route path="*" element={<NotFound />} />
