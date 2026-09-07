@@ -64,7 +64,6 @@ export default function MemberRoom() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [member, setMember] = useState<MemberData | null>(null);
-  const [memberLoading, setMemberLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -95,16 +94,12 @@ export default function MemberRoom() {
     if (!session) return;
     let active = true;
 
-    setMemberLoading(true);
     void getMember(session)
       .then((data) => {
         if (active) setMember(data);
       })
       .catch(() => {
         if (active) setError("We could not load your room just now. Refresh and try again.");
-      })
-      .finally(() => {
-        if (active) setMemberLoading(false);
       });
 
     return () => {
@@ -112,6 +107,7 @@ export default function MemberRoom() {
     };
   }, [session]);
 
+  const memberLoading = Boolean(session && !member && !error);
   const activeTracks = useMemo(
     () => (member?.schedules ?? []).filter((track) => track.active),
     [member?.schedules],
