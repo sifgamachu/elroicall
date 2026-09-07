@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
-import { ArrowDown, ArrowRight, Phone, ShieldCheck } from "lucide-react";
+import { ArrowDown, ArrowRight, Phone, ShieldCheck, Volume2 } from "lucide-react";
 import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
 
 const fade = (delay: number, y = 24) => ({
@@ -12,9 +12,9 @@ const fade = (delay: number, y = 24) => ({
 const NEEDS = [
   { label: "I'm grieving", value: "grief" },
   { label: "I'm afraid", value: "fear" },
-  { label: "I'm exhausted", value: "burnout" },
+  { label: "I can't let go of what I did", value: "shame" },
+  { label: "I'm running on empty", value: "burnout" },
   { label: "I feel unseen", value: "unseen" },
-  { label: "I'm starting over", value: "starting-over" },
   { label: "I need direction", value: "calling" },
 ];
 
@@ -26,9 +26,9 @@ export default function Hero() {
     target: ref,
     offset: ["start start", "end start"],
   });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const fadeOut = useTransform(scrollYProgress, [0, 0.82], [1, 0]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const fadeOut = useTransform(scrollYProgress, [0, 0.88], [1, 0]);
 
   return (
     <section
@@ -40,13 +40,13 @@ export default function Hero() {
         <motion.img
           src="/images/hero-desert.jpg"
           alt="A stone well in the desert at dawn"
-          className="h-full w-full scale-105 object-cover opacity-35"
+          className="h-full w-full scale-105 object-cover opacity-36"
           initial={{ scale: 1.1 }}
           animate={{ scale: 1.05 }}
           transition={{ duration: 7, ease: "easeOut" }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,8,10,0.97)_0%,rgba(8,8,10,0.86)_44%,rgba(8,8,10,0.55)_72%,rgba(8,8,10,0.72)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_70%_22%,hsl(var(--gold-bright)/0.22),transparent_65%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,8,10,0.98)_0%,rgba(8,8,10,0.88)_45%,rgba(8,8,10,0.58)_74%,rgba(8,8,10,0.76)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_68%_55%_at_72%_20%,hsl(var(--gold-bright)/0.23),transparent_66%)]" />
       </motion.div>
 
       <div className="pointer-events-none absolute -right-20 top-10 h-[34rem] w-[34rem] rounded-full border border-[hsl(var(--gold-bright)/0.12)]" />
@@ -65,17 +65,17 @@ export default function Hero() {
             {...fade(0.16)}
             className="font-serif-display mt-7 text-5xl font-light leading-[1.02] tracking-tight text-parchment sm:text-6xl lg:text-7xl"
           >
-            Whatever brought you here,
-            <span className="block italic text-gold-bright">you do not have to make it sound spiritual.</span>
+            You do not need the right words.
+            <span className="block italic text-gold-bright">Start with the true ones.</span>
           </motion.h1>
 
           <motion.p
             {...fade(0.24)}
             className="mt-7 max-w-xl text-base font-light leading-[1.85] text-parchment-dim sm:text-lg"
           >
-            Grief. Fear. A mistake you cannot stop replaying. A prayer that feels unanswered.
-            Start with what is true. El Roi Call helps you meet an AI voice inspired by a biblical
-            story that has carried something like it before.
+            One calm AI guide listens first. Then, when a story from Scripture fits what you're carrying,
+            the guide brings you into it — Job for grief, Hagar for feeling unseen, Esther for fear, Ruth for starting again.
+            Not a character performance. A conversation that keeps returning to you, Scripture, and prayer.
           </motion.p>
 
           <motion.blockquote
@@ -93,7 +93,7 @@ export default function Hero() {
               href="/begin/"
               className="group inline-flex items-center gap-3 bg-[hsl(var(--gold-bright))] px-7 py-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#111015] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_60px_-22px_hsl(var(--gold-bright)/0.8)]"
             >
-              Tell us what you're carrying
+              Meet the guide
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </a>
             <a
@@ -101,34 +101,34 @@ export default function Hero() {
               className="inline-flex items-center gap-2 border border-gold-faint px-6 py-4 text-[11px] font-medium uppercase tracking-[0.22em] text-parchment transition-colors hover:border-gold-soft hover:text-gold-bright"
             >
               <Phone className="h-4 w-4" />
-              Call now
+              Prefer to call
             </a>
           </motion.div>
 
-          <motion.div {...fade(0.48)} className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-light text-parchment-dim">
+          <motion.div {...fade(0.48)} className="mt-7 flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-light text-parchment-dim">
+            <span className="inline-flex items-center gap-1.5"><Volume2 className="h-3 w-3 text-gold" />One familiar AI voice</span>
+            <span>·</span>
+            <span>Whole Scripture</span>
+            <span>·</span>
             <span>First call free</span>
             <span>·</span>
             <span>No card</span>
-            <span>·</span>
-            <span>AI-guided biblical reflection</span>
-            <span>·</span>
-            <span>Adults 18+</span>
           </motion.div>
         </div>
 
         <motion.aside
           {...fade(0.22, 18)}
-          className="relative mx-auto w-full max-w-xl border border-gold-soft/35 bg-[#111013]/88 p-6 shadow-[0_38px_120px_-48px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:p-8"
+          className="relative mx-auto w-full max-w-xl border border-gold-soft/35 bg-[#111013]/90 p-6 shadow-[0_38px_120px_-48px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:p-8"
         >
           <div className="absolute -left-px top-10 h-20 w-px bg-gold" />
           <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-gold">
-            Start where you are
+            The guide starts by listening
           </p>
           <h2 className="font-serif-display mt-4 text-3xl font-light text-parchment sm:text-4xl">
-            What are you carrying today?
+            What is closest to your life today?
           </h2>
           <p className="mt-3 text-[13px] font-light leading-relaxed text-parchment-dim">
-            Choose the closest feeling, or tell us in your own words. You do not need the perfect sentence.
+            Pick one if it helps. Or skip the labels and say it in your own words.
           </p>
 
           <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
@@ -148,15 +148,14 @@ export default function Hero() {
             href="/begin/"
             className="mt-4 flex w-full items-center justify-center gap-2 border border-gold-soft/50 px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-gold-bright transition-colors hover:bg-[hsl(var(--gold)/0.08)]"
           >
-            None of these fit — tell us yourself
+            I'll say it in my own words
           </a>
 
           <div className="mt-7 border-t border-white/8 pt-5">
             <div className="flex items-start gap-3 text-[11px] font-light leading-relaxed text-parchment-dim">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
               <p>
-                You will always be told when you're speaking with AI. El Roi Call is spiritual reflection,
-                not therapy, clergy, medical care, or crisis support.
+                The same AI guide stays with you across scenarios. Biblical people are introduced as stories from Scripture — never impersonated as if they are literally on the line. El Roi Call is not therapy, clergy, medical care, or crisis support.
               </p>
             </div>
             <a
@@ -171,7 +170,7 @@ export default function Hero() {
 
       <motion.a
         href="#tonight"
-        aria-label="Continue to find a biblical witness"
+        aria-label="Continue to find a biblical story"
         className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-parchment-dim/60 transition-colors hover:text-gold-bright"
         animate={reduced ? undefined : { y: [0, 7, 0] }}
         transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
