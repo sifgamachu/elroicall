@@ -84,7 +84,13 @@ export default {
       );
     }
 
-    return withSecurityHeaders(await env.ASSETS.fetch(request));
+    const response = withSecurityHeaders(await env.ASSETS.fetch(request));
+    if (url.pathname.startsWith('/auth/') || url.pathname.startsWith('/account') || url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/schedule')) {
+      response.headers.set('Referrer-Policy', 'no-referrer');
+      response.headers.set('Cache-Control', 'no-store');
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    }
+    return response;
   },
 
   async scheduled(_event, _env, ctx) {

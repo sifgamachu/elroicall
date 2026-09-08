@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { CalendarClock, Check, Clock3, Headphones, LoaderCircle, Pause, Phone, Play, Volume2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import ProductShell from '@/components/ProductShell';
+import AccountSignIn from '@/components/AccountSignIn';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -35,8 +36,6 @@ export default function Schedule() {
   const [startDate, setStartDate] = useState(() => localDate(new Date(), detectedZone()));
   const [duration, setDuration] = useState('10');
   const [consent, setConsent] = useState(false);
-  const [email, setEmail] = useState('');
-  const [emailBusy, setEmailBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -90,16 +89,6 @@ export default function Schedule() {
     const owner=session?.user.id;
     try { const data = await schedulingRequest<{ plans: CallPlan[] }>('/plans', session); if(accountId.current!==owner)return;setPlans(data.plans); setPlansError(false); }
     catch { setPlansError(true); }
-  }
-  async function signIn() {
-    if (!email.trim() || emailBusy) return;
-    setEmailBusy(true); setError('');
-    try {
-      const { error: issue } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: `${window.location.origin}/schedule/` } });
-      if (issue) throw issue;
-      setNotice('Check your email for your sign-in link. Keep this tab open to preserve your choices.');
-    } catch { setError('We could not send your sign-in link. Check your email and try again.'); }
-    finally { setEmailBusy(false); }
   }
   async function preview(id: string) {
     audio.current?.pause();
@@ -178,7 +167,7 @@ export default function Schedule() {
           <p className="elroi-small">Choose a time at least 20 minutes away so we can prepare your audio. Recurring calls follow this time zone when clocks change. If your time is skipped by daylight saving, that day's call is skipped.</p>
         </fieldset>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>4</span> Your number. Your permission.</legend>
-          {authLoading ? <p role="status">Checking your sign-in…</p> : !session ? <div><p className="elroi-schedule-help">Sign in to use your verified phone number and manage your calls.</p><label className="elroi-field" htmlFor="schedule-email">Email<input id="schedule-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" /></label><button type="button" className="elroi-button elroi-button-dark" onClick={() => void signIn()} disabled={emailBusy || !email.trim()}>{emailBusy ? 'Sending…' : 'Email me a sign-in link'}</button></div> : !member ? <p>Loading your calling details… <Link to="/account/" className="elroi-text-link">Open your dashboard</Link></p> : member.phone_verified ? <p className="elroi-verified"><Check size={18} />Calls go to your verified number ending in {member.phone?.slice(-4)}.</p> : <p>Verify your phone number before scheduling. <Link to="/account/#calling-preferences" className="elroi-text-link">Verify in your dashboard</Link></p>}
+          {authLoading ? <p role="status">Checking your sign-in…</p> : !session ? <div><p className="elroi-schedule-help">Sign in to use your verified number. Verify in this tab to keep your schedule choices.</p><AccountSignIn destination="/schedule/" embedded/></div> : !member ? <p>Loading your calling details… <Link to="/account/" className="elroi-text-link">Open your dashboard</Link></p> : member.phone_verified ? <p className="elroi-verified"><Check size={18} />Calls go to your verified number ending in {member.phone?.slice(-4)}.</p> : <p>Verify your phone number before scheduling. <Link to="/account/#calling-preferences" className="elroi-text-link">Verify in your dashboard</Link></p>}
           <label className="elroi-schedule-consent"><Checkbox checked={consent} onCheckedChange={checked => setConsent(checked === true)} /><span>I want El Roi Call to place AI-narrated calls to my verified number for the content, days, and time I chose. I can pause future calls or press 9 during a scheduled call to stop this schedule. Consent is not a condition of purchase. Carrier charges may apply.</span></label>
           {ready === false && <p className="elroi-availability" role="status">Scheduled calls are being connected. You can explore your choices here; no call is booked yet. <a href={PHONE_TEL}>Call El Roi anytime.</a></p>}
           {error && <p className="elroi-status-error" role="alert">{error}</p>}{notice && <p className="elroi-schedule-notice" role="status">{notice}</p>}

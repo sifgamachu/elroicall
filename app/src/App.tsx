@@ -12,6 +12,7 @@ const BeginWell = lazy(() => import("./pages/BeginWell"));
 const Gift = lazy(() => import("./pages/Gift"));
 const GiftRedeem = lazy(() => import("./pages/GiftRedeem"));
 const MemberRoom = lazy(() => import("./pages/MemberRoom"));
+const AuthConfirm = lazy(() => import("./pages/AuthConfirm"));
 
 export default function App() {
   const [draft, setDraft] = useState("");
@@ -20,6 +21,8 @@ export default function App() {
       <RouteMeta />
       <Suspense fallback={<main className="grid min-h-screen place-content-center gap-5 bg-[#f8f9fc] px-6 text-center text-parchment"><p role="status" className="text-lg">Opening your conversation…</p><a href={PHONE_TEL} className="min-h-11 text-gold-bright underline">Prefer voice? Call El Roi</a></main>}>
       <Routes>
+        <Route path="/auth/confirm" element={<AuthConfirm />} />
+        <Route path="/auth/confirm/" element={<AuthConfirm />} />
         <Route path="/" element={<Home />} />
         <Route path="/begin" element={<BeginWell />} />
         <Route path="/begin/" element={<BeginWell />} />

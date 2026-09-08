@@ -20,6 +20,7 @@ export async function fetchJson<T>(
   url: string,
   init?: RequestInit,
   timeoutMs = 20_000,
+  client: typeof fetch = fetch,
 ): Promise<{ status: number; data: T }> {
   const controller = new AbortController();
   const abort = () => controller.abort(init?.signal?.reason);
@@ -27,7 +28,7 @@ export async function fetchJson<T>(
   else init?.signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(() => controller.abort(new DOMException("Request timed out", "TimeoutError")), timeoutMs);
   try {
-    const response = await fetch(url, { ...init, signal: controller.signal });
+    const response = await client(url, { ...init, signal: controller.signal });
     const data = await response.json().catch((error: unknown) => {
       if (controller.signal.aborted) throw controller.signal.reason;
       if (response.ok) throw new ApiError("invalid_response", response.status);

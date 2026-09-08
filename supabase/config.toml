@@ -3,3 +3,17 @@
 verify_jwt = false
 [functions.portal]
 verify_jwt = true
+
+# Desired hosted Auth settings. Committing this file does not apply them to the
+# hosted project; apply through Auth settings or an authorized configuration push.
+[auth]
+site_url = "https://elroicall.com/account/"
+additional_redirect_urls = ["https://elroicall.com/account", "https://elroicall.com/account/", "https://elroicall.com/schedule", "https://elroicall.com/schedule/"]
+
+[auth.email.template.magic_link]
+subject = "Your El Roi Call sign-in code"
+content_path = "./supabase/templates/verification.html"
+
+[auth.email.template.confirmation]
+subject = "Verify your El Roi Call email"
+content_path = "./supabase/templates/verification.html"

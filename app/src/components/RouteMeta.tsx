@@ -49,7 +49,7 @@ export default function RouteMeta() {
               description: "El Roi Call begins with Hagar in Genesis 16 and one principle: listen first, then help people enter Scripture without impersonating biblical people.",
               canonical: "https://elroicall.com/about/",
             }
-          : pathname.startsWith("/account") || pathname.startsWith("/dashboard") || pathname.startsWith("/login") || pathname.startsWith("/portal")
+          : pathname.startsWith("/auth/") || pathname.startsWith("/account") || pathname.startsWith("/dashboard") || pathname.startsWith("/login") || pathname.startsWith("/portal")
             ? {
                 title: "My Dashboard — El Roi Call",
                 description: "Your scheduled calls, conversations, voice preferences, and verified calling number, together in one private space.",
