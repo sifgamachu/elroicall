@@ -3,7 +3,8 @@ import { ArrowUpRight } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const FAQS = [
-  { q: "Who am I speaking with?", a: "El Roi Guide is AI. It offers biblical reflection in one consistent voice, explores stories from Scripture, and can pray with you if you want. It does not impersonate biblical people or claim to speak for God." },
+  { q: "Can El Roi call me at a time I choose?", a: "The separate scheduling service lets you choose Bible study, a sermon, a lecture, a biblical story, or Bible facts, along with a voice, a topic, and your preferred time. The schedule page shows whether booking is available. You can still call El Roi yourself anytime." },
+  { q: "Who am I speaking with?", a: "El Roi Guide is AI. It offers biblical reflection in a consistent guide experience, explores stories from Scripture, and can pray with you if you want. It does not impersonate biblical people or claim to speak for God." },
   { q: "How do I start a conversation?", a: "Call the El Roi phone number, or write a few words here first. Before your writing is submitted, you can review it and consent to AI processing. If you prepare a call online, use the phone number you entered when you dial us." },
   { q: "Is the first call really free?", a: "Your first guided call is free and requires no payment card. Recurring membership is a separate choice. Review the price, billing date, and cancellation terms before subscribing." },
   { q: "What happens to what I share?", a: "An unsubmitted draft stays in this tab and is cleared when you refresh or close the page. After you consent and submit it, the service processes your words to prepare a reflection. Calls are recorded under the current Privacy Policy and are not legally privileged. Please read that policy before sharing sensitive information." },

@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUpRight, BookOpen, Check, Heart, LockKeyhole, Phone } from "lucide-react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { PHONE_TEL } from "@/lib/phone";
 import { useDraft } from "@/lib/draft";
 
@@ -21,6 +21,7 @@ export default function WellEntry() {
           <h1>A little space.<br /><span>A deeper<br className="elroi-desktop-break" /> conversation.</span></h1>
           <p className="elroi-hero-description">Bring your questions, your worries, your real life. Find room to reflect with an AI guide and explore what Scripture brings to the conversation.</p>
           <div className="elroi-hero-actions"><a href={PHONE_TEL} className="elroi-button elroi-button-primary"><Phone size={18} /> Call El Roi<ArrowUpRight size={17} /></a><a href="#first-words" className="elroi-text-link">Start with a few words<ArrowRight size={17} /></a></div>
+          <Link to="/schedule/" className="elroi-text-link" style={{ marginTop: 18 }}>Prefer a regular time? Schedule a call<ArrowRight size={16} /></Link>
           <p className="elroi-free-note"><Check size={15} /> First call free <span>·</span> No card needed</p>
           <div className="elroi-verse"><span className="elroi-verse-line" /><div><p>“You are the God who sees me.”</p><span>Genesis 16:13 · The heart behind El Roi</span></div></div>
         </div>

@@ -1,0 +1,3 @@
+# Only the new function is described here. Existing functions are not redeployed.
+[functions.scheduled-calls]
+verify_jwt = false

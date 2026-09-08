@@ -216,3 +216,68 @@
   .elroi-site *, .elroi-mobile-sheet * { animation:none!important; transition:none!important; }
   .elroi-button:hover,.elroi-story-card:hover { transform:none; }
 }
+
+/* Scheduled calls extend the call-anytime experience. */
+.elroi-schedule-layout { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:32px; align-items:start; }
+.elroi-schedule-form { min-width:0; display:grid; gap:24px; }
+.elroi-schedule-card { min-width:0; border:1px solid #e1e5ef; border-radius:24px; background:white; padding:24px; margin:0; }
+.elroi-schedule-card legend { font-size:1.1rem; font-weight:650; padding:0 8px; display:flex; align-items:center; gap:10px; }
+.elroi-schedule-card legend>span { display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#e9ecff; color:#3a4dcc; font-size:.875rem; }
+.elroi-content-options { grid-template-columns:1fr 1fr; gap:10px; }
+.elroi-choice { display:flex; align-items:flex-start; gap:12px; padding:16px; border:1px solid #e1e5ef; border-radius:16px; cursor:pointer; }
+.elroi-choice[data-selected=true],.elroi-voice-option[data-selected=true] { border-color:#4c5fe2; background:#f2f4ff; }
+.elroi-choice [role=radio] { margin-top:5px; flex-shrink:0; }
+.elroi-choice strong { display:block; font-size:1rem; }
+.elroi-choice span>span { display:block; margin-top:6px; font-size:.875rem; line-height:1.6; color:#5c6478; }
+.elroi-field { display:flex; flex-direction:column; gap:8px; margin-top:20px; font-size:.875rem; font-weight:600; min-width:0; }
+.elroi-field input,.elroi-field [data-slot=select-trigger] { background:#f8f9fc; border:1px solid #dce1ed; border-radius:12px; min-height:48px; padding:12px 14px; width:100%; color:#172039; font-size:1rem; font-weight:400; }
+.elroi-field input:focus { outline:2px solid #4c5fe2; outline-offset:2px; }
+.elroi-schedule-card .elroi-small { margin-top:12px; line-height:1.6; }
+.elroi-schedule-help { margin:0 0 18px; color:#5c6478; line-height:1.7; }
+.elroi-voice-options { grid-template-columns:1fr 1fr; gap:10px; }
+.elroi-voice-option { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; border:1px solid #e1e5ef; border-radius:16px; padding:10px 14px; }
+.elroi-voice-option label { display:flex; gap:10px; align-items:center; min-height:44px; cursor:pointer; }
+.elroi-voice-option>button { display:flex; align-items:center; gap:6px; min-height:44px; font-size:.875rem; color:#3a4dcc; }
+.elroi-voice-option>button:disabled { color:#787f8f; cursor:not-allowed; }
+.elroi-recurrence { display:flex; flex-wrap:wrap; gap:20px; }
+.elroi-recurrence label { display:flex; gap:8px; align-items:center; min-height:44px; font-size:.875rem; }
+.elroi-days { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.elroi-days label { display:flex; align-items:center; gap:6px; padding:10px; min-height:44px; border:1px solid #dce1ed; border-radius:10px; font-size:.875rem; cursor:pointer; }
+.elroi-days label[data-selected=true] { background:#eef1ff; border-color:#4c5fe2; }
+.elroi-schedule-fields { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.elroi-schedule-card .elroi-button { margin-top:18px; }
+.elroi-schedule-consent { display:flex; align-items:flex-start; gap:12px; margin-top:24px; padding:16px; border:1px solid #dce1ed; border-radius:14px; font-size:.875rem; line-height:1.7; }
+.elroi-schedule-consent [role=checkbox] { margin-top:4px; flex-shrink:0; }
+.elroi-schedule-save { width:100%; }
+.elroi-schedule-save:disabled { opacity:.45; cursor:not-allowed; }
+.elroi-availability { margin-top:20px; padding:16px; background:#f1f3fb; border-radius:14px; font-size:.875rem; line-height:1.7; }
+.elroi-availability a { color:#3a4dcc; text-decoration:underline; }
+.elroi-schedule-notice { background:#edf7f2; color:#235a41; padding:16px; margin-top:16px; border-radius:14px; font-size:.875rem; line-height:1.7; }
+.elroi-schedule-card [role=alert] { margin-top:16px; }
+.elroi-verified { display:flex; gap:8px; align-items:center; font-size:.875rem; }
+.elroi-schedule-summary { position:sticky; top:100px; background:#edf0fc; border:1px solid #e0e5f5; padding:28px; border-radius:24px; }
+.elroi-schedule-summary>.elroi-kicker { margin-top:22px; }
+.elroi-schedule-summary h2 { font-size:1.65rem; letter-spacing:-.04em; line-height:1.2; margin:12px 0; }
+.elroi-schedule-summary>p { line-height:1.7; overflow-wrap:anywhere; }
+.elroi-schedule-summary dl { margin:24px 0 16px; }
+.elroi-schedule-summary dl>div { display:flex; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid #dce1f1; font-size:.875rem; }
+.elroi-schedule-summary dt { color:#5c6478; }
+.elroi-schedule-summary dd { text-align:right; }
+.elroi-schedule-summary>.elroi-small { display:flex; gap:6px; align-items:center; }
+.elroi-schedule-anytime { margin-top:28px; padding-top:22px; border-top:1px solid #dce1f1; }
+.elroi-schedule-anytime strong { display:block; margin:12px 0 8px; }
+.elroi-schedule-anytime p { font-size:.875rem; line-height:1.6; margin-bottom:12px; }
+.elroi-saved-plans { margin-top:64px; }
+.elroi-saved-heading { display:flex; justify-content:space-between; gap:24px; align-items:center; margin-bottom:24px; }
+.elroi-saved-heading h2 { font-size:1.8rem; letter-spacing:-.04em; margin-top:8px; }
+.elroi-plans-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.elroi-plan-card { display:grid; gap:18px; padding:24px; background:white; border:1px solid #e1e5ef; border-radius:20px; }
+.elroi-plan-card h3 { font-size:1.3rem; margin-top:8px; }
+.elroi-plan-card p { line-height:1.7; font-size:.875rem; overflow-wrap:anywhere; }
+.elroi-schedule-invite { display:flex; align-items:center; gap:24px; padding:26px; margin:28px 0; border:1px solid #dce1ed; border-radius:20px; background:white; }
+.elroi-schedule-invite h3 { font-size:1.2rem; margin-bottom:8px; }
+.elroi-schedule-invite p { font-size:.875rem; line-height:1.7; color:#5c6478; }
+.elroi-schedule-invite .elroi-button { flex-shrink:0; margin-left:auto; }
+@media(max-width:1050px) { .elroi-schedule-layout { grid-template-columns:minmax(0,1fr) 250px; gap:20px; } .elroi-content-options,.elroi-voice-options { grid-template-columns:1fr; } }
+@media(max-width:850px) { .elroi-schedule-layout { grid-template-columns:1fr; } .elroi-schedule-summary { position:static; } .elroi-content-options,.elroi-voice-options { grid-template-columns:1fr 1fr; } .elroi-schedule-invite { flex-wrap:wrap; } .elroi-schedule-invite .elroi-button { margin-left:0; } }
+@media(max-width:520px) { .elroi-schedule-card { padding:18px; } .elroi-content-options,.elroi-voice-options,.elroi-schedule-fields,.elroi-plans-grid { grid-template-columns:1fr; } .elroi-schedule-card legend { font-size:1rem; } }

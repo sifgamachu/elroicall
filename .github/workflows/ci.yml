@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Request and phone regression tests
+      - name: Application and scheduled-call regression tests
         run: npm test
 
       - name: Lint
@@ -37,6 +37,15 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Typecheck scheduling backend
+        run: ./node_modules/.bin/tsc --noEmit --strict --target es2023 --lib es2023,dom,dom.iterable --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck ../supabase/functions/scheduled-calls/service.ts
+
+      - name: Install isolated database test tooling
+        run: npm ci --ignore-scripts --prefix ../supabase/tests
+
+      - name: Verify PostgreSQL scheduling behavior
+        run: npm test --prefix ../supabase/tests
 
       - name: Build
         run: npm run build
@@ -60,3 +69,4 @@ jobs:
           grep -q 'path="/g/:code"' src/App.tsx
           grep -q 'path="/about' src/App.tsx
           grep -q 'path="/account' src/App.tsx
+          grep -q 'path="/schedule' src/App.tsx

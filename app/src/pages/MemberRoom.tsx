@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { BookOpen, CalendarClock, Gift, LogOut, Phone, ShieldCheck } from "lucide-react";
@@ -204,6 +205,7 @@ export default function MemberRoom() {
           <p className="font-serif-display py-12 text-center text-2xl font-normal italic text-parchment-dim">Gathering your journey…</p>
         ) : member ? (
           <>
+            <div className="elroi-schedule-invite"><CalendarClock size={30} /><div><h3>Scripture, at a time you choose.</h3><p>Choose Bible study, sermons, lectures, stories, or Bible facts, then pick a voice and a calling time.</p></div><Link className="elroi-button elroi-button-primary" to="/schedule/">Schedule a call</Link></div>
             <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
               <article className="border border-gold-soft/35 bg-indigo-50 p-7 sm:p-9">
                 <p className="text-sm font-medium text-gold">Your next conversation</p>

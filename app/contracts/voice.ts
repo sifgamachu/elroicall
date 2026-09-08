@@ -3,14 +3,15 @@ import type { Need } from "./witnesses";
 /**
  * El Roi Guide voice contract.
  *
- * Product direction: one recognizable AI guide voice across every experience.
+ * Product direction: one recognizable AI guide, with a user-selected narration voice for scheduled calls.
  * Biblical figures are stories/witnesses the guide opens with the caller;
  * the guide never impersonates the biblical person.
  *
  * Target runtime (once the production telephony backend is brought into this repo):
  * - Live calls: OpenAI Realtime, gpt-realtime-2.1
  * - Generated previews: OpenAI Speech, gpt-4o-mini-tts
- * - Brand voice candidate: marin (audition against cedar before launch)
+ * - Call-anytime voice candidate: marin (audition against cedar before launch)
+ * - Scheduled narration: marin, cedar, coral, or onyx; selected by the user.
  */
 export const EL_ROI_GUIDE = {
   name: "El Roi Guide",

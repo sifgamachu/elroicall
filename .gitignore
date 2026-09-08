@@ -35,3 +35,6 @@ pnpm-debug.log*
 # Temporary files
 *.tmp
 *.swp
+
+# Supabase CLI local state
+supabase/.temp/

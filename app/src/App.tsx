@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import { PHONE_TEL } from "@/lib/phone";
 
+const Schedule = lazy(() => import("./pages/Schedule"));
 const About = lazy(() => import("./pages/About"));
 const BeginWell = lazy(() => import("./pages/BeginWell"));
 const Gift = lazy(() => import("./pages/Gift"));
@@ -22,6 +23,8 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/begin" element={<BeginWell />} />
         <Route path="/begin/" element={<BeginWell />} />
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/schedule/" element={<Schedule />} />
         <Route path="/gift" element={<Gift />} />
         <Route path="/gift/" element={<Gift />} />
         <Route path="/g" element={<GiftRedeem />} />

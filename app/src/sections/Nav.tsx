@@ -5,7 +5,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTi
 import { PHONE_TEL } from "@/lib/phone";
 
 const links = [
-  { label: "How it works", href: "/#descent" },
+  { label: "Schedule a call", href: "/schedule/" },
   { label: "Explore Scripture", href: "/#stories" },
   { label: "Gift a conversation", href: "/gift/" },
 ];

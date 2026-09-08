@@ -193,7 +193,7 @@ export default function MemberControls({
   };
 
   return (
-    <section className="space-y-5 border-t border-slate-200 pt-10">
+    <section id="calling-preferences" className="space-y-5 border-t border-slate-200 pt-10">
       <div>
         <p className="eyebrow">Your calling preferences</p>
         <h2 className="font-serif-display mt-3 text-3xl font-normal text-parchment">

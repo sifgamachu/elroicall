@@ -22,7 +22,9 @@ export default function RouteMeta() {
     return () => cancelAnimationFrame(frame);
   }, [pathname, hash, key]);
 
-  const meta = pathname.startsWith("/begin")
+  const meta = pathname.startsWith("/schedule")
+    ? { title: "Schedule a Bible call — El Roi Call", description: "Choose Bible study, sermons, lectures, stories, or Bible facts, with your preferred voice and calling time.", canonical: "https://elroicall.com/schedule/", robots: "noindex,nofollow" }
+    : pathname.startsWith("/begin")
     ? {
         title: "What’s on your heart? — El Roi Call",
         description: "Your words first. El Roi reflects what it heard before opening a relevant biblical story and preparing your free first conversation.",
