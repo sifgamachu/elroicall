@@ -8,7 +8,7 @@ const user='11111111-1111-4111-8111-111111111111';
 const other='22222222-2222-4222-8222-222222222222';
 before(async()=>{
  await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key); insert into auth.users values('${user}'),('${other}'); create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
- await db.exec(await readFile(new URL('../migrations/202609080001_scheduled_lessons.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../migrations/20260908170059_scheduled_lessons.sql',import.meta.url),'utf8'));
 });
 beforeEach(async()=>{await db.exec('truncate lesson_jobs,lesson_schedules,lesson_rate_limits cascade');});
 after(()=>db.close());

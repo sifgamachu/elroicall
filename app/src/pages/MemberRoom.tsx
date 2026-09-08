@@ -1,356 +1,101 @@
-import { Link } from "react-router";
-import { useEffect, useMemo, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { BookOpen, CalendarClock, Gift, LogOut, Phone, ShieldCheck } from "lucide-react";
-import MemberControls from "@/components/MemberControls";
-import ProductShell from "@/components/ProductShell";
-import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
-import {
-  getPortalMember,
-  type PortalMember,
-  type PortalTrack,
-} from "@/lib/portal";
-import { supabase } from "@/lib/supabase";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router';
+import type { Session } from '@supabase/supabase-js';
+import { ArrowLeft, ArrowUpRight, BookOpen, CalendarClock, Check, Clock3, Gift, Headphones, History, LayoutDashboard, LoaderCircle, LogOut, Mail, Pause, Phone, Plus, RefreshCw, Settings2, ShieldCheck, Sparkles } from 'lucide-react';
+import Brand from '@/components/Brand';
+import MemberControls from '@/components/MemberControls';
+import DashboardPreferences from '@/components/DashboardPreferences';
+import { supabase } from '@/lib/supabase';
+import { getPortalMember, portalRequest, type PortalMember } from '@/lib/portal';
+import { CONTENT_TYPES, planLabel, schedulingRequest, VOICES, type CallPlan } from '@/lib/scheduled-calls';
+import { deliveryLabels, formatMoment, nextPlan, planState, type Capabilities, type DashboardData } from '@/lib/dashboard';
+import { PHONE_DISPLAY, PHONE_TEL } from '@/lib/phone';
+import '@/dashboard.css';
 
-const MODE_NAMES: Record<string, string> = {
-  journey: "The Journey",
-  sermon: "The Pulpit Walk",
-  inspiration: "Daily Check-In",
-  random: "Surprise Me",
-};
+const tabs=[{id:'overview',name:'Overview',icon:LayoutDashboard},{id:'schedules',name:'Scheduled calls',icon:CalendarClock},{id:'history',name:'Call history',icon:History},{id:'settings',name:'Preferences',icon:Settings2}];
+const modeNames:Record<string,string>={journey:'The Journey',sermon:'The Pulpit Walk',inspiration:'Daily Check-In',random:'Surprise Me'};
+const contentName=(id:string)=>CONTENT_TYPES.find(type=>type.id===id)?.name||'Scripture call';
 
-function formatTime(track: PortalTrack) {
-  if (track.hour_local == null || track.minute_local == null) return "Time not set";
-  const hour = track.hour_local % 12 || 12;
-  const minute = String(track.minute_local).padStart(2, "0");
-  return `${hour}:${minute} ${track.hour_local < 12 ? "AM" : "PM"}`;
+export default function MemberRoom(){
+ const location=useLocation();const requested=new URLSearchParams(location.search).get('view');
+ const view=location.hash==='#calling-preferences'?'settings':tabs.some(tab=>tab.id===requested)?requested!:'overview';
+ const [session,setSession]=useState<Session|null>(null);const [authLoading,setAuthLoading]=useState(true);
+ const [member,setMember]=useState<PortalMember|null>(null);const [data,setData]=useState<DashboardData|null>(null);
+ const [caps,setCaps]=useState<Capabilities|null>(null);const [loading,setLoading]=useState(true);
+ const [memberError,setMemberError]=useState('');const [dataError,setDataError]=useState('');const [notice,setNotice]=useState('');const [actionError,setActionError]=useState('');
+ const [busy,setBusy]=useState('');const sequence=useRef(0);const accountId=useRef<string|null>(null);
+ useEffect(()=>{
+  let active=true;let authEvent=false;
+  const generation=sequence;
+  void supabase.auth.getSession().then(({data})=>{if(active&&!authEvent){accountId.current=data.session?.user.id||null;setSession(data.session);setAuthLoading(false);}}).catch(()=>{if(active&&!authEvent){setAuthLoading(false);setActionError('Your session could not be restored. Please sign in again.');}});
+  const {data:listener}=supabase.auth.onAuthStateChange((_event,next)=>{if(active){authEvent=true;accountId.current=next?.user.id||null;sequence.current++;setSession(next);setAuthLoading(false);setMember(null);setData(null);setNotice('');setActionError('');setBusy('');}});
+  return()=>{active=false;generation.current++;listener.subscription.unsubscribe();};
+ },[]);
+ const refresh=useCallback(()=>{
+  if(!session||accountId.current!==session.user.id)return Promise.resolve();
+  const current=++sequence.current;
+  return Promise.allSettled([getPortalMember(session),schedulingRequest<DashboardData>('/dashboard',session),schedulingRequest<Capabilities>('/capabilities')]).then(results=>{
+  if(current!==sequence.current||accountId.current!==session.user.id)return;
+  const [account,dashboard,capabilities]=results;
+  if(account.status==='fulfilled'){setMember(account.value);setMemberError('');}else setMemberError('Your calling details could not be refreshed.');
+  if(dashboard.status==='fulfilled'){setData(dashboard.value);setDataError('');}else setDataError('Your schedules and preferences could not be refreshed.');
+  setCaps(capabilities.status==='fulfilled'?capabilities.value:null);setLoading(false);
+  });
+ },[session]);
+ useEffect(()=>{const generation=sequence;void refresh();return()=>{generation.current++;};},[refresh]);
+ async function signOut(){setBusy('signout');setActionError('');try{const {error}=await supabase.auth.signOut();if(error)throw error;}catch{setActionError('Sign out did not complete. Please try again.');}finally{setBusy('');}}
+ async function pausePlan(plan:CallPlan){
+  if(busy)return;setBusy(plan.id);setActionError('');setNotice('');
+  try{await schedulingRequest(`/plans/${plan.id}/pause`,session,{});setNotice(`${contentName(plan.content_type)} is paused. A call already ringing may still arrive.`);await refresh();}
+  catch{setActionError('We could not confirm the pause. Refresh your dashboard before trying again.');}finally{setBusy('');}
+ }
+ async function pauseLegacy(mode:string){
+  if(!session||busy)return;setBusy(mode);setActionError('');
+  try{const {status}=await portalRequest('/cancel',session,{mode});if(status!==200)throw Error();setNotice(`${modeNames[mode]||'Your journey'} is paused.`);await refresh();}
+  catch{setActionError('We could not confirm the pause. Refresh and check your journey.');}finally{setBusy('');}
+ }
+ if(authLoading)return <div className="elroi-site dash-auth-loading" role="status"><LoaderCircle className="animate-spin" size={26}/><p>Opening your dashboard…</p></div>;
+ if(!session)return <DashboardSignIn initialError={actionError}/>;
+ const plans=data?.plans||[];const next=nextPlan(plans);const activePlans=plans.filter(plan=>planState(plan)==='Scheduled');
+ const legacy=(member?.schedules||[]).filter(track=>track.active);
+ const name=data?.preferences.display_name||member?.caller_name||'';const firstName=name.trim().split(/\s+/)[0];
+ const zone=data?.preferences.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone;
+ const history=[...(member?.history||[]).map((item,index)=>({id:`call-${item.id||index}`,date:item.created_at||'',title:item.figure_name?`A conversation through ${item.figure_name}`:'Your conversation with El Roi',summary:item.summary||'No summary was saved for this conversation.',status:'On demand',references:[] as string[],kind:'conversation'})),...(data?.history||[]).map(item=>({id:item.id,date:item.due_at,title:item.title||item.topic,summary:`${contentName(item.content_type)} · ${item.voice}`,status:deliveryLabels[item.status]||item.status,references:item.references,kind:'scheduled'}))].sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
+ return <div className="elroi-site dash-layout">
+  <a className="elroi-skip" href="#main-content">Skip to dashboard</a>
+  <aside className="dash-sidebar"><Brand/><p className="dash-sidebar-label">YOUR SPACE</p><nav aria-label="Dashboard navigation">{tabs.map(tab=><Link key={tab.id} to={`/account/?view=${tab.id}`} aria-current={view===tab.id?'page':undefined}><tab.icon size={19}/>{tab.name}{tab.id==='schedules'&&activePlans.length>0&&<span>{activePlans.length}</span>}</Link>)}</nav><div className="dash-sidebar-bottom"><div className="dash-sidebar-note"><Headphones size={24}/><strong>A little space for you.</strong><p>You can call whenever something is on your heart.</p><a href={PHONE_TEL}>Call El Roi <ArrowUpRight size={15}/></a></div><Link to="/"><ArrowLeft size={16}/>Back to website</Link><button type="button" onClick={()=>void signOut()} disabled={busy==='signout'}><LogOut size={16}/>{busy==='signout'?'Signing out…':'Sign out'}</button></div></aside>
+  <div className="dash-workspace"><header className="dash-topbar"><div><span>My dashboard</span><span className="dash-topbar-divider">/</span><strong>{tabs.find(tab=>tab.id===view)?.name}</strong></div><div className="dash-topbar-actions"><button type="button" className="dash-refresh" onClick={()=>{setLoading(true);void refresh();}} disabled={loading} aria-label="Refresh dashboard"><RefreshCw size={18} className={loading?'animate-spin':''}/></button><Link to="/schedule/" className="elroi-button elroi-button-primary"><Plus size={17}/><span>Schedule a call</span></Link><Link to="/account/?view=settings" className="dash-avatar" aria-label="Account preferences">{(firstName||session.user.email||'E').slice(0,1).toUpperCase()}</Link></div></header>
+  <main id="main-content" className="dash-main">
+   <div className="dash-page-heading"><div><p className="elroi-kicker">{view==='overview'?'A LITTLE SPACE. A DEEPER CONNECTION.':'YOUR EL ROI CALL'}</p><h1>{view==='overview'?(firstName?`Welcome back, ${firstName}.`:'Make yourself at home.'):view==='schedules'?'Your moments, on your time.':view==='history'?'Keep the conversation close.':'Make this space yours.'}</h1><p>{view==='overview'?'Call when you need to. Make time for Scripture when you want to.':view==='schedules'?'Every plan is yours to choose, revisit, or pause.':view==='history'?'Return to your conversations and the Scripture you explored.':'Your name, your voice, your rhythm.'}</p></div></div>
+   {loading&&!member&&!data&&<div className="dash-loading" role="status"><LoaderCircle size={22} className="animate-spin"/>Loading your private space…</div>}
+   {(memberError||dataError)&&<div className="dash-error-box" role="alert"><p>{memberError} {dataError} {member||data?'Some information below may be out of date.':''}</p><button type="button" className="elroi-text-link" disabled={loading} onClick={()=>{setLoading(true);void refresh();}}>Try again <RefreshCw size={15}/></button></div>}
+   {notice&&<p className="dash-banner" role="status"><Check size={18}/>{notice}</p>}{actionError&&<p className="dash-error-box" role="alert">{actionError}</p>}
+   {caps&&!caps.ready&&<div className="dash-service-note"><Clock3 size={17}/><p>Scheduled calling is being connected. You can explore the planner and save your preferences. No new call will be booked yet.</p></div>}
+   {view==='overview'&&<>
+    <section className="dash-welcome-grid"><article className="dash-moment"><div className="dash-moment-orbit" aria-hidden="true"><span/><span/><Headphones/></div><p className="dash-light-kicker">{next?'YOUR NEXT SCHEDULED CALL':'THE LINE IS OPEN TO YOU'}</p><h2>{next?contentName(next.content_type):'Come as you are.'}</h2><p>{next?next.topic:'A busy morning. A big question. Something you haven’t found the words for yet.'}</p>{next&&<div className="dash-next-time"><CalendarClock size={18}/><span>{formatMoment(next.next_run_at!,next.timezone)}<small>{next.timezone.replaceAll('_',' ')} · {next.voice} · about {next.duration_minutes} min</small></span></div>}<div className="dash-moment-actions"><a href={PHONE_TEL} className="elroi-button elroi-button-white"><Phone size={17}/>Call now</a><Link to={next?'/account/?view=schedules':'/schedule/'}>{next?'Manage my calls':'Choose a calling time'}<ArrowUpRight size={17}/></Link></div><span className="dash-moment-number">{PHONE_DISPLAY} · Your on-demand line</span></article><article className="dash-scripture"><span className="elroi-icon-tile"><BookOpen size={23}/></span><p className="elroi-kicker">A MOMENT IN SCRIPTURE</p><blockquote>“Be still, and know that I am God.”</blockquote><p>Psalm 46:10 · King James Version</p><Link to="/schedule/?topic=Psalm%2046&content=bible_study">Make room for this passage <ArrowUpRight size={16}/></Link></article></section>
+    <section className="dash-metrics" aria-label="Your activity"><Metric icon={Phone} value={member?String(member.total_calls||0):'—'} label="On-demand conversations"/><Metric icon={CalendarClock} value={data?String(activePlans.length):'—'} label="Scheduled learning plans"/><Metric icon={BookOpen} value={data?String(data.stats.lessons_finished):'—'} label="Lessons finished"/></section>
+    {member&&!member.phone_verified&&<div className="dash-setup"><span className="elroi-icon-tile"><ShieldCheck size={23}/></span><div><h2>Make your account call-ready.</h2><p>Connect and verify your number to bring your call history into this space.</p></div><Link className="elroi-button elroi-button-dark" to="/account/#calling-preferences">Connect my phone <ArrowUpRight size={16}/></Link></div>}
+    <section className="dash-card"><SectionHeading kicker="AT YOUR PACE" title="Your upcoming calls" action={<Link to="/account/?view=schedules" className="elroi-text-link">View all <ArrowUpRight size={16}/></Link>}/>{data?activePlans.length?<div className="dash-upcoming-list">{[...activePlans].sort((a,b)=>Date.parse(a.next_run_at!)-Date.parse(b.next_run_at!)).slice(0,3).map(plan=><div key={plan.id}><span className="elroi-icon-tile"><CalendarClock size={22}/></span><div><h3>{contentName(plan.content_type)}</h3><p>{plan.topic}</p></div><div className="dash-upcoming-time"><strong>{formatMoment(plan.next_run_at!,plan.timezone)}</strong><span>{plan.timezone.replaceAll('_',' ')} · {plan.voice}</span></div></div>)}</div>:<EmptyState icon={CalendarClock} title="A little time, just for Scripture." body="Choose what you want to hear, a voice you enjoy, and a time that fits your life." action={<Link to="/schedule/" className="elroi-button elroi-button-primary"><Plus size={17}/>Build my first schedule</Link>}/>:<p className="dash-help">{dataError?'Schedules are unavailable. Use Try again above.':'Loading your schedules…'}</p>}</section>
+    <section className="dash-card"><SectionHeading kicker="PICK UP THE THREAD" title="Recent conversations" action={<Link to="/account/?view=history" className="elroi-text-link">View history <ArrowUpRight size={16}/></Link>}/>{history.length?<HistoryList entries={history.slice(0,3)} zone={zone}/>:<EmptyState icon={History} title="Your story can keep growing here." body="Once your phone is verified, your saved conversations and scheduled-call activity appear here." action={<a href={PHONE_TEL} className="elroi-text-link">Start a conversation <Phone size={16}/></a>}/>}</section>
+   </>}
+   {view==='schedules'&&<><section className="dash-card"><SectionHeading kicker="BIBLE LEARNING CALLS" title="Your scheduled calls" action={<Link className="elroi-button elroi-button-primary" to="/schedule/"><Plus size={17}/>New schedule</Link>}/>{data?plans.length?<div className="dash-plan-grid">{plans.map(plan=><article key={plan.id} className="dash-plan"><div className="dash-plan-top"><span className="elroi-icon-tile"><BookOpen size={22}/></span><span className="dash-tag" data-active={planState(plan)==='Scheduled'}>{planState(plan)}</span></div><h3>{contentName(plan.content_type)}</h3><p className="dash-plan-topic">{plan.topic}</p><dl><div><dt>When</dt><dd>{plan.local_time.slice(0,5)} · {planLabel(plan)}</dd></div><div><dt>Time zone</dt><dd>{plan.timezone.replaceAll('_',' ')}</dd></div><div><dt>Voice & length</dt><dd>{VOICES.find(v=>v.id===plan.voice)?.name||plan.voice} · about {plan.duration_minutes} min</dd></div><div><dt>Calling</dt><dd>Number ending in {plan.phone_last4}</dd></div></dl>{plan.next_run_at&&<p className="dash-plan-next"><CalendarClock size={15}/>Next: {formatMoment(plan.next_run_at,plan.timezone)}</p>}{plan.last_status&&<p className="dash-help">Last call: {deliveryLabels[plan.last_status]||plan.last_status}</p>}<div className="dash-plan-actions">{plan.active&&plan.next_run_at?<button type="button" className="elroi-text-link" disabled={Boolean(busy)} onClick={()=>void pausePlan(plan)}><Pause size={16}/>{busy===plan.id?'Pausing…':'Pause calls'}</button>:<Link className="elroi-text-link" to={`/schedule/?from=${plan.id}`}>Schedule again <ArrowUpRight size={16}/></Link>}<Link className="elroi-text-link" to="/account/?view=history">Call history</Link></div></article>)}</div>:<EmptyState icon={CalendarClock} title="Choose a rhythm that feels like you." body="A study before work. A story in the evening. Bible facts over your coffee. You choose." action={<Link to="/schedule/" className="elroi-button elroi-button-primary">Explore the planner <ArrowUpRight size={17}/></Link>}/>:<p className="dash-help">{dataError?'Your schedules could not be loaded.':'Loading schedules…'}</p>}</section>
+    {legacy.length>0&&<section className="dash-card"><SectionHeading kicker="YOUR EXISTING JOURNEYS" title="Keep walking through Scripture"/><p className="dash-help">These are your earlier recurring journeys. They continue separately from the new learning plans.</p><div className="dash-legacy-list">{legacy.map(track=><div key={track.mode}><div><h3>{modeNames[track.mode]||track.mode}</h3><p>{String(track.hour_local||0).padStart(2,'0')}:{String(track.minute_local||0).padStart(2,'0')} · {track.days} · {track.tz?.replaceAll('_',' ')}</p>{track.progress?.next&&<p>Next passage: {track.progress.next}</p>}</div><button type="button" disabled={Boolean(busy)} className="elroi-text-link" onClick={()=>void pauseLegacy(track.mode)}><Pause size={15}/>Pause</button></div>)}</div></section>}
+   </>}
+   {view==='history'&&<section className="dash-card"><SectionHeading kicker="CONVERSATIONS & SCRIPTURE" title="Your call history"/><p className="dash-help">Recent activity, shown in {zone.replaceAll('_',' ')}. A call ending does not always mean the lesson was heard in full.</p>{history.length?<HistoryList entries={history} zone={zone}/>:<EmptyState icon={History} title="This is where you can return." body="Your verified phone connects past conversations to your account. Future scheduled calls will show their outcome and Scripture references here." action={<Link to="/account/#calling-preferences" className="elroi-text-link">Check my phone connection <ArrowUpRight size={16}/></Link>}/>}</section>}
+   {view==='settings'&&<div className="dash-settings-grid">{data&&<DashboardPreferences key={JSON.stringify(data.preferences)} session={session} initial={data.preferences} voiceReady={caps?.voice_ready===true} onSaved={async()=>{await refresh();setNotice('Your preferences are saved. New schedules will start with these choices.');}}/>}<div className="dash-form-stack">{member&&<MemberControls key={`${member.phone}-${member.phone_verified}`} session={session} member={member} onRefresh={refresh}/>}<section className="dash-card"><SectionHeading kicker="YOUR ACCOUNT" title="Private by default"/><p className="dash-account-email"><Mail size={17}/>{session.user.email}</p><p className="dash-help">Your preferences and history belong to this account. Scheduled narration is AI generated, and these calls are not recorded.</p><div className="dash-account-links"><Link to="/privacy/">Privacy policy <ArrowUpRight size={14}/></Link><Link to="/terms/">Terms <ArrowUpRight size={14}/></Link></div><button type="button" className="elroi-text-link" disabled={Boolean(busy)} onClick={()=>void signOut()}><LogOut size={16}/>Sign out of this device</button></section></div></div>}
+   <footer className="dash-footer"><span><ShieldCheck size={15}/>Your private El Roi space.</span><Link to="/gift/"><Gift size={15}/>Gift a conversation</Link><a href={PHONE_TEL}>{PHONE_DISPLAY}</a></footer>
+  </main></div>
+ </div>;
 }
-
-export default function MemberRoom() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [member, setMember] = useState<PortalMember | null>(null);
-  const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      setAuthLoading(false);
-    }).catch(() => {
-      if (active) { setAuthLoading(false); setError("We could not restore your session. Please sign in again."); }
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!active) return;
-      setSession(nextSession);
-      setError("");
-      if (!nextSession) setMember(null);
-      setAuthLoading(false);
-    });
-
-    return () => {
-      active = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!session) return;
-    let active = true;
-
-    void getPortalMember(session)
-      .then((data) => {
-        if (active) setMember(data);
-      })
-      .catch(() => {
-        if (active) setError("We could not load your room just now. Refresh and try again.");
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [session]);
-
-  const refreshMember = async () => {
-    if (!session) return;
-    setError("");
-    try {
-      setMember(await getPortalMember(session));
-    } catch {
-      setError("We could not refresh your room just now. Try again.");
-    }
-  };
-
-  const memberLoading = Boolean(session && !member && !error);
-  const activeTracks = useMemo(
-    () => (member?.schedules ?? []).filter((track) => track.active),
-    [member?.schedules],
-  );
-  const primary = activeTracks[0] ?? null;
-  const firstName =
-    primary?.caller_name?.trim().split(/\s+/)[0] ||
-    member?.caller_name?.trim().split(/\s+/)[0] ||
-    "";
-  const daysWalked = activeTracks.reduce(
-    (max, track) => Math.max(max, track.journey_day ?? 0),
-    0,
-  );
-  const progress = activeTracks.reduce(
-    (max, track) => Math.max(max, track.progress?.pct ?? 0),
-    0,
-  );
-
-  const sendLink = async () => {
-    if (!email.trim() || sending) return;
-    setSending(true);
-    setError("");
-    setNotice("");
-    try {
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: { emailRedirectTo: `${window.location.origin}/account` },
-      });
-      if (authError) throw authError;
-      setNotice("Check your email, including spam. Your private sign-in link brings you back here.");
-    } catch {
-      setError("We could not send your sign-in link. Check your email address and connection, then try again.");
-    } finally {
-      setSending(false);
-    }
-  };
-
-  if (authLoading) {
-    return (
-      <ProductShell compact>
-        <div className="py-20 text-center">
-          <div className="mx-auto h-16 w-16 rounded-full border border-gold-soft/50 p-3">
-            <div className="breathe h-full w-full rounded-full border border-gold-soft/40 bg-indigo-50" />
-          </div>
-          <p className="font-serif-display mt-7 text-3xl font-normal italic text-parchment">Opening your room…</p>
-        </div>
-      </ProductShell>
-    );
-  }
-
-  if (!session) {
-    return (
-      <ProductShell
-        eyebrow="Your room"
-        title="Welcome back to your room."
-        description="Sign in to see your journeys and recent conversations."
-        compact
-      >
-        <form onSubmit={(event) => { event.preventDefault(); void sendLink(); }} className="mx-auto max-w-xl border border-slate-200 bg-white p-6 sm:p-8">
-          <p className="text-sm font-medium text-gold">Passwordless sign in</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-normal text-parchment">Sign in with your email.</h2>
-          <p className="mt-3 text-sm font-normal leading-[1.75] text-parchment-dim">
-            Use the email connected to your membership. There is no password to remember.
-          </p>
-          <label htmlFor="member-email" className="mt-5 block text-sm text-gold">Email address</label>
-          <input
-            id="member-email"
-            required
-            disabled={sending}
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            className="mt-6 w-full border border-slate-200 bg-white px-4 py-3.5 text-parchment outline-none placeholder:text-parchment-dim/45 focus:border-gold-soft"
-          />
-          {notice && <p role="status" className="mt-4 text-sm leading-relaxed text-gold-bright">{notice}</p>}
-          {error && <p role="alert" className="mt-4 text-sm leading-relaxed elroi-status-error">{error}</p>}
-          <button
-            type="submit"
-            disabled={!email.trim() || sending}
-            className="mt-5 w-full bg-[hsl(var(--gold))] px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-[hsl(var(--gold-bright))] disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            {sending ? "Sending your link…" : "Email me a sign-in link"}
-          </button>
-        </form>
-      </ProductShell>
-    );
-  }
-
-  return (
-    <ProductShell>
-      <div className="space-y-10">
-        <header className="flex flex-col gap-5 border-b border-slate-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="eyebrow">Today</p>
-            <h1 className="font-serif-display mt-4 text-5xl font-normal leading-none text-parchment sm:text-6xl">
-              {firstName ? `Welcome back, ${firstName}.` : "Welcome back."}
-            </h1>
-            <p className="mt-4 text-sm font-normal text-parchment-dim">
-              {member?.email ?? session.user.email}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => void supabase.auth.signOut().then(({ error: signOutError }) => { if (signOutError) setError("We could not sign you out. Please try again."); }).catch(() => setError("We could not sign you out. Please try again."))}
-            className="inline-flex items-center gap-2 self-start text-sm font-medium text-parchment-dim hover:text-gold-bright"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            Sign out
-          </button>
-        </header>
-
-        {memberLoading ? (
-          <p className="font-serif-display py-12 text-center text-2xl font-normal italic text-parchment-dim">Gathering your journey…</p>
-        ) : member ? (
-          <>
-            <div className="elroi-schedule-invite"><CalendarClock size={30} /><div><h3>Scripture, at a time you choose.</h3><p>Choose Bible study, sermons, lectures, stories, or Bible facts, then pick a voice and a calling time.</p></div><Link className="elroi-button elroi-button-primary" to="/schedule/">Schedule a call</Link></div>
-            <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-              <article className="border border-gold-soft/35 bg-indigo-50 p-7 sm:p-9">
-                <p className="text-sm font-medium text-gold">Your next conversation</p>
-                <h2 className="font-serif-display mt-4 text-4xl font-normal text-parchment">
-                  {primary ? MODE_NAMES[primary.mode] ?? primary.mode : "Nothing is scheduled yet."}
-                </h2>
-                <p className="font-serif-display mt-5 text-2xl font-normal italic leading-relaxed text-gold-bright">
-                  {primary?.progress?.next ?? "Start with whatever is true today."}
-                </p>
-                {primary && (
-                  <p className="mt-4 text-sm font-normal text-parchment-dim">
-                    {formatTime(primary)}{primary.days ? ` · ${primary.days}` : ""}
-                    {primary.progress?.label ? ` · ${primary.progress.label}` : ""}
-                  </p>
-                )}
-                <a
-                  href={PHONE_TEL}
-                  className="mt-7 inline-flex items-center gap-3 bg-[hsl(var(--gold))] px-6 py-3.5 text-sm font-semibold text-white hover:bg-[hsl(var(--gold-bright))]"
-                >
-                  <Phone className="h-3.5 w-3.5" />
-                  Start a conversation
-                </a>
-              </article>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Metric value={String(member.total_calls ?? 0)} label="Calls" />
-                <Metric value={String(daysWalked)} label="Days walked" />
-                <Metric value={`${Math.round(progress)}%`} label="Bible progress" />
-                <Metric value={String(activeTracks.length)} label="Active journeys" />
-              </div>
-            </section>
-
-            <section>
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <p className="eyebrow">Your journeys</p>
-                  <h2 className="font-serif-display mt-3 text-3xl font-normal text-parchment">Your chosen journeys.</h2>
-                </div>
-                <CalendarClock className="h-5 w-5 text-gold" />
-              </div>
-              <div className="mt-6 grid gap-3 md:grid-cols-2">
-                {activeTracks.length ? activeTracks.map((track) => (
-                  <article key={`${track.mode}-${track.hour_local}-${track.minute_local}`} className="border border-slate-200 bg-white p-5">
-                    <p className="text-sm font-medium text-gold">{MODE_NAMES[track.mode] ?? track.mode}</p>
-                    <h3 className="font-serif-display mt-3 text-2xl font-normal text-parchment">
-                      {track.progress?.next ?? "Your next conversation"}
-                    </h3>
-                    <p className="mt-3 text-sm font-normal text-parchment-dim">
-                      {formatTime(track)}{track.days ? ` · ${track.days}` : ""}
-                    </p>
-                    {track.progress?.pct != null && (
-                      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white">
-                        <div
-                          className="h-full rounded-full bg-[hsl(var(--gold))]"
-                          style={{ width: `${Math.max(0, Math.min(track.progress.pct, 100))}%` }}
-                        />
-                      </div>
-                    )}
-                  </article>
-                )) : (
-                  <div className="border border-dashed border-slate-200 p-6 text-sm font-normal leading-[1.8] text-parchment-dim md:col-span-2">
-                    No recurring journey is active yet. Choose one below when you want the line to reach back to you.
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <section className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
-              <article className="border border-slate-200 bg-white p-6">
-                <div className="flex gap-3">
-                  <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-gold" />
-                  <div>
-                    <p className="text-sm font-medium text-gold">Your phone</p>
-                    <h2 className="font-serif-display mt-2 text-2xl font-normal text-parchment">
-                      {member.phone || "No number connected"}
-                    </h2>
-                    <p className="mt-2 text-sm font-normal leading-relaxed text-parchment-dim">
-                      {member.phone_verified
-                        ? "Verified for member calling and scheduled experiences."
-                        : "Verify a number below before you schedule recurring calls."}
-                    </p>
-                  </div>
-                </div>
-              </article>
-
-              <article className="border border-slate-200 bg-white p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gold">Recent conversations</p>
-                    <h2 className="font-serif-display mt-2 text-2xl font-normal text-parchment">A look back at your conversations.</h2>
-                  </div>
-                  <BookOpen className="mt-1 h-4 w-4 shrink-0 text-gold" />
-                </div>
-                <div className="mt-5 space-y-4">
-                  {(member.history ?? []).slice(0, 4).map((item, index) => (
-                    <div key={`${item.created_at}-${index}`} className="border-t border-slate-200 pt-4 first:border-t-0 first:pt-0">
-                      <p className="text-sm font-medium text-parchment-dim">
-                        {(item.created_at ?? "").slice(0, 10)}
-                        {item.figure_name ? ` · Story visited: ${item.figure_name}` : ""}
-                      </p>
-                      <p className="mt-2 text-sm font-normal leading-[1.7] text-parchment/85">
-                        {item.summary?.slice(0, 180) || "Conversation completed."}
-                      </p>
-                    </div>
-                  ))}
-                  {!member.history?.length && (
-                    <p className="text-sm font-normal leading-relaxed text-parchment-dim">Your completed conversations will appear here as brief summaries you can recognize later.</p>
-                  )}
-                </div>
-              </article>
-            </section>
-
-            <MemberControls
-              key={`${member.phone ?? "none"}-${member.phone_verified ? "verified" : "unverified"}-${member.schedules?.length ?? 0}`}
-              session={session}
-              member={member}
-              onRefresh={refreshMember}
-            />
-
-            <section className="grid gap-3 sm:grid-cols-2">
-              <a href="/gift/" className="inline-flex items-center justify-center gap-3 border border-gold-soft px-6 py-4 text-sm font-semibold text-gold-bright hover:bg-indigo-50">
-                <Gift className="h-3.5 w-3.5" />
-                Gift a conversation
-              </a>
-              <a href="/about/" className="inline-flex items-center justify-center border border-slate-200 px-6 py-4 text-sm font-semibold text-parchment-dim hover:border-gold-soft hover:text-gold-bright">
-                Why El Roi
-              </a>
-            </section>
-          </>
-        ) : null}
-
-        {error && <p role="alert" className="text-sm leading-relaxed elroi-status-error">{error}</p>}
-        <p className="text-center font-serif-display text-lg font-normal italic text-parchment-dim">
-          The line is always the same: {PHONE_DISPLAY}. The story can change as your life changes.
-        </p>
-      </div>
-    </ProductShell>
-  );
-}
-
-function Metric({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="flex min-h-28 flex-col justify-center border border-slate-200 bg-white p-4 text-center">
-      <p className="font-serif-display text-3xl font-normal text-parchment">{value}</p>
-      <p className="mt-2 text-sm font-medium text-parchment-dim">{label}</p>
-    </div>
-  );
+function Metric({icon:Icon,value,label}:{icon:typeof Phone;value:string;label:string}){return <article className="dash-metric"><span className="elroi-icon-tile"><Icon size={21}/></span><div><strong>{value}</strong><p>{label}</p></div></article>;}
+function SectionHeading({kicker,title,action}:{kicker:string;title:string;action?:React.ReactNode}){return <div className="dash-section-heading"><div><p className="elroi-kicker">{kicker}</p><h2>{title}</h2></div>{action}</div>;}
+function EmptyState({icon:Icon,title,body,action}:{icon:typeof Phone;title:string;body:string;action?:React.ReactNode}){return <div className="dash-empty"><span className="elroi-icon-tile"><Icon size={23}/></span><h3>{title}</h3><p>{body}</p>{action}</div>;}
+type HistoryEntry={id:string;date:string;title:string;summary:string;status:string;references:string[];kind:string};
+function HistoryList({entries,zone}:{entries:HistoryEntry[];zone:string}){return <div className="dash-history-list">{entries.map(item=><details key={item.id}><summary><span className="elroi-icon-tile">{item.kind==='scheduled'?<BookOpen size={21}/>:<Phone size={21}/>}</span><span className="dash-history-title"><strong>{item.title}</strong><span>{formatMoment(item.date,zone)}</span></span><span className="dash-tag">{item.status}</span><Plus size={17} className="dash-details-plus"/></summary><div className="dash-history-body"><p>{item.summary}</p>{item.references.length>0&&<div><h3>Scripture references</h3><ul>{item.references.map(reference=><li key={reference}>{reference}</li>)}</ul></div>}</div></details>)}</div>;}
+function DashboardSignIn({initialError}:{initialError:string}){
+ const [email,setEmail]=useState('');const [busy,setBusy]=useState(false);const [sent,setSent]=useState(false);const [error,setError]=useState(initialError);
+ async function submit(){if(busy)return;setBusy(true);setError('');let timer:ReturnType<typeof setTimeout>|undefined;
+  try{const result=await Promise.race([supabase.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:`${window.location.origin}/account`}}),new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(Error('timeout')),20000);})]);if(result.error)throw result.error;setSent(true);}
+  catch{setError('We could not confirm delivery. Check your inbox and spam folder first, then try again if no link arrives.');}finally{clearTimeout(timer);setBusy(false);}}
+ return <div className="elroi-site dash-login"><header><Brand/><Link to="/" className="elroi-text-link"><ArrowLeft size={16}/>Back to website</Link></header><main id="main-content" className="dash-login-grid"><section className="dash-login-story"><span className="dash-login-symbol"><Sparkles size={31}/></span><p className="elroi-kicker">YOUR EL ROI SPACE</p><h1>A little space.<br/>All your own.</h1><p>Your conversations, your time in Scripture, and the voice that feels right for you. Together in one peaceful place.</p><div className="dash-login-features"><span><CalendarClock size={20}/>Choose when we call</span><span><Headphones size={20}/>Find your preferred voice</span><span><BookOpen size={20}/>Return to what you learned</span></div></section><section className="dash-login-panel"><span className="elroi-icon-tile">{sent?<Check size={24}/>:<Mail size={24}/>}</span><h2>{sent?'Check your inbox.':'Welcome to your dashboard.'}</h2><p>{sent?`We requested a private sign-in link for ${email}. Open it on this device to continue. Check spam if it does not arrive.`:'Sign in or create your account with an email link. No password to remember.'}</p><form onSubmit={event=>{event.preventDefault();void submit();}}><label className="dash-field" htmlFor="dashboard-email">Email address<input id="dashboard-email" type="email" autoComplete="email" required value={email} onChange={event=>{setEmail(event.target.value);setSent(false);}} disabled={busy} placeholder="you@example.com"/></label><button type="submit" className="elroi-button elroi-button-primary" disabled={busy||!email.trim()}>{busy?<><LoaderCircle size={18} className="animate-spin"/>Sending your link…</>:sent?'Send another sign-in link':<>Email me a sign-in link <ArrowUpRight size={18}/></>}</button></form>{error&&<p role="alert" className="dash-error">{error}</p>}{sent&&<p role="status" className="dash-help">Your link returns you to this dashboard.</p>}<div className="dash-login-call"><Phone size={19}/><div><strong>Need a conversation now?</strong><a href={PHONE_TEL}>Call {PHONE_DISPLAY}</a></div></div><p className="dash-login-privacy"><ShieldCheck size={14}/>Your history appears only after phone verification.</p></section></main></div>;
 }

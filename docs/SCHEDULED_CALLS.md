@@ -29,17 +29,38 @@ These are narrated lessons, not interactive Realtime conversations. The greeting
 - Preparation errors may retry within a bounded budget. An ambiguous Twilio create-call result is marked uncertain and is never automatically redialed. Reconcile such cases against Twilio call logs before retrying manually.
 - Initial workers are bounded: two preparation jobs per tick, up to three audio chunks concurrently per job, and three deliveries per tick. Monitor queue age and missed jobs, and increase dispatch capacity before broader launch. Calls with different recurring patterns can eventually overlap even when their first occurrences do not; delivery suppresses overlaps rather than ringing twice.
 
-## Production activation
+## Deployment status — 8 September 2026
 
-The website can deploy independently. It shows an explicit availability message and cannot confirm bookings while the new backend is unavailable. Existing incoming calls continue as before.
+The two migrations, `scheduled-calls`, and the secured member `portal` are deployed to `mkocnufwmsfchivfbhuf`. Both minute cron jobs are installed and report fresh heartbeats. The incoming `voice` function and its Twilio incoming-number configuration were not modified.
 
-1. In project `mkocnufwmsfchivfbhuf`, inspect the current portal's `/me` and phone-verification implementation. Confirm it returns the authenticated user's canonical E.164 `phone` and a server-enforced `phone_verified` boolean. Verify the existing member account and email redirect allowlist includes `https://elroicall.com/schedule/`.
-2. Apply the reviewed additive SQL in `supabase/migrations/202609080001_scheduled_lessons.sql`. It creates private tables/RPCs and the private `scheduled-call-audio` bucket. Do not run unrelated migrations or replace existing functions.
-3. Deploy only `supabase/functions/scheduled-calls/index.ts` and its imports. The function config sets `verify_jwt=false` because authenticated member routes, signed Twilio callbacks, and secret-authenticated cron routes have different credentials. Each route validates its own credential; disabling the platform JWT check does not make schedule mutations public.
-4. Configure the server values in `supabase/functions/.env.example`, initially keeping `SCHEDULED_CALLS_ENABLED=false`. Reuse verified existing OpenAI/Twilio secrets where their names and purpose match. Never export them to the frontend or repository. `TWILIO_FROM_NUMBER` must be the authorized caller ID; keep its incoming-call handler intact.
-5. Create Vault entries named `elroi_supabase_url` and `elroi_scheduler_secret`, with the latter matching the function's `SCHEDULER_SECRET`. Apply `supabase/enable-scheduled-call-cron.sql`. Confirm both named jobs and their HTTP results succeed.
-6. Use a controlled staging project or an explicitly consenting test account/phone to verify sign-in, phone ownership, a voice preview, a one-time call, press-1 playback, press-9 opt-out, status callbacks, and references. Match a recording-free call's actual audio and duration against each format. Confirm account deletion removes queued schedules. Check Supabase security advisors and queue metrics.
-7. Enable `SCHEDULED_CALLS_ENABLED=true` only after configuration and the controlled call test pass. Verify `/capabilities` returns `ready:true` and that an authenticated booking returns a server-generated next-run timestamp. If credentials, cron, or the phone contract are not available, retain the disabled state.
+The dashboard at `/account/` (also `/dashboard/`) integrates legacy journeys with the new learning plans, account-scoped history, saved preferences, and phone verification. Preferences can be saved even while outbound calls are disabled. The planner applies these defaults to a new plan, and a paused/completed plan can be used as the starting point for a new booking. The dashboard reports finished lessons only when playback reached the end. It does not equate a completed telephone connection with a completed lesson.
+
+Production reports `ready:false`, `voice_ready:false`, and `phone_ready:false`. The active function lacks OpenAI speech configuration and a complete outbound Twilio credential pair. Incoming calls use the existing provider arrangement and are independent of these new secrets. No voice sample or real outbound call has been verified.
+
+### Remaining activation
+
+1. In [Supabase Edge Function Secrets](https://supabase.com/dashboard/project/mkocnufwmsfchivfbhuf/functions/secrets), set `OPENAI_API_KEY`, `TWILIO_ACCOUNT_SID`, and `TWILIO_AUTH_TOKEN` with the project's authorized provider credentials. Set `TWILIO_FROM_NUMBER` if it differs from the existing `+18556197337` number. Secrets never belong in the browser or this repository.
+2. Verify provider account access, a real voice sample, email sign-in, and the explicitly requested phone-verification call through the dashboard. Check the Auth redirect allowlist for `https://elroicall.com/account` and `https://elroicall.com/schedule/`.
+3. Enable the new scheduler by updating the single row in `public.lesson_service_settings` to `enabled=true` through an authorized database connection, or by setting `SCHEDULED_CALLS_ENABLED=true` in Edge Function secrets. Configuration is cached for up to 15 seconds. Both provider configuration and fresh worker heartbeats remain required before booking opens.
+4. With a consenting test member, book a one-time call and verify the selected voice/content, press 1, press 9, status callbacks, timing, and reference display. The service reserves 20 minutes for lesson preparation. Until this happens, do not represent real telephone delivery as tested.
+
+### Cron authorization
+
+`configure-scheduled-call-cron.sql` generates a random token directly inside Vault and stores only its SHA-256 digest in the service-only settings table. The minute jobs read the token from Vault; the Edge Function validates its digest. The token is never returned to this workspace or committed to source. An explicit `SCHEDULER_SECRET` environment value remains supported, but must match the Vault token if used. `enabled` remains false until the remaining provider checks pass. Existing `elroi_dialer` and `prayer_cleanup` jobs are untouched.
+
+### Member privacy and verification
+
+The portal now validates each access token with Supabase Auth. Call history and legacy schedules are read only after phone verification. Verification uses a cryptographically generated six-digit code, stores a hash, expires after ten minutes, and permits five attempts. Requests are rate-limited per account and destination. Linking a replacement number retains the current verified number until confirmation; confirming a different number atomically pauses earlier plans and old-number journeys. The dispatcher rechecks current phone ownership immediately before dialing.
+
+The portal, preferences, service settings, and lesson tables have RLS enabled and no direct `anon` or `authenticated` table grants. Their invoker SQL functions are executable only by `service_role`, with account IDs supplied from validated server authentication. No user-editable JWT metadata authorizes access. The original `/portal/schedule` creation form is retired in favor of the single planner; existing recurring journeys remain listed and can be paused.
+
+### Verified and not verified
+
+- 34 application/provider tests and 22 PostgreSQL tests pass, covering validation, authentication, cross-account isolation, code limits, replacement-number behavior, idempotency, DST, preparation leases and call deduplication.
+- Frontend lint, type checking, production build, and backend type checking pass.
+- Live database checks confirm RLS and denied direct browser access; minute cron workers report fresh heartbeats; unauthenticated API checks are performed without exposing member data.
+- Automatic approval review blocked creation of test accounts in production because that was not sufficiently authorized. No test accounts were created, and there was no retry through another mechanism. Account behavior is tested in isolated fixtures; live email sign-in, signed-in rendering, voice generation, and phone delivery still require the normal user flow.
+- Supabase advisors report no new security errors. Existing warnings remain for [pg_net in the public schema](https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public) and [leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). Service-only RLS tables intentionally have no browser policies.
 
 Before broad production use, define and implement a retention policy for generated scripts/audio and historical delivery metadata. No automated purge is claimed by this change. Confirm paid-call entitlements/pricing separately; the scheduler does not charge a card or create a Stripe subscription.
 

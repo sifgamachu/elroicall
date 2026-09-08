@@ -1,5 +1,5 @@
 import { escapeXml, splitSpeech, type CallPlanInput, type Voice } from './scheduling.ts';
-export type Secrets = { SUPABASE_URL: string; SUPABASE_SERVICE_ROLE_KEY: string; SUPABASE_ANON_KEY: string; OPENAI_API_KEY: string; TWILIO_ACCOUNT_SID: string; TWILIO_AUTH_TOKEN: string; TWILIO_FROM_NUMBER: string; SCHEDULER_SECRET: string; SCHEDULED_CALLS_ENABLED: string; CONTENT_MODEL?: string; SITE_ORIGIN?: string };
+export type Secrets = { SUPABASE_URL: string; SUPABASE_SERVICE_ROLE_KEY: string; SUPABASE_ANON_KEY: string; OPENAI_API_KEY: string; TWILIO_ACCOUNT_SID: string; TWILIO_AUTH_TOKEN: string; TWILIO_FROM_NUMBER: string; SCHEDULER_SECRET: string; SCHEDULED_CALLS_ENABLED: string; SCHEDULER_SECRET_SHA256?: string; CONTENT_MODEL?: string; SITE_ORIGIN?: string };
 export async function fetchDeadline(url: string, init: RequestInit, milliseconds = 35000, client: typeof fetch = fetch): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), milliseconds);

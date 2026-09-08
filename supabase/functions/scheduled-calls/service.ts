@@ -1,5 +1,6 @@
 import { validatePlan, VOICES, type CallPlanInput, type Voice } from '../_shared/scheduling.ts';
 import { equalSecret, fetchDeadline, generateLesson, generateSpeech, lessonTwiml, placeCall, verifyTwilio, type Secrets } from '../_shared/providers.ts';
+import { DEFAULT_PREFERENCES, publicPreferences, sha256, validatePreferences, type MemberPreferences } from '../_shared/member.ts';
 
 type ScheduleRow = CallPlanInput & { id: string; user_id: string; phone: string; active: boolean; next_run_at: string | null; created_at: string };
 type Job = { id: string; schedule_id: string; due_at: string; status: string; script_chunks: string[]; audio_paths: string[]; call_sid: string | null; accepted: boolean; lesson_finished: boolean; failures: number; reference_list: string[]; title: string | null };
@@ -13,7 +14,7 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
   const origin=env.SITE_ORIGIN || 'https://elroicall.com';
   const base=`${env.SUPABASE_URL}/functions/v1/scheduled-calls`;
   const serviceHeaders={apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json',Prefer:'return=representation'};
-  const configured=()=>[env.SUPABASE_URL,env.SUPABASE_ANON_KEY,env.SUPABASE_SERVICE_ROLE_KEY,env.OPENAI_API_KEY,env.TWILIO_ACCOUNT_SID,env.TWILIO_AUTH_TOKEN,env.TWILIO_FROM_NUMBER,env.SCHEDULER_SECRET].every(Boolean);
+  const configured=()=>[env.SUPABASE_URL,env.SUPABASE_ANON_KEY,env.SUPABASE_SERVICE_ROLE_KEY,env.OPENAI_API_KEY,env.TWILIO_ACCOUNT_SID,env.TWILIO_AUTH_TOKEN,env.TWILIO_FROM_NUMBER,env.SCHEDULER_SECRET||env.SCHEDULER_SECRET_SHA256].every(Boolean);
   const enabled=()=>env.SCHEDULED_CALLS_ENABLED==='true'&&configured();
   const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization, apikey, content-type','Access-Control-Allow-Methods':'GET, POST, OPTIONS',Vary:'Origin'}});
   const xml=(body:string)=>new Response(body,{headers:{'Content-Type':'text/xml','Cache-Control':'no-store'}});
@@ -97,6 +98,8 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
     try {
       const plan=await schedule(item.schedule_id);
       if(!plan?.active) { await db(`lesson_jobs?id=eq.${item.id}&status=eq.dialing`,'PATCH',{status:'cancelled'}); return; }
+      const accounts=await db<{phone:string;phone_verified:boolean}[]>(`portal_accounts?user_id=eq.${plan.user_id}&select=phone,phone_verified&limit=1`);
+      if(!accounts[0]?.phone_verified||accounts[0].phone!==plan.phone){await rpc('lesson_pause_plan',{p_user:plan.user_id,p_id:plan.id});await db(`lesson_jobs?id=eq.${item.id}&status=eq.dialing`,'PATCH',{status:'cancelled'});return;}
       // Account removal cascades schedules; re-read immediately before dialing.
       const sid=await placeCall(env,plan.phone,item.id,client);
       await db(`lesson_jobs?id=eq.${item.id}&status=in.(dialing,uncertain)`,'PATCH',{status:'submitted',call_sid:sid});
@@ -159,16 +162,38 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
       if(request.method==='OPTIONS') return json({ok:true});
       if(path.startsWith('/voice/')) return await twilio(request,url);
       if(path==='/dispatch'||path==='/prepare') {
-        if(request.method!=='POST'||!await equalSecret(request.headers.get('x-scheduler-secret')||'',env.SCHEDULER_SECRET)) throw new HttpError(401,'Unauthorized');
+        const secret=request.headers.get('x-scheduler-secret')||'';
+        const valid=env.SCHEDULER_SECRET?await equalSecret(secret,env.SCHEDULER_SECRET):Boolean(secret&&env.SCHEDULER_SECRET_SHA256&&await equalSecret(await sha256(secret),env.SCHEDULER_SECRET_SHA256));
+        if(request.method!=='POST'||!valid) throw new HttpError(401,'Unauthorized');
         return json(await dispatch(path==='/prepare'));
       }
-      if(path==='/capabilities'&&request.method==='GET') return json({version:1,ready:await ready(),voices:VOICES});
+      if(path==='/capabilities'&&request.method==='GET') return json({version:2,ready:await ready(),voice_ready:Boolean(env.OPENAI_API_KEY),phone_ready:Boolean(env.TWILIO_ACCOUNT_SID&&env.TWILIO_AUTH_TOKEN&&env.TWILIO_FROM_NUMBER),voices:VOICES});
       const owner=await user(request);
-      if(path==='/plans'&&request.method==='GET') {
-        const plans=await db<ScheduleRow[]>(`lesson_schedules?user_id=eq.${owner}&order=created_at.desc&limit=50`);
+      if(path==='/preferences'&&request.method==='GET'){
+        const rows=await db<MemberPreferences[]>(`member_preferences?user_id=eq.${owner}&limit=1`);
+        return json({preferences:publicPreferences(rows[0]||DEFAULT_PREFERENCES)});
+      }
+      if(path==='/preferences'&&request.method==='POST'){
+        const raw=await request.text();if(raw.length>4096)throw new HttpError(413,'Request too large.');
+        let data:unknown;try{data=JSON.parse(raw);}catch{throw new HttpError(400,'Invalid preferences.');}
+        const validation=validatePreferences(data);if(validation)throw new HttpError(400,validation);
+        if(!await rpc<boolean>('lesson_rate_limit',{p_key:`preferences:${owner}`,p_limit:60}))throw new HttpError(429,'Please wait before saving again.');
+        const preferences=publicPreferences(data as MemberPreferences);
+        const r=await fetchDeadline(`${env.SUPABASE_URL}/rest/v1/member_preferences?on_conflict=user_id`,{method:'POST',headers:{...serviceHeaders,Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({...preferences,user_id:owner,updated_at:new Date().toISOString()})},15000,client);
+        if(!r.ok)throw new HttpError(503,'Your preferences could not be saved. Try again.');
+        return json({preferences});
+      }
+      if((path==='/plans'||path==='/dashboard')&&request.method==='GET') {
+        const plans=await db<ScheduleRow[]>(`lesson_schedules?user_id=eq.${owner}&order=active.desc,next_run_at.desc.nullslast,created_at.desc&limit=50`);
         const ids=plans.map(plan=>plan.id);
         const jobs=ids.length?await db<Job[]>(`lesson_jobs?schedule_id=in.(${ids.join(',')})&order=due_at.desc&limit=250`):[];
-        return json({plans:plans.map(plan=>publicPlan(plan,jobs))});
+        if(path==='/plans')return json({plans:plans.map(plan=>publicPlan(plan,jobs))});
+        const [preferences,stats]=await Promise.all([db<MemberPreferences[]>(`member_preferences?user_id=eq.${owner}&limit=1`),rpc('lesson_dashboard_stats',{p_user:owner})]);
+        const history=jobs.filter(item=>terminal.includes(item.status)||item.status==='uncertain').slice(0,50).map(item=>{
+          const plan=plans.find(plan=>plan.id===item.schedule_id)!;
+          return {id:item.id,plan_id:plan.id,topic:plan.topic,content_type:plan.content_type,voice:plan.voice,due_at:item.due_at,title:item.title,status:item.status==='completed'?(item.lesson_finished?'lesson_finished':item.accepted?'call_ended':'not_started'):item.status,references:item.reference_list};
+        });
+        return json({plans:plans.map(plan=>publicPlan(plan,jobs)),history,preferences:publicPreferences(preferences[0]||DEFAULT_PREFERENCES),stats});
       }
       const pauseId=path.match(/^\/plans\/([0-9a-f-]+)\/pause$/i)?.[1];
       if(pauseId&&UUID.test(pauseId)&&request.method==='POST') {
@@ -176,8 +201,8 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
         if(!paused) throw new HttpError(404,'Schedule not found.');
         return json({ok:true});
       }
-      if(!await ready()) throw new HttpError(503,'Scheduled calls are not accepting bookings yet.');
       if(path==='/plans'&&request.method==='POST') {
+        if(!await ready()) throw new HttpError(503,'Scheduled calls are not accepting bookings yet.');
         if(Number(request.headers.get('content-length')||0)>8192) throw new HttpError(413,'Request too large.');
         const raw=await request.text(); if(raw.length>8192) throw new HttpError(413,'Request too large.');
         let payload:CallPlanInput; try { payload=JSON.parse(raw); } catch { throw new HttpError(400,'Invalid schedule.'); }
@@ -195,6 +220,7 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
       }
       const previewVoice=path.match(/^\/voice-preview\/([a-z]+)$/)?.[1];
       if(previewVoice&&request.method==='GET'&&VOICES.some(voice=>voice.id===previewVoice)) {
+        if(!env.OPENAI_API_KEY)throw new HttpError(503,'Voice samples are being connected.');
         if(!await rpc<boolean>('lesson_rate_limit',{p_key:`preview:${owner}`,p_limit:12})) throw new HttpError(429,'Please wait before requesting another sample.');
         const object=`previews/${previewVoice}-v1.mp3`;
         try { return json({url:await signedAudio(object)}); } catch { /* Create the shared sample on first use. */ }

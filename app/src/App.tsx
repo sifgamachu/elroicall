@@ -34,6 +34,8 @@ export default function App() {
         <Route path="/about/" element={<About />} />
         <Route path="/account" element={<MemberRoom />} />
         <Route path="/account/" element={<MemberRoom />} />
+        <Route path="/dashboard" element={<MemberRoom />} />
+        <Route path="/dashboard/" element={<MemberRoom />} />
         <Route path="/login" element={<Navigate to="/account" replace />} />
         <Route path="/portal" element={<Navigate to="/account" replace />} />
         <Route path="*" element={<NotFound />} />

@@ -21,7 +21,7 @@ export default function Nav() {
           {links.map(link => <Link key={link.href} to={link.href}>{link.label}</Link>)}
         </nav>
         <div className="elroi-nav-actions">
-          <Link to="/account/" className="elroi-signin">Sign in</Link>
+          <Link to="/account/" className="elroi-signin">My dashboard</Link>
           <Link to="/begin/" className="elroi-button elroi-button-dark elroi-nav-start" aria-current={pathname.startsWith("/begin") ? "page" : undefined}>Begin <ArrowUpRight size={16} /></Link>
           <Sheet>
             <SheetTrigger asChild><button type="button" className="elroi-menu-button" aria-label="Open navigation"><Menu size={22} /></button></SheetTrigger>
@@ -29,7 +29,7 @@ export default function Nav() {
               <SheetHeader><SheetTitle>El Roi Call</SheetTitle><SheetDescription>A little space for what is on your heart.</SheetDescription></SheetHeader>
               <nav aria-label="Mobile navigation" className="elroi-mobile-links">
                 {links.map(link => <SheetClose asChild key={link.href}><Link to={link.href}>{link.label}<ArrowUpRight size={18} /></Link></SheetClose>)}
-                <SheetClose asChild><Link to="/account/">Your room<ArrowUpRight size={18} /></Link></SheetClose>
+                <SheetClose asChild><Link to="/account/">My dashboard<ArrowUpRight size={18} /></Link></SheetClose>
                 <SheetClose asChild><a href={PHONE_TEL}>Call El Roi<Phone size={18} /></a></SheetClose>
               </nav>
             </SheetContent>

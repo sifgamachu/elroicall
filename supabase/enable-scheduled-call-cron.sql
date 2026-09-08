@@ -1,4 +1,4 @@
--- Run only after deploying scheduled-calls and adding matching server secrets.
+-- Run after deploying scheduled-calls and configure-scheduled-call-cron.sql.
 -- These named Vault entries must exist: elroi_scheduler_secret and elroi_supabase_url.
 -- Existing inbound call hooks and existing journey cron jobs are not changed.
 create extension if not exists pg_cron;

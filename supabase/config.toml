@@ -1,3 +1,5 @@
-# Only the new function is described here. Existing functions are not redeployed.
+# Member API verifies Auth users; scheduled calls also verify Twilio/cron credentials.
 [functions.scheduled-calls]
 verify_jwt = false
+[functions.portal]
+verify_jwt = true

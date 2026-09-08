@@ -22,6 +22,7 @@ export type PortalTrack = {
 };
 
 export type PortalHistoryItem = {
+  id?: string;
   created_at?: string;
   figure_name?: string;
   summary?: string;
@@ -32,6 +33,9 @@ export type PortalMember = {
   caller_name?: string;
   phone?: string;
   phone_verified?: boolean;
+  pending_phone?: string | null;
+  verification_pending?: boolean;
+  member_since?: string | null;
   verify_ready?: boolean;
   total_calls?: number;
   schedules?: PortalTrack[];

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { CalendarClock, Check, Clock3, Headphones, LoaderCircle, Pause, Phone, Play, Volume2 } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import ProductShell from '@/components/ProductShell';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,17 +11,22 @@ import { getPortalMember, type PortalMember } from '@/lib/portal';
 import { PHONE_TEL } from '@/lib/phone';
 import { ApiError } from '@/lib/api';
 import { CONTENT_TYPES, VOICES, WEEKDAYS, localDate, planLabel, schedulingRequest, validatePlan, type CallPlan, type CallPlanInput } from '@/lib/scheduled-calls';
+import type { MemberPreferences } from '@/lib/dashboard';
 
 const detectedZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 const contentName = (id: string) => CONTENT_TYPES.find(type => type.id === id)?.name ?? id;
 
 export default function Schedule() {
+  const location=useLocation();
+  const query=new URLSearchParams(location.search);
+  const fromPlan=query.get('from');
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [member, setMember] = useState<PortalMember | null>(null);
   const [ready, setReady] = useState<boolean | null>(null);
-  const [contentType, setContentType] = useState('');
-  const [topic, setTopic] = useState('');
+  const [voiceReady,setVoiceReady]=useState(false);
+  const [contentType, setContentType] = useState(()=>CONTENT_TYPES.some(type=>type.id===query.get('content'))?query.get('content')!:'');
+  const [topic, setTopic] = useState(()=>(query.get('topic')||'').slice(0,160));
   const [voice, setVoice] = useState('');
   const [time, setTime] = useState('');
   const [timezone, setTimezone] = useState(detectedZone);
@@ -43,28 +48,47 @@ export default function Schedule() {
   const previewSequence = useRef(0);
   const saving = useRef(false);
   const request = useRef<{ fingerprint: string; id: string } | null>(null);
+  const edited=useRef(false);
+  const defaultsApplied=useRef('');
+  const accountId=useRef<string|null>(null);
   const zones = useMemo(() => Array.from(new Set([detectedZone(), 'UTC', ...Intl.supportedValuesOf('timeZone')])).sort(), []);
 
   useEffect(() => {
-    let active = true;
+    let active = true;let authEvent=false;
     const playback = previewSequence;
     const currentAudio = audio;
-    void schedulingRequest<{ ready: boolean }>('/capabilities').then(data => { if (active) setReady(data.ready === true); }).catch(() => { if (active) setReady(false); });
-    void supabase.auth.getSession().then(({ data }) => { if (active) { setSession(data.session); setAuthLoading(false); } }).catch(() => { if (active) { setAuthLoading(false); setError('Please sign in to manage scheduled calls.'); } });
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, next) => { if (active) { setSession(next); setMember(null); setPlans([]); } });
+    void schedulingRequest<{ ready: boolean;voice_ready:boolean }>('/capabilities').then(data => { if (active) {setReady(data.ready === true);setVoiceReady(data.voice_ready===true);} }).catch(() => { if (active) setReady(false); });
+    void supabase.auth.getSession().then(({ data }) => { if (active&&!authEvent) { accountId.current=data.session?.user.id||null;setSession(data.session); setAuthLoading(false); } }).catch(() => { if (active&&!authEvent) { setAuthLoading(false); setError('Please sign in to manage scheduled calls.'); } });
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, next) => { if (active) { authEvent=true;accountId.current=next?.user.id||null;setSession(next);setAuthLoading(false); setMember(null); setPlans([]);setNotice('');setError(''); } });
     return () => { active = false; subscription.subscription.unsubscribe(); playback.current++; currentAudio.current?.pause(); };
   }, []);
 
   useEffect(() => {
     if (!session) return;
     let active = true;
-    void getPortalMember(session).then(data => { if (active) setMember(data); }).catch(() => { if (active) setError('We could not load your verified number. Open your room to check it, then return here.'); });
-    void schedulingRequest<{ plans: CallPlan[] }>('/plans', session).then(data => { if (active) { setPlans(data.plans); setPlansError(false); } }).catch(() => { if (active) setPlansError(true); });
+    void getPortalMember(session).then(data => { if (active) setMember(data); }).catch(() => { if (active) setError('We could not load your verified number. Open your dashboard to check it, then return here.'); });
+    void schedulingRequest<{ plans: CallPlan[] }>('/plans', session).then(data => { if (active) {
+      setPlans(data.plans); setPlansError(false);
+      if(fromPlan&&defaultsApplied.current!==fromPlan&&!edited.current){
+        const plan=data.plans.find(plan=>plan.id===fromPlan);defaultsApplied.current=fromPlan;
+        if(plan){setContentType(plan.content_type);setTopic(plan.topic);setVoice(plan.voice);setTime(plan.local_time.slice(0,5));setTimezone(plan.timezone);setRecurrence(plan.recurrence);setWeekdays(plan.weekdays);setStartDate(localDate(new Date(),plan.timezone));setDuration(String(plan.duration_minutes));setNotice('Your previous choices are ready. Review the new date and confirm your schedule.');}
+        else setError('That schedule was not found in your account. You can create a new one below.');
+      }
+    } }).catch(() => { if (active) setPlansError(true); });
+    if(!fromPlan)void schedulingRequest<{preferences:MemberPreferences}>('/preferences',session).then(({preferences:p})=>{
+      if(!active||edited.current||defaultsApplied.current===session.user.id)return;
+      defaultsApplied.current=session.user.id;
+      if(p.default_voice)setVoice(current=>current||p.default_voice!);
+      if(p.default_content_type)setContentType(current=>current||p.default_content_type!);
+      if(p.timezone){setTimezone(p.timezone);setStartDate(localDate(new Date(),p.timezone));}
+      setDuration(String(p.duration_minutes));
+    }).catch(()=>{});
     return () => { active = false; };
-  }, [session, ready]);
+  }, [session, ready, fromPlan]);
 
   async function refreshPlans() {
-    try { const data = await schedulingRequest<{ plans: CallPlan[] }>('/plans', session); setPlans(data.plans); setPlansError(false); }
+    const owner=session?.user.id;
+    try { const data = await schedulingRequest<{ plans: CallPlan[] }>('/plans', session); if(accountId.current!==owner)return;setPlans(data.plans); setPlansError(false); }
     catch { setPlansError(true); }
   }
   async function signIn() {
@@ -101,10 +125,11 @@ export default function Schedule() {
     const payload = { ...choices, request_id: request.current.id } as CallPlanInput;
     const validation = validatePlan(payload);
     if (validation) { setError(validation); return; }
-    if (!member?.phone_verified) { setError('Verify your phone in your room before scheduling a call.'); return; }
+    if (!member?.phone_verified) { setError('Verify your phone in your dashboard before scheduling a call.'); return; }
     saving.current = true; setBusy(true);
     try {
       const data = await schedulingRequest<{ plan: CallPlan }>('/plans', session, payload);
+      if(accountId.current!==session.user.id)return;
       if (!data.plan?.id || !data.plan.next_run_at) throw new Error('Unconfirmed schedule');
       setPlans(previous => [data.plan, ...previous.filter(plan => plan.id !== data.plan.id)]);
       setNotice(`Scheduled. Your next ${contentName(data.plan.content_type).toLowerCase()} call is ${new Intl.DateTimeFormat(undefined, { timeZone: data.plan.timezone, dateStyle: 'full', timeStyle: 'short' }).format(new Date(data.plan.next_run_at))} (${data.plan.timezone.replaceAll('_', ' ')}).`);
@@ -119,6 +144,7 @@ export default function Schedule() {
     saving.current = true; setBusy(true); setError('');
     try {
       await schedulingRequest(`/plans/${plan.id}/pause`, session, {});
+      if(accountId.current!==session.user.id)return;
       setPlans(previous => previous.map(item => item.id === plan.id ? { ...item, active: false, next_run_at: null } : item));
       setNotice('Future calls for this schedule are paused. You can still call El Roi anytime.');
     } catch { setError('We could not confirm the pause. Refresh your saved calls and try again.'); }
@@ -131,7 +157,7 @@ export default function Schedule() {
 
   return <ProductShell eyebrow="ON YOUR SCHEDULE" title="Make room for Scripture." description="Choose what you want to hear and when. We call you at the time you choose. You can also call El Roi anytime.">
     <div className="elroi-schedule-layout">
-      <form id="schedule-form" className="elroi-schedule-form" onSubmit={event => { event.preventDefault(); void save(); }}>
+      <form id="schedule-form" className="elroi-schedule-form" onChange={()=>{edited.current=true;}} onClick={()=>{edited.current=true;}} onSubmit={event => { event.preventDefault(); void save(); }}>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>1</span> What is this call for?</legend>
           <RadioGroup value={contentType} onValueChange={setContentType} className="elroi-content-options" aria-label="Call content">
             {CONTENT_TYPES.map(type => <label className="elroi-choice" data-selected={contentType === type.id} key={type.id}><RadioGroupItem value={type.id} /><span><strong>{type.name}</strong><span>{type.description}</span></span></label>)}
@@ -141,8 +167,8 @@ export default function Schedule() {
         </fieldset>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>2</span> Choose your voice</legend><p className="elroi-schedule-help">The same El Roi Guide, in the voice you prefer. All voices are AI generated.</p>
           <RadioGroup value={voice} onValueChange={setVoice} className="elroi-voice-options" aria-label="Narration voice">
-            {VOICES.map(option => <div key={option.id} className="elroi-voice-option" data-selected={voice === option.id}><label><RadioGroupItem value={option.id} /><Volume2 size={20} /><strong>{option.name}</strong></label><button type="button" disabled={!ready || !session || busy} onClick={() => void preview(option.id)} aria-label={`${previewVoice === option.id ? 'Stop' : 'Preview'} ${option.name}`} aria-pressed={previewVoice === option.id}>{previewVoice === option.id ? previewLoading ? <LoaderCircle size={16} className="animate-spin" /> : <Pause size={16} /> : <Play size={16} />}<span>{previewVoice === option.id ? previewLoading ? 'Loading' : 'Stop' : 'Listen'}</span></button></div>)}
-          </RadioGroup><p className="elroi-small">{ready ? session ? 'Listen to the same short sample in each voice.' : 'Sign in below to listen to voice samples.' : 'Voice samples will be available when scheduled calls open.'}</p>
+            {VOICES.map(option => <div key={option.id} className="elroi-voice-option" data-selected={voice === option.id}><label><RadioGroupItem value={option.id} /><Volume2 size={20} /><strong>{option.name}</strong></label><button type="button" disabled={!voiceReady || !session || busy} onClick={() => void preview(option.id)} aria-label={`${previewVoice === option.id ? 'Stop' : 'Preview'} ${option.name}`} aria-pressed={previewVoice === option.id}>{previewVoice === option.id ? previewLoading ? <LoaderCircle size={16} className="animate-spin" /> : <Pause size={16} /> : <Play size={16} />}<span>{previewVoice === option.id ? previewLoading ? 'Loading' : 'Stop' : 'Listen'}</span></button></div>)}
+          </RadioGroup><p className="elroi-small">{voiceReady ? session ? 'Listen to the same short sample in each voice.' : 'Sign in below to listen to voice samples.' : 'Voice samples will be available when the voice service is connected.'}</p>
         </fieldset>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>3</span> When should we call?</legend>
           <RadioGroup value={recurrence} onValueChange={value => setRecurrence(value as 'once' | 'weekly')} className="elroi-recurrence" aria-label="Repeat"><label><RadioGroupItem value="weekly" />Repeat on chosen days</label><label><RadioGroupItem value="once" />Just once</label></RadioGroup>
@@ -152,7 +178,7 @@ export default function Schedule() {
           <p className="elroi-small">Choose a time at least 20 minutes away so we can prepare your audio. Recurring calls follow this time zone when clocks change. If your time is skipped by daylight saving, that day's call is skipped.</p>
         </fieldset>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>4</span> Your number. Your permission.</legend>
-          {authLoading ? <p role="status">Checking your sign-in…</p> : !session ? <div><p className="elroi-schedule-help">Sign in to use your verified phone number and manage your calls.</p><label className="elroi-field" htmlFor="schedule-email">Email<input id="schedule-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" /></label><button type="button" className="elroi-button elroi-button-dark" onClick={() => void signIn()} disabled={emailBusy || !email.trim()}>{emailBusy ? 'Sending…' : 'Email me a sign-in link'}</button></div> : !member ? <p>Loading your calling details… <Link to="/account/" className="elroi-text-link">Open your room</Link></p> : member.phone_verified ? <p className="elroi-verified"><Check size={18} />Calls go to your verified number ending in {member.phone?.slice(-4)}.</p> : <p>Verify your phone number before scheduling. <Link to="/account/#calling-preferences" className="elroi-text-link">Verify in your room</Link></p>}
+          {authLoading ? <p role="status">Checking your sign-in…</p> : !session ? <div><p className="elroi-schedule-help">Sign in to use your verified phone number and manage your calls.</p><label className="elroi-field" htmlFor="schedule-email">Email<input id="schedule-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" /></label><button type="button" className="elroi-button elroi-button-dark" onClick={() => void signIn()} disabled={emailBusy || !email.trim()}>{emailBusy ? 'Sending…' : 'Email me a sign-in link'}</button></div> : !member ? <p>Loading your calling details… <Link to="/account/" className="elroi-text-link">Open your dashboard</Link></p> : member.phone_verified ? <p className="elroi-verified"><Check size={18} />Calls go to your verified number ending in {member.phone?.slice(-4)}.</p> : <p>Verify your phone number before scheduling. <Link to="/account/#calling-preferences" className="elroi-text-link">Verify in your dashboard</Link></p>}
           <label className="elroi-schedule-consent"><Checkbox checked={consent} onCheckedChange={checked => setConsent(checked === true)} /><span>I want El Roi Call to place AI-narrated calls to my verified number for the content, days, and time I chose. I can pause future calls or press 9 during a scheduled call to stop this schedule. Consent is not a condition of purchase. Carrier charges may apply.</span></label>
           {ready === false && <p className="elroi-availability" role="status">Scheduled calls are being connected. You can explore your choices here; no call is booked yet. <a href={PHONE_TEL}>Call El Roi anytime.</a></p>}
           {error && <p className="elroi-status-error" role="alert">{error}</p>}{notice && <p className="elroi-schedule-notice" role="status">{notice}</p>}
