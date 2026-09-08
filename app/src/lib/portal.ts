@@ -1,5 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
-import { PORTAL_API } from "@/lib/api";
+import { PORTAL_API, fetchJson } from "@/lib/api";
 import { SUPABASE_ANON_KEY } from "@/lib/supabase";
 
 export type PortalProgress = {
@@ -43,7 +43,7 @@ export async function portalRequest<T>(
   session: Session,
   body?: unknown,
 ): Promise<{ status: number; data: T }> {
-  const response = await fetch(`${PORTAL_API}${path}`, {
+  return fetchJson<T>(`${PORTAL_API}${path}`, {
     method: body === undefined ? "GET" : "POST",
     headers: {
       Authorization: `Bearer ${session.access_token}`,
@@ -53,8 +53,6 @@ export async function portalRequest<T>(
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  const data = (await response.json().catch(() => ({}))) as T;
-  return { status: response.status, data };
 }
 
 export async function getPortalMember(session: Session): Promise<PortalMember> {

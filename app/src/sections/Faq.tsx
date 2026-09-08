@@ -25,11 +25,11 @@ const FAQS = [
   },
   {
     q: "Is what I share private?",
-    a: "The first draft on the homepage stays in your browser until you continue. Before sensitive text is submitted, El Roi shows the AI, privacy, age, and consent notice. Calls may be recorded and transcribed as described in the Privacy Policy. El Roi conversations are not legally privileged, and we do not sell conversation content for advertising.",
+    a: "Your unsubmitted draft stays in this tab and is cleared when you refresh or close the page. Before sensitive text is submitted, El Roi shows the AI, privacy, age, and consent notice. Calls may be recorded and transcribed as described in the Privacy Policy. El Roi conversations are not legally privileged, and we do not sell conversation content for advertising.",
   },
   {
     q: "What will El Roi remember about me?",
-    a: "The product direction is explicit, user-controlled memory rather than hidden profile accumulation. The member experience will only expose memory controls as backend retention behavior is technically verified. Until then, El Roi should not promise that every conversation will be remembered or that a specific memory can be deleted unless the underlying system supports it.",
+    a: "Your member room can show recent conversation summaries. Optional memory and individual memory controls are not available yet. Do not assume a new call remembers an earlier one. See the Privacy Policy for how submitted information and recordings are handled.",
   },
   {
     q: "What happens if I'm in crisis?",
@@ -37,7 +37,7 @@ const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "The first guided call is free and does not require a card. Recurring membership is intentionally a separate decision after someone has experienced the core product. Any active price, trial, billing date, and cancellation terms should be shown clearly before subscription.",
+    a: "The first guided call is free and does not require a card. Recurring membership is intentionally a separate decision after someone has experienced the core product. Review the price, billing date, and cancellation terms before choosing a membership.",
   },
 ];
 

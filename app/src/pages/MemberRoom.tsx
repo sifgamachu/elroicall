@@ -30,6 +30,7 @@ export default function MemberRoom() {
   const [authLoading, setAuthLoading] = useState(true);
   const [member, setMember] = useState<PortalMember | null>(null);
   const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
@@ -40,11 +41,14 @@ export default function MemberRoom() {
       if (!active) return;
       setSession(data.session);
       setAuthLoading(false);
+    }).catch(() => {
+      if (active) { setAuthLoading(false); setError("We could not restore your session. Please sign in again."); }
     });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!active) return;
       setSession(nextSession);
+      setError("");
       if (!nextSession) setMember(null);
       setAuthLoading(false);
     });
@@ -102,20 +106,22 @@ export default function MemberRoom() {
   );
 
   const sendLink = async () => {
-    if (!email.trim()) return;
+    if (!email.trim() || sending) return;
+    setSending(true);
     setError("");
     setNotice("");
-
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/account` },
-    });
-
-    if (authError) {
-      setError(authError.message);
-      return;
+    try {
+      const { error: authError } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/account` },
+      });
+      if (authError) throw authError;
+      setNotice("Check your email, including spam. Your private sign-in link brings you back here.");
+    } catch {
+      setError("We could not send your sign-in link. Check your email address and connection, then try again.");
+    } finally {
+      setSending(false);
     }
-    setNotice("Check your email. The private sign-in link brings you back here.");
   };
 
   if (authLoading) {
@@ -135,17 +141,21 @@ export default function MemberRoom() {
     return (
       <ProductShell
         eyebrow="Your room"
-        title="Return to the thread — not to an admin dashboard."
-        description="Member access is organized around what matters today, what you are walking through, and what you want to return to."
+        title="Welcome back to your room."
+        description="Sign in to see your journeys and recent conversations."
         compact
       >
-        <section className="mx-auto max-w-xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+        <form onSubmit={(event) => { event.preventDefault(); void sendLink(); }} className="mx-auto max-w-xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
           <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-gold">Passwordless sign in</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-light text-parchment">We email you the door.</h2>
+          <h2 className="font-serif-display mt-3 text-3xl font-light text-parchment">Sign in with your email.</h2>
           <p className="mt-3 text-[12px] font-light leading-[1.75] text-parchment-dim">
             Use the email connected to your membership. There is no password to remember.
           </p>
+          <label htmlFor="member-email" className="mt-5 block text-sm text-gold">Email address</label>
           <input
+            id="member-email"
+            required
+            disabled={sending}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             type="email"
@@ -153,17 +163,16 @@ export default function MemberRoom() {
             placeholder="you@example.com"
             className="mt-6 w-full border border-white/12 bg-white/[0.025] px-4 py-3.5 text-parchment outline-none placeholder:text-parchment-dim/45 focus:border-gold-soft"
           />
-          {notice && <p className="mt-4 text-[12px] leading-relaxed text-gold-bright">{notice}</p>}
-          {error && <p className="mt-4 text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
+          {notice && <p role="status" className="mt-4 text-[12px] leading-relaxed text-gold-bright">{notice}</p>}
+          {error && <p role="alert" className="mt-4 text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
           <button
-            type="button"
-            onClick={sendLink}
-            disabled={!email.trim()}
+            type="submit"
+            disabled={!email.trim() || sending}
             className="mt-5 w-full bg-[hsl(var(--gold))] px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.23em] text-[#17120a] transition-colors hover:bg-[hsl(var(--gold-bright))] disabled:cursor-not-allowed disabled:opacity-35"
           >
-            Email me the door
+            {sending ? "Sending your link…" : "Email me a sign-in link"}
           </button>
-        </section>
+        </form>
       </ProductShell>
     );
   }
@@ -183,7 +192,7 @@ export default function MemberRoom() {
           </div>
           <button
             type="button"
-            onClick={() => void supabase.auth.signOut()}
+            onClick={() => void supabase.auth.signOut().then(({ error: signOutError }) => { if (signOutError) setError("We could not sign you out. Please try again."); }).catch(() => setError("We could not sign you out. Please try again."))}
             className="inline-flex items-center gap-2 self-start text-[10px] font-medium uppercase tracking-[0.2em] text-parchment-dim hover:text-gold-bright"
           >
             <LogOut className="h-3.5 w-3.5" />
@@ -326,7 +335,7 @@ export default function MemberRoom() {
           </>
         ) : null}
 
-        {error && <p className="text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
+        {error && <p role="alert" className="text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
         <p className="text-center font-serif-display text-lg font-light italic text-parchment-dim">
           The line is always the same: {PHONE_DISPLAY}. The story can change as your life changes.
         </p>

@@ -19,7 +19,7 @@ export default function Gift() {
   const [error, setError] = useState("");
 
   const createGift = async () => {
-    if (!giver.trim()) return;
+    if (!giver.trim() || submitting) return;
     setSubmitting(true);
     setError("");
 
@@ -32,7 +32,7 @@ export default function Gift() {
       if (!data.ok) throw new Error("gift_failed");
       setResult(data);
     } catch {
-      setError("We could not prepare the gift just now. Nothing was sent — try once more when you are ready.");
+      setError("We could not confirm that your gift was prepared. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -40,9 +40,13 @@ export default function Gift() {
 
   const copyMessage = async () => {
     if (!result?.sms_suggestion) return;
-    await navigator.clipboard.writeText(result.sms_suggestion);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+    try {
+      await navigator.clipboard.writeText(result.sms_suggestion);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setError("Copy is unavailable. Select and copy the gift message below.");
+    }
   };
 
   return (
@@ -140,6 +144,7 @@ export default function Gift() {
               {result.sms_suggestion}
             </div>
 
+            {error && <p role="alert" className="mt-4 text-sm text-[#e1a695]">{error}</p>}
             <button
               type="button"
               onClick={copyMessage}

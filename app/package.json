@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
     "check": "npm run lint && npm run typecheck && npm run build",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -83,6 +84,6 @@
     "prettier": "^3.7.4"
   },
   "engines": {
-    "node": ">=20.19"
+    "node": ">=22.18"
   }
 }

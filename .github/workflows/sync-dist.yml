@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: app
-        run: npm install --ignore-scripts --package-lock=false
+        run: npm ci --ignore-scripts
 
       - name: Build production assets
         working-directory: app

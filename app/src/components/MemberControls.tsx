@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Check, Pause, PhoneCall, Save, ShieldCheck } from "lucide-react";
 import type { PortalMember, PortalTrack } from "@/lib/portal";
+import { normalizePhone } from "@/lib/phone";
 import { portalRequest } from "@/lib/portal";
 
 const MODES = [
@@ -72,59 +73,70 @@ export default function MemberControls({
   const activeTracks = (member.schedules ?? []).filter((track) => track.active);
 
   const requestVerification = async () => {
-    if (!phone.trim()) return;
+    if (!normalizePhone(phone) || phoneBusy) return;
     setPhoneBusy(true);
     setPhoneMessage("");
+    try {
 
-    const { status, data } = await portalRequest<{
-      verify?: string;
-      error?: string;
-    }>("/phone", session, { phone: phone.trim() });
+      const { status, data } = await portalRequest<{
+        verify?: string;
+        error?: string;
+      }>("/phone", session, { phone: normalizePhone(phone) });
 
-    setPhoneBusy(false);
-    if (status === 409) {
-      setPhoneMessage("That number is already connected to another account.");
-      return;
+      if (status === 409) {
+        setPhoneMessage("That number is already connected to another account.");
+        return;
+      }
+      if (status !== 200) {
+        setPhoneMessage("That number could not be saved. Check it and try again.");
+        return;
+      }
+
+      setPhoneStage("verify");
+      setPhoneMessage(
+        data.verify === "calling"
+          ? "Your verification call should be ringing now. Enter the four-digit code you hear."
+          : "Your number is saved. If you do not receive a code, request another verification call.",
+      );
+    } catch {
+      setPhoneMessage("We could not confirm the verification call. Check your connection, then try again.");
+    } finally {
+      setPhoneBusy(false);
     }
-    if (status !== 200) {
-      setPhoneMessage("That number could not be saved. Check it and try again.");
-      return;
-    }
-
-    setPhoneStage("verify");
-    setPhoneMessage(
-      data.verify === "calling"
-        ? "Your verification call should be ringing now. Enter the four-digit code you hear."
-        : "Your number is saved. Verification calling may still be connecting on the backend.",
-    );
   };
 
   const verifyPhone = async () => {
-    if (code.trim().length !== 4) return;
+    if (code.trim().length !== 4 || phoneBusy) return;
     setPhoneBusy(true);
     setPhoneMessage("");
+    try {
 
-    const { status, data } = await portalRequest<{
-      phone_verified?: boolean;
-      error?: string;
-    }>("/verify", session, { code: code.trim() });
+      const { status, data } = await portalRequest<{
+        phone_verified?: boolean;
+        error?: string;
+      }>("/verify", session, { code: code.trim() });
 
-    setPhoneBusy(false);
-    if (status === 200 && data.phone_verified) {
-      setPhoneStage("verified");
-      setPhoneMessage("Verified. Scheduled calls can use this number.");
-      await onRefresh();
-      return;
+      if (status === 200 && data.phone_verified) {
+        setPhoneStage("verified");
+        setPhoneMessage("Verified. Scheduled calls can use this number.");
+        await onRefresh();
+        return;
+      }
+
+      setPhoneMessage(
+        data.error === "expired"
+          ? "That code expired. Request another verification call."
+          : "That code did not match. Listen once more and try again.",
+      );
+    } catch {
+      setPhoneMessage("We could not verify the code just now. Try again.");
+    } finally {
+      setPhoneBusy(false);
     }
-
-    setPhoneMessage(
-      data.error === "expired"
-        ? "That code expired. Request another verification call."
-        : "That code did not match. Listen once more and try again.",
-    );
   };
 
   const saveSchedule = async () => {
+    if (scheduleBusy) return;
     if (!member.phone_verified) {
       setScheduleMessage("Verify your phone before scheduling automated calls.");
       return;
@@ -136,36 +148,47 @@ export default function MemberControls({
 
     setScheduleBusy(true);
     setScheduleMessage("");
-    const { status } = await portalRequest("/schedule", session, {
-      hour_local: hour,
-      minute_local: minute,
-      timezone,
-      days,
-      mode,
-      caller_name: callerName.trim(),
-      consent: true,
-    });
-    setScheduleBusy(false);
+    try {
+      const { status } = await portalRequest("/schedule", session, {
+        hour_local: hour,
+        minute_local: minute,
+        timezone,
+        days,
+        mode,
+        caller_name: callerName.trim(),
+        consent: true,
+      });
 
-    if (status === 200) {
-      setScheduleMessage("Saved. This journey is now part of your rhythm.");
-      setScheduleConsent(false);
-      await onRefresh();
-    } else {
-      setScheduleMessage("The schedule could not be saved just now. Try again.");
+      if (status === 200) {
+        setScheduleMessage("Saved. This journey is now part of your rhythm.");
+        setScheduleConsent(false);
+        await onRefresh();
+      } else {
+        setScheduleMessage("The schedule could not be saved just now. Try again.");
+      }
+    } catch {
+      setScheduleMessage("We could not confirm whether your schedule was saved. Refresh your room before trying again.");
+    } finally {
+      setScheduleBusy(false);
     }
   };
 
   const pauseTrack = async (track: PortalTrack) => {
+    if (scheduleBusy) return;
     setScheduleBusy(true);
     setScheduleMessage("");
-    const { status } = await portalRequest("/cancel", session, { mode: track.mode });
-    setScheduleBusy(false);
-    if (status === 200) {
-      setScheduleMessage(`${modeName(track.mode)} is paused. Your other journeys are unchanged.`);
-      await onRefresh();
-    } else {
-      setScheduleMessage("That journey could not be paused just now.");
+    try {
+      const { status } = await portalRequest("/cancel", session, { mode: track.mode });
+      if (status === 200) {
+        setScheduleMessage(`${modeName(track.mode)} is paused. Your other journeys are unchanged.`);
+        await onRefresh();
+      } else {
+        setScheduleMessage("That journey could not be paused just now.");
+      }
+    } catch {
+      setScheduleMessage("We could not confirm whether this journey was paused. Refresh your room before trying again.");
+    } finally {
+      setScheduleBusy(false);
     }
   };
 
@@ -177,7 +200,7 @@ export default function MemberControls({
           You decide when the line reaches back to you.
         </h2>
         <p className="mt-3 max-w-2xl text-[12px] font-light leading-[1.8] text-parchment-dim">
-          Phone verification, recurring journeys, pause controls, and consent now live in the same member application instead of a separate settings site.
+          Verify your phone, choose a time that works for you, and pause scheduled calls whenever you need to.
         </p>
       </div>
 
@@ -205,13 +228,16 @@ export default function MemberControls({
                 type="tel"
                 inputMode="tel"
                 autoComplete="tel"
+                disabled={phoneBusy}
+                aria-describedby="member-phone-help"
                 placeholder="(555) 555-5555"
                 className="mt-2 w-full border border-white/12 bg-black/15 px-4 py-3 text-parchment outline-none placeholder:text-parchment-dim/40 focus:border-gold-soft"
               />
+              <p id="member-phone-help" className="mt-2 text-sm text-parchment-dim">Use your full number, including + and country code outside the U.S. or Canada.</p>
               <button
                 type="button"
                 onClick={requestVerification}
-                disabled={!phone.trim() || phoneBusy}
+                disabled={!normalizePhone(phone) || phoneBusy}
                 className="mt-4 inline-flex w-full items-center justify-center gap-2 bg-[hsl(var(--gold))] px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#17120a] disabled:opacity-35"
               >
                 <PhoneCall className="h-3.5 w-3.5" />
@@ -226,6 +252,9 @@ export default function MemberControls({
                 Enter the four-digit code spoken during the verification call.
               </p>
               <input
+                aria-label="Four-digit verification code"
+                autoComplete="one-time-code"
+                disabled={phoneBusy}
                 value={code}
                 onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 4))}
                 inputMode="numeric"
@@ -272,7 +301,7 @@ export default function MemberControls({
           )}
 
           {phoneMessage && (
-            <p className="mt-4 text-[11px] font-light leading-relaxed text-parchment-dim">
+            <p role="status" className="mt-4 text-[11px] font-light leading-relaxed text-parchment-dim">
               {phoneMessage}
             </p>
           )}
@@ -373,7 +402,7 @@ export default function MemberControls({
           </button>
 
           {scheduleMessage && (
-            <p className="mt-4 text-[11px] font-light leading-relaxed text-parchment-dim">
+            <p role="status" className="mt-4 text-[11px] font-light leading-relaxed text-parchment-dim">
               {scheduleMessage}
             </p>
           )}

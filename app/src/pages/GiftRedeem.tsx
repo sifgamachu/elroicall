@@ -3,7 +3,7 @@ import { Check, Gift, ShieldCheck } from "lucide-react";
 import { useParams, useSearchParams } from "react-router";
 import ProductShell from "@/components/ProductShell";
 import { GIFT_API, postJson, requestJson } from "@/lib/api";
-import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
+import { normalizePhone, PHONE_DISPLAY, PHONE_TEL } from "@/lib/phone";
 
 type GiftLookup = {
   ok: boolean;
@@ -25,6 +25,7 @@ export default function GiftRedeem() {
   const [view, setView] = useState<View>("loading");
   const [gift, setGift] = useState<GiftLookup | null>(null);
   const [phone, setPhone] = useState("");
+  const [claiming, setClaiming] = useState(false);
   const [consented, setConsented] = useState(false);
   const [error, setError] = useState("");
   const [badMessage, setBadMessage] = useState("This gift could not be found.");
@@ -70,13 +71,14 @@ export default function GiftRedeem() {
   }, [code]);
 
   const claim = async () => {
-    if (!phone.trim() || !consented || !code) return;
+    if (!normalizePhone(phone) || !consented || !code || claiming) return;
+    setClaiming(true);
     setError("");
 
     try {
       const data = await postJson<GiftClaim>(`${GIFT_API}/claim`, {
         code,
-        phone: phone.trim(),
+        phone: normalizePhone(phone),
       });
       if (!data.ok) {
         if (data.error === "already_used") throw new Error("already_used");
@@ -89,6 +91,8 @@ export default function GiftRedeem() {
           ? "This gift has already been claimed."
           : "We could not prepare the call just now. Please try once more.",
       );
+    } finally {
+      setClaiming(false);
     }
   };
 
@@ -154,6 +158,8 @@ export default function GiftRedeem() {
             </label>
             <input
               id="gift-phone"
+              disabled={claiming}
+              aria-describedby="gift-phone-help"
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
               type="tel"
@@ -163,15 +169,16 @@ export default function GiftRedeem() {
               className="mt-3 w-full border border-white/12 bg-white/[0.025] px-5 py-4 text-center text-base text-parchment outline-none placeholder:text-parchment-dim/45 focus:border-gold-soft"
             />
 
-            {error && <p className="mt-4 text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
+            <p id="gift-phone-help" className="mt-3 text-sm text-parchment-dim">Enter your full number, including + and country code outside the U.S. or Canada.</p>
+            {error && <p role="alert" className="mt-4 text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
 
             <button
               type="button"
               onClick={claim}
-              disabled={!consented || !phone.trim()}
+              disabled={!consented || !normalizePhone(phone) || claiming}
               className="mt-5 w-full bg-[hsl(var(--gold))] px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#17120a] transition-colors hover:bg-[hsl(var(--gold-bright))] disabled:cursor-not-allowed disabled:opacity-35"
             >
-              Claim my free call
+              {claiming ? "Preparing your call…" : "Claim my free call"}
             </button>
 
             <p className="mt-5 text-[11px] font-light leading-relaxed text-parchment-dim">

@@ -4,12 +4,13 @@ import { BrowserRouter } from 'react-router'
 import { MotionConfig } from 'framer-motion'
 import './index.css'
 import App from './App.tsx'
+import AppErrorBoundary from './components/AppErrorBoundary'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <MotionConfig reducedMotion="user">
-        <App />
+        <AppErrorBoundary><App /></AppErrorBoundary>
       </MotionConfig>
     </BrowserRouter>
   </StrictMode>,

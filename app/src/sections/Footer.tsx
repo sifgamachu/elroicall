@@ -20,7 +20,7 @@ export default function Footer() {
         <Reveal delay={0.15}>
           <div className="mt-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-parchment-dim">
-              The line is open
+              Call when you are ready
             </p>
             <a
               href={PHONE_TEL}
@@ -34,13 +34,12 @@ export default function Footer() {
           </div>
         </Reveal>
 
-        <div className="mx-auto mt-16 max-w-2xl space-y-4 text-[11.5px] font-light leading-relaxed text-parchment-dim/70">
+        <div className="mx-auto mt-16 max-w-2xl space-y-4 text-sm font-light leading-relaxed text-parchment-dim/70">
           <p>
-            El Roi Call is a guided spiritual experience featuring
-            artificial-intelligence voices inspired by biblical figures. The
-            voices are AI — not real people, clergy, counselors, or
-            therapists — and their responses are AI-generated, not divine
-            communication or authoritative doctrine.
+            El Roi Call uses one AI guide for biblical reflection. The guide
+            explores stories from Scripture in its own voice and does not
+            impersonate biblical people or speak for God. Responses are
+            AI-generated, not divine communication or authoritative doctrine.
           </p>
           <p>
             El Roi Call is for spiritual encouragement and reflection only. It
