@@ -98,14 +98,14 @@ Last time we were here...
 [ Something else ]
 ```
 
-Target memory model:
+Saved notes now implement the first part of this model:
 
 - visible to the user
-- editable/deletable when backend guarantees exist
-- saved only with a clear product reason
-- never presented as working before retention/delete semantics are verified
+- editable, pausable, and deletable from the dashboard
+- saved only through an explicit member action and consent
+- available as a draft the member reviews before continuing in writing
 
-The current homepage shows this as an explicitly labeled design target. It is not a backend promise.
+Private notes and the writing continuation are implemented with authenticated, owner-scoped storage. Phone continuation is prepared but remains unavailable until the secure voice configuration is activated. See `CONTINUITY.md` for the data boundaries and deployment requirements.
 
 ## Monetization rule
 
@@ -152,7 +152,7 @@ Avoid making cosmic imagery, AI spectacle, or religious stock imagery the core b
 
 - realtime voice-provider migration
 - full web-chat conversation backend
-- editable persistent memory controls
+- activation of explicit saved-note sharing with the phone guide
 - theological content studio UI
 
 Those require backend/content governance work. The web architecture should make room for them without pretending they already exist.

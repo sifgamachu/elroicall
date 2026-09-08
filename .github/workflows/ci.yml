@@ -39,7 +39,7 @@ jobs:
         run: npm run typecheck
 
       - name: Typecheck member and scheduling backends
-        run: ./node_modules/.bin/tsc --noEmit --strict --target es2023 --lib es2023,dom,dom.iterable --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck ../supabase/functions/scheduled-calls/service.ts ../supabase/functions/portal/service.ts ../supabase/functions/phone-scheduling/service.ts ../supabase/functions/voice/phone-scheduling.ts
+        run: ./node_modules/.bin/tsc --noEmit --strict --target es2023 --lib es2023,dom,dom.iterable --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck ../supabase/functions/scheduled-calls/service.ts ../supabase/functions/portal/service.ts ../supabase/functions/phone-scheduling/service.ts ../supabase/functions/voice/phone-scheduling.ts ../supabase/functions/continuity/service.ts ../supabase/functions/voice/continuity.ts
 
       - name: Install isolated database test tooling
         run: npm ci --ignore-scripts --prefix ../supabase/tests
