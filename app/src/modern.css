@@ -219,6 +219,12 @@
 
 /* Scheduled calls extend the call-anytime experience. */
 .elroi-schedule-layout { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:32px; align-items:start; }
+.elroi-phone-booking { display:flex; align-items:center; gap:22px; margin-bottom:36px; padding:26px; border:1px solid #dce1f1; border-radius:24px; background:linear-gradient(120deg,#f1f3ff,#fff); }
+.elroi-phone-booking>div { flex:1; min-width:0; }
+.elroi-phone-booking h2 { font-size:1.2rem; margin:0 0 8px; }
+.elroi-phone-booking p { font-size:.95rem; line-height:1.6; color:#536078; }
+.elroi-phone-booking .elroi-small { margin-top:10px; font-size:.8rem; }
+@media(max-width:700px) { .elroi-phone-booking { flex-wrap:wrap; padding:20px; gap:16px; } .elroi-phone-booking>div { flex-basis:calc(100% - 80px); } .elroi-phone-booking>.elroi-button { width:100%; } }
 .elroi-schedule-form { min-width:0; display:grid; gap:24px; }
 .elroi-schedule-card { min-width:0; border:1px solid #e1e5ef; border-radius:24px; background:white; padding:24px; margin:0; }
 .elroi-schedule-card legend { font-size:1.1rem; font-weight:650; padding:0 8px; display:flex; align-items:center; gap:10px; }

@@ -1,0 +1,34 @@
+# Schedule by phone
+
+Release status (2026-09-08): the database, callback backend, minute worker, and website entry are deployed. Updating the existing `voice` guide was blocked by automatic approval review because its legacy source embeds live credentials. That guide remains on version 27. The reviewed patch now removes embedded credentials, requires secure environment configuration, and has not been deployed to the guide. Phone bookings stay disabled until that final integration is safely installed.
+
+The existing ConversationRelay guide can collect a learning plan during a normal call. Available formats are Bible study, sermon, Bible lecture, biblical story, and Bible facts. Callers choose their own topic or passage, Marin/Cedar/Coral/Onyx narrator, 5/10/15 minutes, exact local minute, IANA time zone, first date, and one-time or selected weekly days. The guide checks readiness before asking for details. Phone bookings require at least 40 minutes of notice.
+
+Example: “Schedule a ten-minute Bible study on forgiveness every Tuesday at seven in the evening.” The guide clarifies the city/time zone, first date, and narrator, then reads the exact request back. The caller must agree to the details and one confirmation callback. They hang up, receive that callback, press 1 to hear the plan, and then press 1 after the full readback to consent and save. Silence, voicemail, 9, expiry, and provider failure never create a lesson schedule.
+
+## Components
+
+- `phone-scheduling` validates internal service credentials and looks up the actual CallSID in Twilio. The receiving number comes from that call, never from model input. Inbound caller ID alone cannot authorize an account change or recurring calls.
+- `phone_booking_drafts` stores a 20-minute draft. Changed choices invalidate the previous draft ID. One request per source call can enter the callback queue; up to three callback requests per number per hour are permitted.
+- `elroi-phone-booking` runs every minute using the existing Vault cron token. It waits until the source call has completed, claims a draft atomically, and makes one verification call. Ambiguous Calls API results are never redialed. Signed webhooks reconcile early callbacks.
+- Verification checks the exact Twilio signature, account, destination, origin, and callback SID. A first keypad step protects the topic from voicemail. The full readback plays before the consent keypad prompt.
+- `phone_booking_commit` atomically rechecks verified ownership and the exact read-back occurrence, then calls the same `lesson_create_plan` RPC used by the website. Duplicate confirmations return the existing schedule. Conflict and five-plan limits still apply.
+- A verified portal account is reused first. Otherwise a confirmed phone Auth account is reused. Only after recipient keypad confirmation may Auth Admin create a new confirmed phone account. An existing unverified identity or different canonical dashboard number is not overwritten. Phone-only members need Supabase SMS login enabled to access their dashboard; scheduling itself does not require opening the website.
+- `stop_scheduled_calls` prepares a stop-all request through the same confirmation flow. It pauses legacy tracks and the member’s new learning plans at this number. Pressing 9 during an individual lesson or using the dashboard still pauses that specific plan immediately.
+- Unconfirmed drafts expire after 20 minutes and are deleted after seven days. Confirmed records reference their owning Auth user and cascade on account deletion. No raw provider responses, credentials, phone numbers, or topics are logged by this new service.
+
+## Deployment and activation
+
+Apply `20260908191019_phone_learning_booking.sql`, deploy `phone-scheduling` with the shared dependencies, and apply the guarded `scripts/patch-voice-scheduling.mjs` adapter to the current native `voice` source. Include `supabase/functions/voice/phone-scheduling.ts` in the voice deployment. Before deploying the patch, move the existing route token into `VOICE_ROUTE_TOKEN` and ensure `ANTHROPIC_API_KEY` is configured in Supabase Functions Secrets. The existing Twilio and cron token values must continue to match; never paste them into chat or Git. The patch removes both embedded credential constants and rejects an empty route token. The native legacy source is deliberately not committed; the patch is pure, requires each anchor to match exactly once, and refuses a second installation. Never deploy a redacted source copy.
+
+The new function uses custom internal and Twilio webhook authentication, so platform JWT verification is disabled. Browser users cannot access privileged tables or RPCs directly. The phone-to-owner lookup alone uses a fixed-search-path security definer, executable only by the service role, because that role cannot directly read Auth users. Other booking functions use security invoker. No inbound number webhook, existing conversational voice provider, or existing lesson playback function is replaced.
+
+Required outbound secrets are `OPENAI_API_KEY`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and the existing `TWILIO_FROM_NUMBER`. After the guide integration is deployed, set `PHONE_BOOKING_VOICE_ENABLED=true`. The scheduled-call service must be enabled, both lesson workers healthy, and the phone-booking heartbeat current. Until these conditions are met, the new phone-booking capability reports unavailable. No production lesson or verification call was placed during development. The connected Supabase tools do not provide secret-management operations, so credential configuration requires the project’s Functions Secrets dashboard.
+
+Supabase phone SMS sign-in is a separate provider setting. See `AUTH_SIGN_IN.md` for phone login and email redirect configuration. Provision outbound credentials in Supabase Functions Secrets, enable the lesson service after an authorized test call, and enable SMS authentication for phone-only members. Do not copy the legacy embedded provider keys into the repository.
+
+## Verification
+
+Application tests exercise forged requests, signed callbacks, destination isolation, exact readback, voicemail privacy, recipient consent, provider withdrawal, hangup-before-callback, ambiguous delivery, and adapter state. PostgreSQL tests exercise duplicate confirmation, owner resolution, changed/expired drafts, canonical-phone protection, unchanged occurrence times, shared dashboard plans, stop-all scoping, and browser-role denial. CI typechecks the phone backend and voice adapter alongside the existing services.
+
+Provider references: [Twilio Call resource](https://www.twilio.com/docs/voice/api/call-resource), [Twilio Gather](https://www.twilio.com/docs/voice/twiml/gather), [Supabase Auth Admin create user](https://supabase.com/docs/reference/javascript/auth-admin-createuser).

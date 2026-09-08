@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/lib/supabase';
 import { getPortalMember, type PortalMember } from '@/lib/portal';
 import { PHONE_TEL } from '@/lib/phone';
-import { ApiError } from '@/lib/api';
+import { ApiError, fetchJson, SUPABASE_URL } from '@/lib/api';
 import { CONTENT_TYPES, VOICES, WEEKDAYS, localDate, planLabel, schedulingRequest, validatePlan, type CallPlan, type CallPlanInput } from '@/lib/scheduled-calls';
 import type { MemberPreferences } from '@/lib/dashboard';
 
@@ -26,6 +26,7 @@ export default function Schedule() {
   const [member, setMember] = useState<PortalMember | null>(null);
   const [ready, setReady] = useState<boolean | null>(null);
   const [voiceReady,setVoiceReady]=useState(false);
+  const [phoneReady,setPhoneReady]=useState(false);
   const [contentType, setContentType] = useState(()=>CONTENT_TYPES.some(type=>type.id===query.get('content'))?query.get('content')!:'');
   const [topic, setTopic] = useState(()=>(query.get('topic')||'').slice(0,160));
   const [voice, setVoice] = useState('');
@@ -56,6 +57,7 @@ export default function Schedule() {
     let active = true;let authEvent=false;
     const playback = previewSequence;
     const currentAudio = audio;
+    void fetchJson<{ready:boolean}>(`${SUPABASE_URL}/functions/v1/phone-scheduling/capabilities`,{},12000).then(result=>{if(active)setPhoneReady(result.status===200&&result.data.ready===true);}).catch(()=>{if(active)setPhoneReady(false);});
     void schedulingRequest<{ ready: boolean;voice_ready:boolean }>('/capabilities').then(data => { if (active) {setReady(data.ready === true);setVoiceReady(data.voice_ready===true);} }).catch(() => { if (active) setReady(false); });
     void supabase.auth.getSession().then(({ data }) => { if (active&&!authEvent) { accountId.current=data.session?.user.id||null;setSession(data.session); setAuthLoading(false); } }).catch(() => { if (active&&!authEvent) { setAuthLoading(false); setError('Please sign in to manage scheduled calls.'); } });
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, next) => { if (active) { authEvent=true;accountId.current=next?.user.id||null;setSession(next);setAuthLoading(false); setMember(null); setPlans([]);setNotice('');setError(''); } });
@@ -145,6 +147,7 @@ export default function Schedule() {
   }
 
   return <ProductShell eyebrow="ON YOUR SCHEDULE" title="Make room for Scripture." description="Choose what you want to hear and when. We call you at the time you choose. You can also call El Roi anytime.">
+    <section className="elroi-phone-booking" aria-labelledby="phone-booking-title"><span className="elroi-icon-tile"><Phone size={22}/></span><div><h2 id="phone-booking-title">Prefer to arrange it over the phone?</h2><p>Tell the guide what you want to learn, your voice, and when to call. Review the details, then confirm on a brief callback. Your saved plan appears in your dashboard.</p><p className="elroi-small">{phoneReady ? 'For example: “A ten-minute Bible study on forgiveness, Tuesdays at 7 p.m.” Allow at least 40 minutes before your first lesson.' : 'Phone scheduling is being connected alongside online booking. You can still call for a conversation now.'}</p></div><a href={PHONE_TEL} className="elroi-button elroi-button-secondary">Call El Roi <Phone size={16}/></a></section>
     <div className="elroi-schedule-layout">
       <form id="schedule-form" className="elroi-schedule-form" onChange={()=>{edited.current=true;}} onClick={()=>{edited.current=true;}} onSubmit={event => { event.preventDefault(); void save(); }}>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>1</span> What is this call for?</legend>
