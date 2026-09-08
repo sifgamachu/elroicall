@@ -1,18 +1,30 @@
+import { useEffect } from "react";
 import { useLocation } from "react-router";
 import { useDocumentMeta } from "@/hooks/use-document-meta";
 
 const HOME = {
-  title: "El Roi Call — Tell me what happened",
+  title: "El Roi Call — A little space. A deeper conversation.",
   description: "Start with what is true. El Roi listens first, reflects what it heard, and opens Scripture only when a biblical story actually fits.",
   canonical: "https://elroicall.com/",
 };
 
 export default function RouteMeta() {
-  const { pathname } = useLocation();
+  const { pathname, hash, key } = useLocation();
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      if (hash) {
+        document.getElementById(hash.slice(1))?.scrollIntoView();
+      } else {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pathname, hash, key]);
 
   const meta = pathname.startsWith("/begin")
     ? {
-        title: "Start with the true sentence — El Roi Call",
+        title: "What’s on your heart? — El Roi Call",
         description: "Your words first. El Roi reflects what it heard before opening a relevant biblical story and preparing your free first conversation.",
         canonical: "https://elroicall.com/begin/",
       }

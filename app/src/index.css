@@ -4,15 +4,15 @@
 
 @layer base {
   :root {
-    /* dawn parchment editorial — morning has broken */
-    --ink: 42 48% 95%;         /* warm cream — first light on parchment */
-    --ink-2: 40 42% 91%;       /* deeper cream for section bands */
-    --ink-3: 38 36% 85%;       /* card hover, wells of shade */
-    --parchment: 27 32% 17%;   /* deep umber — ink on the page */
-    --parchment-dim: 28 16% 40%;
-    --gold: 36 62% 42%;        /* bronze gold — readable on cream */
-    --gold-bright: 38 84% 52%; /* amber radiance — the gaze that sees */
-    --glory: 38 72% 36%;       /* deep glory gold for display text */
+    /* El Roi: clear light, ink blue, and a confident cobalt accent. */
+    --ink: 220 33% 98%;
+    --ink-2: 222 38% 96%;
+    --ink-3: 222 29% 92%;
+    --parchment: 224 33% 15%;
+    --parchment-dim: 222 13% 41%;
+    --gold: 234 70% 56%;
+    --gold-bright: 234 68% 48%;
+    --glory: 234 68% 48%;
 
     --background: var(--ink);
     --foreground: var(--parchment);
@@ -21,7 +21,7 @@
     --popover: var(--ink-2);
     --popover-foreground: var(--parchment);
     --primary: var(--gold);
-    --primary-foreground: 228 40% 8%;
+    --primary-foreground: 0 0% 100%;
     --secondary: var(--ink-3);
     --secondary-foreground: var(--parchment);
     --muted: var(--ink-3);
@@ -30,10 +30,10 @@
     --accent-foreground: var(--parchment);
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 42 40% 34%;
-    --input: 42 40% 34%;
+    --border: 222 27% 89%;
+    --input: 222 27% 86%;
     --ring: var(--gold-bright);
-    --radius: 0.5rem;
+    --radius: 1rem;
   }
 }
 
@@ -47,22 +47,22 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
-    background-color: #f7f1e4;
+    background-color: #f8f9fc;
   }
   ::selection {
     background: hsl(var(--gold-bright) / 0.35);
-    color: #2b2117;
+    color: #142047;
   }
   /* the night inside the dawn — dark bands keep light text */
   .night-band {
-    --parchment: 38 45% 88%;
-    --parchment-dim: 36 24% 65%;
+    --parchment: 220 35% 95%;
+    --parchment-dim: 220 19% 73%;
   }
 }
 
 @layer utilities {
   .font-serif-display {
-    font-family: "Cormorant Garamond", "Georgia", serif;
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
   }
   .text-gold {
     color: hsl(var(--gold));
@@ -95,7 +95,7 @@
     border-color: hsl(var(--gold) / 0.35);
   }
   .eyebrow {
-    @apply text-[11px] font-medium uppercase tracking-[0.42em] text-gold;
+    @apply text-sm font-semibold tracking-wide text-gold;
   }
   /* film grain overlay */
   .grain::after {

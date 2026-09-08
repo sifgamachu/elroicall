@@ -17,7 +17,7 @@ export default function App() {
   return (
     <DraftContext.Provider value={{ draft, setDraft }}>
       <RouteMeta />
-      <Suspense fallback={<main className="grid min-h-screen place-content-center gap-5 bg-[#0b0a08] px-6 text-center text-parchment"><p role="status" className="text-lg">Opening your conversation…</p><a href={PHONE_TEL} className="min-h-11 text-gold-bright underline">Prefer voice? Call El Roi</a></main>}>
+      <Suspense fallback={<main className="grid min-h-screen place-content-center gap-5 bg-[#f8f9fc] px-6 text-center text-parchment"><p role="status" className="text-lg">Opening your conversation…</p><a href={PHONE_TEL} className="min-h-11 text-gold-bright underline">Prefer voice? Call El Roi</a></main>}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/begin" element={<BeginWell />} />

@@ -1,0 +1,218 @@
+:root { --elroi-blue:#4c5fe2; --elroi-blue-hover:#3d4dcc; --elroi-navy:#172039; --elroi-muted:#657087; --elroi-line:#e3e7f0; --elroi-soft:#f2f5fb; }
+.elroi-site { color:var(--elroi-navy); background:#f8f9fc; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+.elroi-container { width:min(1240px,calc(100% - 80px)); margin-inline:auto; }
+.elroi-site *, .elroi-mobile-sheet * { box-sizing:border-box; }
+.elroi-site :is(a,button,input,textarea,select):focus-visible { outline:3px solid #7183ff; outline-offset:4px; }
+.elroi-site section[id], .elroi-site [id=first-words] { scroll-margin-top:110px; }
+.elroi-site svg { flex-shrink:0; }
+.elroi-nav { position:sticky; top:0; z-index:40; background:rgba(248,249,252,.94); backdrop-filter:blur(20px); border-bottom:1px solid var(--elroi-line); }
+.elroi-nav-inner { height:88px; display:flex; align-items:center; justify-content:space-between; gap:28px; }
+.elroi-brand { display:inline-flex; align-items:center; gap:10px; color:var(--elroi-navy); font-size:27px; font-weight:700; letter-spacing:-1.5px; white-space:nowrap; }
+.elroi-brand-icon { width:37px; height:37px; border-radius:12px; display:grid; place-items:center; background:var(--elroi-blue); color:white; }
+.elroi-brand-call { font-weight:400; color:#68748b; letter-spacing:-1px; }
+.elroi-brand-light { color:white; }
+.elroi-desktop-links { display:flex; align-items:center; gap:32px; }
+.elroi-desktop-links a, .elroi-signin { color:#535e74; font-size:14px; font-weight:500; padding-block:12px; }
+.elroi-desktop-links a:hover, .elroi-signin:hover { color:var(--elroi-blue); }
+.elroi-nav-actions { display:flex; align-items:center; gap:25px; }
+.elroi-button { min-height:52px; padding:15px 23px; display:inline-flex; align-items:center; justify-content:center; gap:12px; border:1px solid transparent; border-radius:13px; font-size:14px; font-weight:600; line-height:1.3; transition:background .2s,transform .2s,box-shadow .2s; text-decoration:none; }
+.elroi-button:hover { transform:translateY(-2px); }
+.elroi-button-primary { background:var(--elroi-blue); color:#fff; box-shadow:0 6px 16px #4c5fe21a; }
+.elroi-button-primary:hover { background:var(--elroi-blue-hover); box-shadow:0 8px 24px #4c5fe22b; }
+.elroi-button-dark { background:var(--elroi-navy); color:white; }
+.elroi-button-dark:hover { background:#283452; }
+.elroi-button-white { background:white; color:#3346c1; }
+.elroi-button-white:hover { background:#edf0ff; }
+.elroi-nav-start { min-height:44px; padding:12px 18px; border-radius:11px; }
+.elroi-menu-button { display:none; min-height:44px; min-width:44px; align-items:center; justify-content:center; border:1px solid var(--elroi-line); border-radius:12px; }
+.elroi-skip { position:fixed; top:10px; left:10px; transform:translateY(-200%); z-index:100; padding:12px 18px; border-radius:10px; background:var(--elroi-navy); color:#fff; }
+.elroi-skip:focus { transform:none; }
+.elroi-mobile-sheet { background:#f8f9fc; padding:24px; color:var(--elroi-navy); }
+.elroi-mobile-sheet > button { min-width:44px; min-height:44px; display:grid; place-items:center; }
+.elroi-mobile-links { display:flex; flex-direction:column; margin-top:12px; }
+.elroi-mobile-links a { display:flex; justify-content:space-between; gap:16px; padding:20px 12px; border-bottom:1px solid var(--elroi-line); font-size:16px; }
+.elroi-hero { background:radial-gradient(ellipse at 78% 28%,#eaf0fd 0,transparent 49%); }
+.elroi-hero-grid { display:grid; grid-template-columns:1.08fr 1fr; gap:70px; padding-block:70px 60px; align-items:center; }
+.elroi-pill { display:inline-flex; align-items:center; gap:9px; padding:8px 13px; background:#eaeefd; color:#4857b1; border:1px solid #dce3fc; border-radius:50px; font-size:12px; font-weight:500; }
+.elroi-hero h1 { margin:26px 0 24px; font-size:clamp(3rem,5.5vw,5rem); font-weight:600; letter-spacing:-.065em; line-height:1.07; }
+.elroi-hero h1 > span { color:var(--elroi-blue); }
+.elroi-hero-description { color:#626d82; max-width:470px; font-size:17px; line-height:1.8; }
+.elroi-hero-actions { display:flex; align-items:center; flex-wrap:wrap; gap:22px; margin-top:30px; }
+.elroi-text-link { display:inline-flex; align-items:center; gap:10px; min-height:44px; font-size:14px; font-weight:600; color:var(--elroi-navy); }
+.elroi-text-link:hover { color:var(--elroi-blue); }
+.elroi-free-note { display:flex; align-items:center; gap:8px; margin-top:17px; color:#737d91; font-size:12px; }
+.elroi-free-note > span { margin-inline:3px; }
+.elroi-verse { display:flex; gap:15px; margin-top:44px; align-items:stretch; }
+.elroi-verse-line { width:2px; background:#cbd2ea; }
+.elroi-verse p { font-size:15px; font-weight:500; color:#46536b; }
+.elroi-verse div > span { display:block; margin-top:7px; font-size:12px; color:#7e889b; }
+.elroi-entry { overflow:hidden; border:1px solid #e0e6f2; border-radius:26px; background:#fff; box-shadow:0 24px 70px -24px #34457626,0 4px 12px #24375904; }
+.elroi-entry-art { height:190px; position:relative; overflow:hidden; background:#dfecfa; }
+.elroi-entry-art img { width:100%; height:100%; object-fit:cover; object-position:70% 57%; }
+.elroi-entry-label { position:absolute; top:20px; left:22px; display:flex; align-items:center; gap:8px; background:#ffffffc9; border:1px solid #fff9; color:#3b5585; border-radius:50px; padding:8px 12px; font-size:12px; font-weight:500; backdrop-filter:blur(8px); }
+.elroi-composer { padding:25px 27px 20px; }
+.elroi-composer-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.elroi-composer-heading label { font-size:21px; font-weight:600; letter-spacing:-.04em; }
+.elroi-composer-heading > svg { color:#7c889d; }
+.elroi-composer textarea { display:block; width:100%; min-height:101px; resize:vertical; margin-block:15px; padding:13px 15px; border:1px solid #e6eaf2; border-radius:12px; background:#f8f9fc; color:var(--elroi-navy); font-size:16px; line-height:1.5; transition:border .2s; }
+.elroi-composer textarea::placeholder { color:#8a94a7; }
+.elroi-composer textarea:focus { border-color:#7e8dec; outline:none; box-shadow:0 0 0 3px #6272ee13; }
+.elroi-composer-submit { width:100%; justify-content:space-between; }
+.elroi-button:disabled { cursor:not-allowed; background:#e8ecfa; color:#6b76a5; box-shadow:none; transform:none; }
+.elroi-small { color:#738098; font-size:12px; line-height:1.65; }
+.elroi-composer .elroi-small { margin-top:13px; }
+.elroi-starters { border-top:1px solid #edf0f5; background:#fcfcfe; padding:17px 27px 21px; }
+.elroi-starters > p { font-size:12px; color:#788299; margin-bottom:10px; }
+.elroi-starters > div { display:flex; flex-wrap:wrap; gap:8px; }
+.elroi-starters button { display:flex; align-items:center; gap:6px; min-height:44px; padding:9px 11px; border:1px solid #e3e8f2; border-radius:9px; background:white; color:#66718a; font-size:14px; }
+.elroi-starters button:hover { border-color:#a5b0ee; color:#4656ca; background:#f5f7ff; }
+.elroi-trust-strip { display:flex; align-items:center; justify-content:center; gap:70px; padding-block:25px; border-top:1px solid var(--elroi-line); color:#738099; font-size:13px; }
+.elroi-trust-strip span { display:flex; align-items:center; gap:10px; }
+.elroi-trust-strip svg { color:#667ad2; }
+.elroi-section { padding-block:102px; }
+.elroi-kicker { color:#6270bd; font-size:12px; letter-spacing:.12em; font-weight:600; margin-bottom:18px; }
+.elroi-section h2, .elroi-gift-banner h2 { font-size:clamp(2rem,3.6vw,3.2rem); font-weight:600; letter-spacing:-.055em; line-height:1.14; }
+.elroi-section-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:32px; margin-bottom:45px; }
+.elroi-section-heading > p { color:var(--elroi-muted); font-size:16px; line-height:1.8; max-width:400px; }
+.elroi-how { background:white; }
+.elroi-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:30px; }
+.elroi-steps article { padding:30px; border:1px solid #e7eaf2; border-radius:22px; background:#fcfcfe; }
+.elroi-step-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+.elroi-step-top > span:last-child { font-size:13px; color:#9aa4b7; }
+.elroi-icon-tile { display:grid; place-items:center; width:52px; height:52px; flex-shrink:0; border:1px solid #e1e6fa; background:#f0f3ff; border-radius:15px; color:#5769db; }
+.elroi-steps h3 { font-size:21px; font-weight:600; letter-spacing:-.04em; margin-bottom:13px; }
+.elroi-steps article > p { color:#6e7890; font-size:16px; line-height:1.8; }
+.elroi-stories { background:#121b30; color:white; }
+.elroi-stories .elroi-kicker { color:#9eaefb; }
+.elroi-stories .elroi-section-heading > p { color:#a3aec5; }
+.elroi-story-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:13px; }
+.elroi-story-card { min-width:0; padding:24px 20px; border-radius:18px; border:1px solid #ffffff14; background:#1a2640; display:flex; flex-direction:column; transition:transform .2s,border-color .2s,background .2s; }
+.elroi-story-card:hover { transform:translateY(-4px); border-color:#7d91ff; background:#233152; }
+.elroi-story-top { display:flex; align-items:center; justify-content:space-between; gap:12px; color:#a7b6fc; }
+.elroi-story-1 .elroi-story-top { color:#cbbcff; }.elroi-story-2 .elroi-story-top { color:#9ecfdc; }.elroi-story-3 .elroi-story-top { color:#c8d4ed; }.elroi-story-4 .elroi-story-top { color:#b8cec6; }
+.elroi-story-card h3 { font-size:25px; font-weight:500; letter-spacing:-.05em; margin-top:28px; }
+.elroi-story-card > p { font-size:16px; line-height:1.7; color:#acb7d0; margin-top:12px; margin-bottom:23px; }
+.elroi-story-card > span { margin-top:auto; font-size:12px; color:#8091b5; }
+.elroi-story-note { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-top:30px; color:#a8b6d2; font-size:14px; }
+.elroi-story-note a { display:flex; align-items:center; gap:8px; color:#bcc7ff; min-height:44px; }
+.elroi-return { background:#f8f9fc; }
+.elroi-return-grid { display:grid; grid-template-columns:1fr 1fr; gap:100px; align-items:center; }
+.elroi-section-copy { color:var(--elroi-muted); font-size:16px; line-height:1.9; max-width:480px; margin-block:23px 27px; }
+.elroi-return .elroi-small { margin-top:13px; }
+.elroi-room-card { padding:32px; background:white; border:1px solid var(--elroi-line); border-radius:25px; box-shadow:0 22px 65px -40px #344d854d; }
+.elroi-room-heading { display:flex; align-items:center; gap:16px; border-bottom:1px solid #edf0f6; padding-bottom:25px; }
+.elroi-room-heading div > span { font-size:11px; color:#7d88a1; letter-spacing:.1em; }
+.elroi-room-heading h3 { font-size:22px; letter-spacing:-.045em; font-weight:600; margin-top:4px; }
+.elroi-room-features > div { display:flex; gap:15px; margin-top:27px; }
+.elroi-room-features > div > svg { color:#7e8cc9; margin-top:2px; }
+.elroi-room-features h4 { font-weight:500; font-size:15px; }
+.elroi-room-features p { color:#7e899f; font-size:14px; line-height:1.65; margin-top:5px; }
+.elroi-room-note { font-size:12px; line-height:1.7; margin-top:26px; padding:14px; border-radius:11px; background:#f6f8fc; color:#7e899e; }
+.elroi-gift-section { padding-bottom:50px; background:#f8f9fc; }
+.elroi-gift-banner { display:flex; justify-content:space-between; align-items:center; gap:60px; padding:58px 68px; border-radius:27px; background:#4c5fe2; background-image:radial-gradient(ellipse at 95% 10%,#7b8cf5 0,transparent 60%); color:white; }
+.elroi-gift-banner .elroi-kicker { color:#d7deff; display:flex; align-items:center; gap:10px; }
+.elroi-gift-copy > p:last-child { max-width:530px; font-size:16px; line-height:1.85; margin-top:23px; color:#d9dfff; }
+.elroi-gift-action { display:flex; flex-direction:column; gap:15px; flex-shrink:0; align-items:center; }
+.elroi-gift-action > span { font-size:12px; color:#dde3ff; }
+.elroi-faq { background:#fff; }
+.elroi-faq-grid { display:grid; grid-template-columns:.7fr 1fr; gap:100px; }
+.elroi-accordion [data-slot=accordion-item], .elroi-accordion > div { border-color:#e5e9f2; }
+.elroi-accordion button { font-size:16px; font-weight:500; line-height:1.55; padding-block:23px; color:#344059; }
+.elroi-accordion button:hover { text-decoration:none; color:var(--elroi-blue); }
+.elroi-accordion [role=region] > div { font-size:15px; line-height:1.85; color:#6e7890; padding-bottom:24px; }
+.elroi-footer { background:#f2f5fb; padding-block:46px 30px; border-top:1px solid #e7ebf3; }
+.elroi-footer-top { display:flex; justify-content:space-between; gap:30px; align-items:center; }
+.elroi-footer-top > div > p { font-size:14px; margin-top:12px; color:#7b859a; }
+.elroi-footer-phone { display:flex; align-items:center; gap:13px; font-size:21px; font-weight:500; letter-spacing:-.025em; color:#465371; }
+.elroi-footer-bottom { margin-top:36px; padding-top:23px; border-top:1px solid #dfe5ef; display:flex; justify-content:space-between; align-items:center; gap:25px; font-size:12px; color:#7a869d; }
+.elroi-footer-bottom nav { display:flex; flex-wrap:wrap; gap:25px; font-size:13px; }
+.elroi-footer-bottom a:hover { color:var(--elroi-blue); }
+.elroi-disclosure { font-size:12px; color:#8590a4; line-height:1.8; margin-top:23px; max-width:990px; }
+.elroi-product-main { width:min(1120px,calc(100% - 80px)); margin-inline:auto; padding-block:38px 90px; }
+.elroi-product-compact { max-width:790px; }
+.elroi-back { display:inline-flex; align-items:center; gap:8px; color:#7a869c; font-size:14px; min-height:44px; margin-bottom:26px; }
+.elroi-back:hover { color:var(--elroi-blue); }
+.elroi-product-heading { max-width:800px; margin-bottom:38px; }
+.elroi-product-heading h1 { font-size:clamp(2rem,3.5vw,3.5rem); line-height:1.12; letter-spacing:-.05em; font-weight:600; }
+.elroi-product-heading > p:last-child:not(.elroi-kicker) { font-size:17px; line-height:1.85; color:#6a7790; margin-top:20px; }
+.elroi-product-content { --parchment:224 33% 15%; --parchment-dim:222 13% 41%; }
+.elroi-product-content .font-serif-display { font-family:Inter,ui-sans-serif,system-ui,sans-serif; font-style:normal; letter-spacing:-.035em; }
+.elroi-product-content :is(h1,h2,h3) { font-weight:600; line-height:1.2; }
+.elroi-product-content h1 { font-size:clamp(2rem,3.6vw,3.15rem); letter-spacing:-.05em; }
+.elroi-product-content blockquote { font-size:clamp(1.2rem,2.2vw,1.6rem); font-weight:400; line-height:1.7; letter-spacing:-.015em; color:#526183; }
+.elroi-product-content :is(input:not([type=checkbox]),textarea,select) { border-radius:12px; font-size:16px; background:#fff; border:1px solid #dce3f1; color:#293753; line-height:1.6; }
+.elroi-product-content :is(input,textarea,select)::placeholder { color:#909aae; }
+.elroi-product-content :is(input:not([type=checkbox]),textarea,select):focus { border-color:#8796ee; outline:3px solid #6272ee14; }
+.elroi-product-content button, .elroi-product-content a[class*="bg-[hsl"] { border-radius:12px; min-height:44px; }
+.elroi-product-content :is(article,form), .elroi-product-content section.border { border-radius:20px; }
+.elroi-product-content div.border { border-radius:16px; }
+.elroi-product-content p { overflow-wrap:anywhere; }
+.elroi-product-content input[type=checkbox] { accent-color:var(--elroi-blue); width:18px; height:18px; flex-shrink:0; }
+.elroi-product-content button:disabled { cursor:not-allowed; }
+.elroi-product-content .eyebrow { font-size:13px; letter-spacing:.035em; }
+.elroi-product-content .elroi-intake-layout { gap:60px; grid-template-columns:.3fr .7fr; }
+.elroi-product-content .elroi-intake-aside { background:#f0f3fa; padding:24px; border:1px solid #e2e8f3; border-radius:20px; }
+.elroi-product-content .elroi-intake-aside > a { font-size:13px; }
+.elroi-product-content [role=alert] { color:#ae4050; }
+.elroi-product-content .elroi-status-error { color:#ae4050; }
+@media(min-width:1500px) { .elroi-hero-grid { gap:95px; } }
+@media(max-width:1100px) {
+  .elroi-container { width:calc(100% - 56px); }
+  .elroi-desktop-links { gap:20px; }.elroi-nav-actions { gap:18px; }
+  .elroi-hero-grid { gap:36px; }.elroi-hero h1 { font-size:clamp(2.7rem,5.9vw,4.4rem); }
+  .elroi-hero-actions { gap:12px; }.elroi-hero-description { font-size:16px; }
+  .elroi-story-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .elroi-story-card:nth-last-child(1) { grid-column:auto; }
+  .elroi-steps { gap:16px; }.elroi-steps article { padding:24px; }
+  .elroi-return-grid,.elroi-faq-grid { gap:50px; }
+  .elroi-gift-banner { padding:45px; gap:35px; }
+  .elroi-product-content .elroi-intake-layout { gap:30px; }
+}
+@media(max-width:850px) {
+  .elroi-desktop-links { display:none; }.elroi-menu-button { display:flex; }
+  .elroi-hero-grid { grid-template-columns:1fr; gap:38px; padding-block:42px; }
+  .elroi-hero-copy { max-width:620px; }.elroi-hero h1 { font-size:clamp(2.7rem,7.5vw,4.2rem); margin-block:21px; }
+  .elroi-desktop-break { display:none; }.elroi-hero-description { max-width:550px; }
+  .elroi-entry { max-width:620px; width:100%; }.elroi-entry-art { height:160px; }
+  .elroi-verse { display:none; }.elroi-trust-strip { gap:30px; flex-wrap:wrap; justify-content:flex-start; }
+  .elroi-section { padding-block:70px; }.elroi-section-heading { gap:24px; align-items:flex-start; flex-direction:column; }
+  .elroi-steps { grid-template-columns:1fr; gap:15px; }.elroi-step-top { margin-bottom:20px; }
+  .elroi-steps article { padding:25px; }.elroi-steps h3 { font-size:21px; }
+  .elroi-return-grid,.elroi-faq-grid { grid-template-columns:1fr; gap:38px; }
+  .elroi-story-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .elroi-gift-banner { align-items:flex-start; flex-direction:column; padding:38px; }
+  .elroi-gift-action { align-items:flex-start; }.elroi-footer-phone { font-size:18px; }
+  .elroi-footer-bottom { flex-direction:column; align-items:flex-start; gap:17px; }
+  .elroi-product-main { width:calc(100% - 48px); }
+  .elroi-product-content .elroi-intake-layout { grid-template-columns:1fr; gap:30px; }
+  .elroi-product-content .elroi-intake-aside { padding:20px; }
+}
+@media(max-width:520px) {
+  .elroi-container { width:calc(100% - 40px); }.elroi-nav-inner { height:72px; gap:12px; }
+  .elroi-brand { font-size:24px; gap:8px; }.elroi-brand-icon { height:32px; width:32px; border-radius:10px; }
+  .elroi-signin { display:none; }.elroi-nav-actions { gap:9px; }.elroi-nav-start { padding:11px 13px; }
+  .elroi-hero-grid { padding-top:31px; gap:27px; }.elroi-hero h1 { font-size:clamp(2.5rem,10.7vw,3.25rem); letter-spacing:-.065em; }
+  .elroi-pill { font-size:11px; padding:7px 10px; }.elroi-hero-description { font-size:16px; line-height:1.8; }
+  .elroi-hero-actions { margin-top:23px; gap:10px 17px; }.elroi-hero-actions .elroi-button { padding:15px 18px; }
+  .elroi-hero-actions .elroi-text-link { font-size:13px; }.elroi-free-note { font-size:11px; }
+  .elroi-entry-art { display:none; }.elroi-entry { border-radius:20px; }
+  .elroi-composer { padding:24px 20px 18px; }.elroi-composer-heading label { font-size:21px; }
+  .elroi-composer textarea { min-height:95px; }.elroi-starters { padding:16px 20px 21px; }
+  .elroi-trust-strip { font-size:12px; gap:15px; padding-block:22px; flex-direction:column; align-items:flex-start; }
+  .elroi-section { padding-block:58px; }.elroi-section h2,.elroi-gift-banner h2 { font-size:34px; }
+  .elroi-section-heading { margin-bottom:28px; }.elroi-section-heading > p { font-size:15px; }
+  .elroi-story-grid { gap:10px; }.elroi-story-card { padding:20px 16px; border-radius:14px; }.elroi-story-card h3 { font-size:23px; }.elroi-story-card > p { font-size:14px; }
+  .elroi-story-card > span { font-size:11px; }.elroi-story-note { flex-direction:column; align-items:flex-start; gap:8px; font-size:13px; }
+  .elroi-room-card { padding:23px; border-radius:20px; }.elroi-room-heading { gap:12px; }.elroi-room-heading h3 { font-size:20px; }
+  .elroi-gift-banner { padding:30px 25px; border-radius:21px; }.elroi-gift-banner .elroi-kicker { font-size:11px; }
+  .elroi-gift-copy > p:last-child { font-size:15px; }.elroi-gift-section { padding-bottom:30px; }
+  .elroi-accordion button { font-size:15px; }.elroi-footer-top { flex-direction:column; align-items:flex-start; gap:28px; }
+  .elroi-product-main { width:calc(100% - 36px); padding-block:22px 60px; }.elroi-back { margin-bottom:20px; }
+  .elroi-product-content h1 { font-size:32px; }.elroi-product-content .elroi-intake-aside > a { display:none; }
+  .elroi-product-content .elroi-intake-aside { padding:16px; }.elroi-product-content .elroi-intake-aside > p { font-size:12px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto!important; }
+  .elroi-site *, .elroi-mobile-sheet * { animation:none!important; transition:none!important; }
+  .elroi-button:hover,.elroi-story-card:hover { transform:none; }
+}

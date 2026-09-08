@@ -129,9 +129,9 @@ export default function MemberRoom() {
       <ProductShell compact>
         <div className="py-20 text-center">
           <div className="mx-auto h-16 w-16 rounded-full border border-gold-soft/50 p-3">
-            <div className="breathe h-full w-full rounded-full border border-gold-soft/40 bg-[hsl(var(--gold)/0.08)]" />
+            <div className="breathe h-full w-full rounded-full border border-gold-soft/40 bg-indigo-50" />
           </div>
-          <p className="font-serif-display mt-7 text-3xl font-light italic text-parchment">Opening your room…</p>
+          <p className="font-serif-display mt-7 text-3xl font-normal italic text-parchment">Opening your room…</p>
         </div>
       </ProductShell>
     );
@@ -145,10 +145,10 @@ export default function MemberRoom() {
         description="Sign in to see your journeys and recent conversations."
         compact
       >
-        <form onSubmit={(event) => { event.preventDefault(); void sendLink(); }} className="mx-auto max-w-xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
-          <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-gold">Passwordless sign in</p>
-          <h2 className="font-serif-display mt-3 text-3xl font-light text-parchment">Sign in with your email.</h2>
-          <p className="mt-3 text-[12px] font-light leading-[1.75] text-parchment-dim">
+        <form onSubmit={(event) => { event.preventDefault(); void sendLink(); }} className="mx-auto max-w-xl border border-slate-200 bg-white p-6 sm:p-8">
+          <p className="text-sm font-medium text-gold">Passwordless sign in</p>
+          <h2 className="font-serif-display mt-3 text-3xl font-normal text-parchment">Sign in with your email.</h2>
+          <p className="mt-3 text-sm font-normal leading-[1.75] text-parchment-dim">
             Use the email connected to your membership. There is no password to remember.
           </p>
           <label htmlFor="member-email" className="mt-5 block text-sm text-gold">Email address</label>
@@ -161,14 +161,14 @@ export default function MemberRoom() {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className="mt-6 w-full border border-white/12 bg-white/[0.025] px-4 py-3.5 text-parchment outline-none placeholder:text-parchment-dim/45 focus:border-gold-soft"
+            className="mt-6 w-full border border-slate-200 bg-white px-4 py-3.5 text-parchment outline-none placeholder:text-parchment-dim/45 focus:border-gold-soft"
           />
-          {notice && <p role="status" className="mt-4 text-[12px] leading-relaxed text-gold-bright">{notice}</p>}
-          {error && <p role="alert" className="mt-4 text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
+          {notice && <p role="status" className="mt-4 text-sm leading-relaxed text-gold-bright">{notice}</p>}
+          {error && <p role="alert" className="mt-4 text-sm leading-relaxed elroi-status-error">{error}</p>}
           <button
             type="submit"
             disabled={!email.trim() || sending}
-            className="mt-5 w-full bg-[hsl(var(--gold))] px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.23em] text-[#17120a] transition-colors hover:bg-[hsl(var(--gold-bright))] disabled:cursor-not-allowed disabled:opacity-35"
+            className="mt-5 w-full bg-[hsl(var(--gold))] px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-[hsl(var(--gold-bright))] disabled:cursor-not-allowed disabled:opacity-35"
           >
             {sending ? "Sending your link…" : "Email me a sign-in link"}
           </button>
@@ -180,20 +180,20 @@ export default function MemberRoom() {
   return (
     <ProductShell>
       <div className="space-y-10">
-        <header className="flex flex-col gap-5 border-b border-white/10 pb-8 sm:flex-row sm:items-end sm:justify-between">
+        <header className="flex flex-col gap-5 border-b border-slate-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Today</p>
-            <h1 className="font-serif-display mt-4 text-5xl font-light leading-none text-parchment sm:text-6xl">
+            <h1 className="font-serif-display mt-4 text-5xl font-normal leading-none text-parchment sm:text-6xl">
               {firstName ? `Welcome back, ${firstName}.` : "Welcome back."}
             </h1>
-            <p className="mt-4 text-[12px] font-light text-parchment-dim">
+            <p className="mt-4 text-sm font-normal text-parchment-dim">
               {member?.email ?? session.user.email}
             </p>
           </div>
           <button
             type="button"
             onClick={() => void supabase.auth.signOut().then(({ error: signOutError }) => { if (signOutError) setError("We could not sign you out. Please try again."); }).catch(() => setError("We could not sign you out. Please try again."))}
-            className="inline-flex items-center gap-2 self-start text-[10px] font-medium uppercase tracking-[0.2em] text-parchment-dim hover:text-gold-bright"
+            className="inline-flex items-center gap-2 self-start text-sm font-medium text-parchment-dim hover:text-gold-bright"
           >
             <LogOut className="h-3.5 w-3.5" />
             Sign out
@@ -201,27 +201,27 @@ export default function MemberRoom() {
         </header>
 
         {memberLoading ? (
-          <p className="font-serif-display py-12 text-center text-2xl font-light italic text-parchment-dim">Gathering your journey…</p>
+          <p className="font-serif-display py-12 text-center text-2xl font-normal italic text-parchment-dim">Gathering your journey…</p>
         ) : member ? (
           <>
             <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-              <article className="border border-gold-soft/35 bg-[hsl(var(--gold)/0.055)] p-7 sm:p-9">
-                <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-gold">Today at the Well</p>
-                <h2 className="font-serif-display mt-4 text-4xl font-light text-parchment">
+              <article className="border border-gold-soft/35 bg-indigo-50 p-7 sm:p-9">
+                <p className="text-sm font-medium text-gold">Your next conversation</p>
+                <h2 className="font-serif-display mt-4 text-4xl font-normal text-parchment">
                   {primary ? MODE_NAMES[primary.mode] ?? primary.mode : "Nothing is scheduled yet."}
                 </h2>
-                <p className="font-serif-display mt-5 text-2xl font-light italic leading-relaxed text-gold-bright">
+                <p className="font-serif-display mt-5 text-2xl font-normal italic leading-relaxed text-gold-bright">
                   {primary?.progress?.next ?? "Start with whatever is true today."}
                 </p>
                 {primary && (
-                  <p className="mt-4 text-[11px] font-light text-parchment-dim">
+                  <p className="mt-4 text-sm font-normal text-parchment-dim">
                     {formatTime(primary)}{primary.days ? ` · ${primary.days}` : ""}
                     {primary.progress?.label ? ` · ${primary.progress.label}` : ""}
                   </p>
                 )}
                 <a
                   href={PHONE_TEL}
-                  className="mt-7 inline-flex items-center gap-3 bg-[hsl(var(--gold))] px-6 py-3.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#17120a] hover:bg-[hsl(var(--gold-bright))]"
+                  className="mt-7 inline-flex items-center gap-3 bg-[hsl(var(--gold))] px-6 py-3.5 text-sm font-semibold text-white hover:bg-[hsl(var(--gold-bright))]"
                 >
                   <Phone className="h-3.5 w-3.5" />
                   Start a conversation
@@ -240,22 +240,22 @@ export default function MemberRoom() {
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="eyebrow">Your journeys</p>
-                  <h2 className="font-serif-display mt-3 text-3xl font-light text-parchment">The rhythms you chose to keep.</h2>
+                  <h2 className="font-serif-display mt-3 text-3xl font-normal text-parchment">Your chosen journeys.</h2>
                 </div>
                 <CalendarClock className="h-5 w-5 text-gold" />
               </div>
               <div className="mt-6 grid gap-3 md:grid-cols-2">
                 {activeTracks.length ? activeTracks.map((track) => (
-                  <article key={`${track.mode}-${track.hour_local}-${track.minute_local}`} className="border border-white/10 bg-white/[0.02] p-5">
-                    <p className="text-[9px] font-medium uppercase tracking-[0.22em] text-gold">{MODE_NAMES[track.mode] ?? track.mode}</p>
-                    <h3 className="font-serif-display mt-3 text-2xl font-light text-parchment">
+                  <article key={`${track.mode}-${track.hour_local}-${track.minute_local}`} className="border border-slate-200 bg-white p-5">
+                    <p className="text-sm font-medium text-gold">{MODE_NAMES[track.mode] ?? track.mode}</p>
+                    <h3 className="font-serif-display mt-3 text-2xl font-normal text-parchment">
                       {track.progress?.next ?? "Your next conversation"}
                     </h3>
-                    <p className="mt-3 text-[11px] font-light text-parchment-dim">
+                    <p className="mt-3 text-sm font-normal text-parchment-dim">
                       {formatTime(track)}{track.days ? ` · ${track.days}` : ""}
                     </p>
                     {track.progress?.pct != null && (
-                      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+                      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white">
                         <div
                           className="h-full rounded-full bg-[hsl(var(--gold))]"
                           style={{ width: `${Math.max(0, Math.min(track.progress.pct, 100))}%` }}
@@ -264,7 +264,7 @@ export default function MemberRoom() {
                     )}
                   </article>
                 )) : (
-                  <div className="border border-dashed border-white/12 p-6 text-[13px] font-light leading-[1.8] text-parchment-dim md:col-span-2">
+                  <div className="border border-dashed border-slate-200 p-6 text-sm font-normal leading-[1.8] text-parchment-dim md:col-span-2">
                     No recurring journey is active yet. Choose one below when you want the line to reach back to you.
                   </div>
                 )}
@@ -272,15 +272,15 @@ export default function MemberRoom() {
             </section>
 
             <section className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
-              <article className="border border-white/10 bg-white/[0.02] p-6">
+              <article className="border border-slate-200 bg-white p-6">
                 <div className="flex gap-3">
                   <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-gold" />
                   <div>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-gold">Your phone</p>
-                    <h2 className="font-serif-display mt-2 text-2xl font-light text-parchment">
+                    <p className="text-sm font-medium text-gold">Your phone</p>
+                    <h2 className="font-serif-display mt-2 text-2xl font-normal text-parchment">
                       {member.phone || "No number connected"}
                     </h2>
-                    <p className="mt-2 text-[11px] font-light leading-relaxed text-parchment-dim">
+                    <p className="mt-2 text-sm font-normal leading-relaxed text-parchment-dim">
                       {member.phone_verified
                         ? "Verified for member calling and scheduled experiences."
                         : "Verify a number below before you schedule recurring calls."}
@@ -289,28 +289,28 @@ export default function MemberRoom() {
                 </div>
               </article>
 
-              <article className="border border-white/10 bg-white/[0.02] p-6">
+              <article className="border border-slate-200 bg-white p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-gold">Recent conversations</p>
-                    <h2 className="font-serif-display mt-2 text-2xl font-light text-parchment">Recognizable moments, not a transcript dump.</h2>
+                    <p className="text-sm font-medium text-gold">Recent conversations</p>
+                    <h2 className="font-serif-display mt-2 text-2xl font-normal text-parchment">A look back at your conversations.</h2>
                   </div>
                   <BookOpen className="mt-1 h-4 w-4 shrink-0 text-gold" />
                 </div>
                 <div className="mt-5 space-y-4">
                   {(member.history ?? []).slice(0, 4).map((item, index) => (
-                    <div key={`${item.created_at}-${index}`} className="border-t border-white/[0.08] pt-4 first:border-t-0 first:pt-0">
-                      <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-parchment-dim">
+                    <div key={`${item.created_at}-${index}`} className="border-t border-slate-200 pt-4 first:border-t-0 first:pt-0">
+                      <p className="text-sm font-medium text-parchment-dim">
                         {(item.created_at ?? "").slice(0, 10)}
                         {item.figure_name ? ` · Story visited: ${item.figure_name}` : ""}
                       </p>
-                      <p className="mt-2 text-[12px] font-light leading-[1.7] text-parchment/85">
+                      <p className="mt-2 text-sm font-normal leading-[1.7] text-parchment/85">
                         {item.summary?.slice(0, 180) || "Conversation completed."}
                       </p>
                     </div>
                   ))}
                   {!member.history?.length && (
-                    <p className="text-[12px] font-light leading-relaxed text-parchment-dim">Your completed conversations will appear here as brief summaries you can recognize later.</p>
+                    <p className="text-sm font-normal leading-relaxed text-parchment-dim">Your completed conversations will appear here as brief summaries you can recognize later.</p>
                   )}
                 </div>
               </article>
@@ -324,19 +324,19 @@ export default function MemberRoom() {
             />
 
             <section className="grid gap-3 sm:grid-cols-2">
-              <a href="/gift/" className="inline-flex items-center justify-center gap-3 border border-gold-soft px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-bright hover:bg-[hsl(var(--gold)/0.08)]">
+              <a href="/gift/" className="inline-flex items-center justify-center gap-3 border border-gold-soft px-6 py-4 text-sm font-semibold text-gold-bright hover:bg-indigo-50">
                 <Gift className="h-3.5 w-3.5" />
                 Gift a conversation
               </a>
-              <a href="/about/" className="inline-flex items-center justify-center border border-white/10 px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-parchment-dim hover:border-gold-soft hover:text-gold-bright">
+              <a href="/about/" className="inline-flex items-center justify-center border border-slate-200 px-6 py-4 text-sm font-semibold text-parchment-dim hover:border-gold-soft hover:text-gold-bright">
                 Why El Roi
               </a>
             </section>
           </>
         ) : null}
 
-        {error && <p role="alert" className="text-[12px] leading-relaxed text-[#e1a695]">{error}</p>}
-        <p className="text-center font-serif-display text-lg font-light italic text-parchment-dim">
+        {error && <p role="alert" className="text-sm leading-relaxed elroi-status-error">{error}</p>}
+        <p className="text-center font-serif-display text-lg font-normal italic text-parchment-dim">
           The line is always the same: {PHONE_DISPLAY}. The story can change as your life changes.
         </p>
       </div>
@@ -346,9 +346,9 @@ export default function MemberRoom() {
 
 function Metric({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex min-h-28 flex-col justify-center border border-white/10 bg-white/[0.02] p-4 text-center">
-      <p className="font-serif-display text-3xl font-light text-parchment">{value}</p>
-      <p className="mt-2 text-[9px] font-medium uppercase tracking-[0.2em] text-parchment-dim">{label}</p>
+    <div className="flex min-h-28 flex-col justify-center border border-slate-200 bg-white p-4 text-center">
+      <p className="font-serif-display text-3xl font-normal text-parchment">{value}</p>
+      <p className="mt-2 text-sm font-medium text-parchment-dim">{label}</p>
     </div>
   );
 }

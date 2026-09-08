@@ -193,24 +193,24 @@ export default function MemberControls({
   };
 
   return (
-    <section className="space-y-5 border-t border-white/10 pt-10">
+    <section className="space-y-5 border-t border-slate-200 pt-10">
       <div>
         <p className="eyebrow">Your calling preferences</p>
-        <h2 className="font-serif-display mt-3 text-3xl font-light text-parchment">
+        <h2 className="font-serif-display mt-3 text-3xl font-normal text-parchment">
           You decide when the line reaches back to you.
         </h2>
-        <p className="mt-3 max-w-2xl text-[12px] font-light leading-[1.8] text-parchment-dim">
+        <p className="mt-3 max-w-2xl text-sm font-normal leading-[1.8] text-parchment-dim">
           Verify your phone, choose a time that works for you, and pause scheduled calls whenever you need to.
         </p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
-        <article className="border border-white/10 bg-white/[0.02] p-6">
+        <article className="border border-slate-200 bg-white p-6">
           <div className="flex items-start gap-3">
             <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-gold" />
             <div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-gold">Verified phone</p>
-              <h3 className="font-serif-display mt-2 text-2xl font-light text-parchment">
+              <p className="text-sm font-medium text-gold">Verified phone</p>
+              <h3 className="font-serif-display mt-2 text-2xl font-normal text-parchment">
                 {phoneStage === "verified" ? member.phone ?? phone : "Connect your number"}
               </h3>
             </div>
@@ -218,7 +218,7 @@ export default function MemberControls({
 
           {phoneStage === "set" && (
             <div className="mt-5">
-              <label htmlFor="member-phone" className="text-[9px] font-medium uppercase tracking-[0.2em] text-parchment-dim">
+              <label htmlFor="member-phone" className="text-sm font-medium text-parchment-dim">
                 Phone number
               </label>
               <input
@@ -231,14 +231,14 @@ export default function MemberControls({
                 disabled={phoneBusy}
                 aria-describedby="member-phone-help"
                 placeholder="(555) 555-5555"
-                className="mt-2 w-full border border-white/12 bg-black/15 px-4 py-3 text-parchment outline-none placeholder:text-parchment-dim/40 focus:border-gold-soft"
+                className="mt-2 w-full border border-slate-200 bg-slate-50 px-4 py-3 text-parchment outline-none placeholder:text-parchment-dim/40 focus:border-gold-soft"
               />
               <p id="member-phone-help" className="mt-2 text-sm text-parchment-dim">Use your full number, including + and country code outside the U.S. or Canada.</p>
               <button
                 type="button"
                 onClick={requestVerification}
                 disabled={!normalizePhone(phone) || phoneBusy}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 bg-[hsl(var(--gold))] px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#17120a] disabled:opacity-35"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 bg-[hsl(var(--gold))] px-4 py-3 text-sm font-semibold text-white disabled:opacity-35"
               >
                 <PhoneCall className="h-3.5 w-3.5" />
                 {phoneBusy ? "Calling…" : "Call me with a code"}
@@ -248,7 +248,7 @@ export default function MemberControls({
 
           {phoneStage === "verify" && (
             <div className="mt-5">
-              <p className="text-[11px] font-light leading-relaxed text-parchment-dim">
+              <p className="text-sm font-normal leading-relaxed text-parchment-dim">
                 Enter the four-digit code spoken during the verification call.
               </p>
               <input
@@ -259,13 +259,13 @@ export default function MemberControls({
                 onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 4))}
                 inputMode="numeric"
                 placeholder="0000"
-                className="mt-3 w-full border border-white/12 bg-black/15 px-4 py-3 text-center text-xl tracking-[0.45em] text-parchment outline-none focus:border-gold-soft"
+                className="mt-3 w-full border border-slate-200 bg-slate-50 px-4 py-3 text-center text-xl tracking-[0.45em] text-parchment outline-none focus:border-gold-soft"
               />
               <button
                 type="button"
                 onClick={verifyPhone}
                 disabled={code.length !== 4 || phoneBusy}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 bg-[hsl(var(--gold))] px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#17120a] disabled:opacity-35"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 bg-[hsl(var(--gold))] px-4 py-3 text-sm font-semibold text-white disabled:opacity-35"
               >
                 <Check className="h-3.5 w-3.5" />
                 Verify number
@@ -277,7 +277,7 @@ export default function MemberControls({
                   setCode("");
                   setPhoneMessage("");
                 }}
-                className="mt-3 w-full border border-white/10 px-4 py-3 text-[9px] font-medium uppercase tracking-[0.18em] text-parchment-dim hover:border-gold-soft hover:text-gold-bright"
+                className="mt-3 w-full border border-slate-200 px-4 py-3 text-sm font-medium text-parchment-dim hover:border-gold-soft hover:text-gold-bright"
               >
                 Use a different number
               </button>
@@ -286,14 +286,14 @@ export default function MemberControls({
 
           {phoneStage === "verified" && (
             <div className="mt-5">
-              <p className="flex items-center gap-2 text-[11px] font-light text-parchment-dim">
+              <p className="flex items-center gap-2 text-sm font-normal text-parchment-dim">
                 <Check className="h-3.5 w-3.5 text-gold" />
                 Verified for scheduled experiences.
               </p>
               <button
                 type="button"
                 onClick={() => setPhoneStage("set")}
-                className="mt-4 text-[9px] font-medium uppercase tracking-[0.18em] text-parchment-dim hover:text-gold-bright"
+                className="mt-4 text-sm font-medium text-parchment-dim hover:text-gold-bright"
               >
                 Change number
               </button>
@@ -301,16 +301,16 @@ export default function MemberControls({
           )}
 
           {phoneMessage && (
-            <p role="status" className="mt-4 text-[11px] font-light leading-relaxed text-parchment-dim">
+            <p role="status" className="mt-4 text-sm font-normal leading-relaxed text-parchment-dim">
               {phoneMessage}
             </p>
           )}
         </article>
 
-        <article className="border border-white/10 bg-white/[0.02] p-6">
-          <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-gold">Schedule a journey</p>
-          <h3 className="font-serif-display mt-2 text-2xl font-light text-parchment">
-            Choose the rhythm, not a notification pile.
+        <article className="border border-slate-200 bg-white p-6">
+          <p className="text-sm font-medium text-gold">Schedule a journey</p>
+          <h3 className="font-serif-display mt-2 text-2xl font-normal text-parchment">
+            Make time for reflection.
           </h3>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -321,14 +321,14 @@ export default function MemberControls({
                 onClick={() => setMode(option.id)}
                 className={`border p-4 text-left transition-colors ${
                   mode === option.id
-                    ? "border-gold-soft bg-[hsl(var(--gold)/0.07)]"
-                    : "border-white/10 bg-black/10 hover:border-gold-soft/60"
+                    ? "border-gold-soft bg-indigo-50"
+                    : "border-slate-200 bg-slate-50 hover:border-gold-soft/60"
                 }`}
               >
-                <span className="font-serif-display block text-xl font-light text-parchment">
+                <span className="font-serif-display block text-xl font-normal text-parchment">
                   {option.title}
                 </span>
-                <span className="mt-2 block text-[10.5px] font-light leading-relaxed text-parchment-dim">
+                <span className="mt-2 block text-sm font-normal leading-relaxed text-parchment-dim">
                   {option.body}
                 </span>
               </button>
@@ -375,11 +375,11 @@ export default function MemberControls({
               onChange={(event) => setCallerName(event.target.value)}
               maxLength={60}
               placeholder="First name is enough"
-              className="mt-2 w-full border border-white/12 bg-black/15 px-4 py-3 text-parchment outline-none placeholder:text-parchment-dim/40 focus:border-gold-soft"
+              className="mt-2 w-full border border-slate-200 bg-slate-50 px-4 py-3 text-parchment outline-none placeholder:text-parchment-dim/40 focus:border-gold-soft"
             />
           </Field>
 
-          <label className="mt-5 flex cursor-pointer items-start gap-3 border border-white/10 bg-black/10 p-4 text-[11px] font-light leading-[1.7] text-parchment-dim">
+          <label className="mt-5 flex cursor-pointer items-start gap-3 border border-slate-200 bg-slate-50 p-4 text-sm font-normal leading-[1.7] text-parchment-dim">
             <input
               type="checkbox"
               checked={scheduleConsent}
@@ -395,14 +395,14 @@ export default function MemberControls({
             type="button"
             onClick={saveSchedule}
             disabled={scheduleBusy || !member.phone_verified}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 bg-[hsl(var(--gold))] px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#17120a] disabled:opacity-35"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 bg-[hsl(var(--gold))] px-5 py-3.5 text-sm font-semibold text-white disabled:opacity-35"
           >
             <Save className="h-3.5 w-3.5" />
             {scheduleBusy ? "Saving…" : "Save this journey"}
           </button>
 
           {scheduleMessage && (
-            <p role="status" className="mt-4 text-[11px] font-light leading-relaxed text-parchment-dim">
+            <p role="status" className="mt-4 text-sm font-normal leading-relaxed text-parchment-dim">
               {scheduleMessage}
             </p>
           )}
@@ -410,14 +410,14 @@ export default function MemberControls({
       </div>
 
       {activeTracks.length > 0 && (
-        <div className="border border-white/10 bg-white/[0.015] p-5">
-          <p className="text-[9px] font-medium uppercase tracking-[0.22em] text-gold">Active journeys</p>
+        <div className="border border-slate-200 bg-white p-5">
+          <p className="text-sm font-medium text-gold">Active journeys</p>
           <div className="mt-3 divide-y divide-white/[0.08]">
             {activeTracks.map((track) => (
               <div key={track.mode} className="flex items-center justify-between gap-4 py-3">
                 <div>
-                  <p className="font-serif-display text-lg font-light text-parchment">{modeName(track.mode)}</p>
-                  <p className="mt-1 text-[10px] font-light text-parchment-dim">
+                  <p className="font-serif-display text-lg font-normal text-parchment">{modeName(track.mode)}</p>
+                  <p className="mt-1 text-sm font-normal text-parchment-dim">
                     {track.hour_local == null ? "Scheduled" : formatTime(track)}{track.days ? ` · ${track.days}` : ""}
                   </p>
                 </div>
@@ -425,7 +425,7 @@ export default function MemberControls({
                   type="button"
                   onClick={() => pauseTrack(track)}
                   disabled={scheduleBusy}
-                  className="inline-flex items-center gap-2 text-[9px] font-medium uppercase tracking-[0.18em] text-parchment-dim hover:text-gold-bright disabled:opacity-35"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-parchment-dim hover:text-gold-bright disabled:opacity-35"
                 >
                   <Pause className="h-3.5 w-3.5" />
                   Pause
@@ -441,7 +441,7 @@ export default function MemberControls({
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="mt-4 block text-[9px] font-medium uppercase tracking-[0.18em] text-parchment-dim">
+    <label className="mt-4 block text-sm font-medium text-parchment-dim">
       {label}
       {children}
     </label>
@@ -459,4 +459,4 @@ function formatTime(track: PortalTrack) {
 }
 
 const selectClass =
-  "mt-2 w-full border border-white/12 bg-[#111115] px-3 py-3 text-[11px] font-normal normal-case tracking-normal text-parchment outline-none focus:border-gold-soft";
+  "mt-2 w-full border border-slate-200 bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-parchment outline-none focus:border-gold-soft";
