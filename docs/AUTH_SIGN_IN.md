@@ -4,7 +4,9 @@
 
 On 8 September 2026, read-only probes using deliberately invalid tokens and no redirect following confirmed that Supabase redirected all three requested production destinations (`/account`, `/account/`, `/schedule/`) to `http://localhost:3000`. No real member link was inspected or consumed. Public Auth settings reported email enabled and phone disabled.
 
-This is a hosted Auth URL configuration problem. Frontend `emailRedirectTo` requests alone cannot override Supabase's allowed redirect list. The connected Supabase tools expose database and Edge Function operations, but no hosted Auth configuration update operation, and no management credential is available in this workspace. The hosted URL settings have **not** been changed by this release.
+This was a hosted Auth URL configuration problem. Frontend `emailRedirectTo` requests alone cannot override Supabase's allowed redirect list. On 9 September 2026, after the owner signed in to the Supabase dashboard, the production Site URL was changed from `http://localhost:3000` to `https://elroicall.com/account/`. The previously empty redirect allow list now contains the account and scheduling URLs, with and without trailing slashes.
+
+Seven live redirect probes passed after saving: the default destination, all four allowed production URLs, an explicit localhost request, and an unrelated destination. The last two correctly fall back to the production account page. These probes used deliberately invalid credentials and did not send email, create accounts, or consume member links. An expired or already-used email link still needs a fresh sign-in request.
 
 ## Deployed application behavior
 
@@ -17,17 +19,17 @@ This is a hosted Auth URL configuration problem. Frontend `emailRedirectTo` requ
 - Phone sign-in uses `create_user:false` to avoid silently creating a second account for an existing email member. After email sign-in, Preferences contains “Your sign-in methods” to link a phone to that same Auth user via `updateUser` and `phone_change` OTP verification. The returned user ID must match the signed-in account. Phone sign-in and the consented number used for outgoing calls remain separate controls.
 - Requests have deadlines, resend cooldowns, explicit errors, and no automatic resend on ambiguous failures. Pasted links/codes remain only in component memory and are cleared after verification; they are not logged or stored as drafts.
 
-## Required hosted configuration
+## Hosted configuration and remaining email/SMS work
 
-These changes are authorized but require a management interface with Auth settings access. The checked-in `supabase/config.toml` and `supabase/templates/verification.html` make the intended result reviewable; committing them does not configure the hosted project.
+The URL changes below are applied. The checked-in email template remains a prepared improvement; committing it does not configure the hosted project. The dashboard currently reports the built-in email delivery service, so production SMTP setup remains separate from the resolved redirect incident.
 
-1. Open [Auth URL Configuration](https://supabase.com/dashboard/project/mkocnufwmsfchivfbhuf/auth/url-configuration). Set Site URL to `https://elroicall.com/account/`. Add these redirect URLs:
+1. **Applied and verified on 9 September 2026:** [Auth URL Configuration](https://supabase.com/dashboard/project/mkocnufwmsfchivfbhuf/auth/url-configuration) uses Site URL `https://elroicall.com/account/` and these exact redirect URLs:
    - `https://elroicall.com/account`
    - `https://elroicall.com/account/`
    - `https://elroicall.com/schedule`
    - `https://elroicall.com/schedule/`
-   Preserve any other intentional production redirects. Remove development destinations from this production project's list when no longer needed.
-2. In [Auth Email Templates](https://supabase.com/dashboard/project/mkocnufwmsfchivfbhuf/auth/templates), use `supabase/templates/verification.html` for **Magic Link** and **Confirm signup**. This adds a visible code and a direct production confirmation link. Use the subjects in `config.toml`. No redirect or template change repairs an already-sent email; members should request a new one or use recovery.
+   No development or wildcard redirects were added.
+2. In [Auth Email Templates](https://supabase.com/dashboard/project/mkocnufwmsfchivfbhuf/auth/templates), use `supabase/templates/verification.html` for **Magic Link** and **Confirm signup** when activating the prepared code-and-link template. This adds a visible code and a direct production confirmation link. Use the subjects in `config.toml`. Expired or already-used links need a new email or the existing recovery flow.
 3. In [Auth Providers](https://supabase.com/dashboard/project/mkocnufwmsfchivfbhuf/auth/providers), configure the Phone provider with a supported SMS service before enabling it. Edge Function `TWILIO_*` secrets used for voice calls do not configure Auth SMS. Keep existing rate limits and abuse controls in place.
 4. Verify a newly delivered email, the return destination and an explicitly requested SMS with the real delivery providers. Do not describe inbox/SMS delivery as tested by synthetic credential tests.
 
