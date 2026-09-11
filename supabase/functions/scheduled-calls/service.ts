@@ -1,3 +1,4 @@
+import {createCallGuard} from '../_shared/call-guard.ts';
 import { validatePlan, VOICES, type CallPlanInput, type Voice } from '../_shared/scheduling.ts';
 import { equalSecret, fetchDeadline, generateLesson, generateSpeech, lessonTwiml, placeCall, verifyTwilio, type Secrets } from '../_shared/providers.ts';
 import { DEFAULT_PREFERENCES, publicPreferences, sha256, validatePreferences, type MemberPreferences } from '../_shared/member.ts';
@@ -11,6 +12,7 @@ const terminal = ['completed','busy','failed','no-answer','canceled','cancelled'
 const hangup = '<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>';
 
 export function createSchedulingService(env: Secrets, client: typeof fetch = fetch) {
+  const callGuard=createCallGuard(env,client);
   const origin=env.SITE_ORIGIN || 'https://elroicall.com';
   const base=`${env.SUPABASE_URL}/functions/v1/scheduled-calls`;
   const serviceHeaders={apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json',Prefer:'return=representation'};
@@ -144,6 +146,8 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
     }
     if(!enabled()||!plan.active||!['dialing','submitted','uncertain'].includes(current.status)||Date.now()-new Date(current.due_at).getTime()>3600000) return xml(hangup);
     if(!current.call_sid) await db(`lesson_jobs?id=eq.${id}&call_sid=is.null`,'PATCH',{call_sid:sid});
+    const access=await callGuard.enter(request,form,{kind:'lesson',context:id,callback:`${base}/voice/calling-pin?job=${id}`,resume:`${base}/voice/start?job=${id}`,answer:url.pathname.endsWith('/calling-pin')});
+    if(access.response)return access.response;
     if(form.get('Digits')==='9') { await rpc('lesson_pause_plan',{p_user:plan.user_id,p_id:plan.id}); return xml(hangup); }
     if(url.pathname.endsWith('/start')) return xml(lessonTwiml(await signedAudio(current.audio_paths[0]),`${base}/voice/lesson?job=${id}&part=1`,true));
     const part=Number(url.searchParams.get('part'));

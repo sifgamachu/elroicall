@@ -32,3 +32,5 @@ Supabase phone SMS sign-in is a separate provider setting. See `AUTH_SIGN_IN.md`
 Application tests exercise forged requests, signed callbacks, destination isolation, exact readback, voicemail privacy, recipient consent, provider withdrawal, hangup-before-callback, ambiguous delivery, and adapter state. PostgreSQL tests exercise duplicate confirmation, owner resolution, changed/expired drafts, canonical-phone protection, unchanged occurrence times, shared dashboard plans, stop-all scoping, and browser-role denial. CI typechecks the phone backend and voice adapter alongside the existing services.
 
 Provider references: [Twilio Call resource](https://www.twilio.com/docs/voice/api/call-resource), [Twilio Gather](https://www.twilio.com/docs/voice/twiml/gather), [Supabase Auth Admin create user](https://supabase.com/docs/reference/javascript/auth-admin-createuser).
+
+The 11 September calling-identity release adds nickname/PIN verification and fixed call budgets. Apply its adapter after both existing voice adapters and complete the activation steps in [CALLING_IDENTITY.md](CALLING_IDENTITY.md).

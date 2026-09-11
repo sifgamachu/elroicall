@@ -35,3 +35,5 @@ The guide retrieves fresh context on subsequent turns. A pause, deletion, edit, 
 New application tests cover authentication, owner binding, consent, paused notes, phone feature gating, hashed codes, provider-derived destinations, attempt limits, and context revocation. PostgreSQL tests cover default-off behavior, isolation, concurrency, deletion, account cascades, one-call binding, expiry, and all revocation paths. The combined secure voice source and both adapters typecheck without deploying the guide.
 
 The hosted email redirect was corrected and verified on 9 September 2026; see `AUTH_SIGN_IN.md`. Production SMTP and SMS provider configuration remain separate activation tasks. Outbound phone scheduling still needs provider configuration and guide activation. These are separate from the working saved-note dashboard feature. No real email, SMS, or phone call is sent as part of this release.
+
+The 11 September calling-identity release adds nickname/PIN verification and fixed call budgets. Apply its adapter after both existing voice adapters and complete the activation steps in [CALLING_IDENTITY.md](CALLING_IDENTITY.md).
