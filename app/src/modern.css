@@ -40,7 +40,8 @@
 .elroi-hero-actions { display:flex; align-items:center; flex-wrap:wrap; gap:22px; margin-top:30px; }
 .elroi-text-link { display:inline-flex; align-items:center; gap:10px; min-height:44px; font-size:14px; font-weight:600; color:var(--elroi-navy); }
 .elroi-text-link:hover { color:var(--elroi-blue); }
-.elroi-free-note { display:flex; align-items:center; gap:8px; margin-top:17px; color:#737d91; font-size:12px; }
+.elroi-hero-reading-link { margin-top:10px; color:#53617b; }
+.elroi-free-note { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:17px; color:#737d91; font-size:12px; }
 .elroi-free-note > span { margin-inline:3px; }
 .elroi-verse { display:flex; gap:15px; margin-top:44px; align-items:stretch; }
 .elroi-verse-line { width:2px; background:#cbd2ea; }
@@ -82,6 +83,35 @@
 .elroi-icon-tile { display:grid; place-items:center; width:52px; height:52px; flex-shrink:0; border:1px solid #e1e6fa; background:#f0f3ff; border-radius:15px; color:#5769db; }
 .elroi-steps h3 { font-size:21px; font-weight:600; letter-spacing:-.04em; margin-bottom:13px; }
 .elroi-steps article > p { color:#6e7890; font-size:16px; line-height:1.8; }
+.elroi-call-value { background:#111b32; color:white; overflow:hidden; position:relative; }
+.elroi-call-value::before { content:""; position:absolute; width:620px; height:620px; right:-220px; top:-290px; border-radius:50%; background:radial-gradient(circle,#5268e044 0,transparent 68%); pointer-events:none; }
+.elroi-call-value .elroi-container { position:relative; }
+.elroi-call-value .elroi-kicker { color:#aebaff; display:flex; align-items:center; gap:9px; }
+.elroi-call-value .elroi-section-heading { align-items:flex-end; }
+.elroi-call-value .elroi-section-heading > p { color:#aab5cc; max-width:450px; }
+.elroi-call-format-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.elroi-call-format { min-width:0; min-height:315px; display:flex; flex-direction:column; padding:27px; border:1px solid #ffffff16; border-radius:21px; background:#1a2641; color:white; transition:transform .2s,border-color .2s,background .2s; }
+.elroi-call-format:hover { transform:translateY(-4px); border-color:#8c9cff; background:#202e4d; }
+.elroi-call-format[data-featured=true] { grid-column:span 2; background:linear-gradient(135deg,#263a71,#1b2948 72%); border-color:#7184ea66; }
+.elroi-call-format-top { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.elroi-call-format .elroi-icon-tile { color:#c3ccff; background:#ffffff10; border-color:#ffffff1c; }
+.elroi-call-duration { display:flex; align-items:center; gap:7px; color:#aeb9cf; font-size:12px; }
+.elroi-call-popular { align-self:flex-start; margin-top:21px; padding:6px 8px; border-radius:7px; background:#7183ef21; color:#bdc8ff; font-size:10px; letter-spacing:.1em; font-weight:700; }
+.elroi-call-format h3 { margin-top:23px; font-size:25px; letter-spacing:-.045em; font-weight:600; }
+.elroi-call-format[data-featured=true] h3 { margin-top:14px; }
+.elroi-call-format > p { margin-top:12px; max-width:520px; color:#aeb9ce; font-size:15px; line-height:1.75; }
+.elroi-call-example { display:block; margin-top:18px; color:#d9def0; font:italic 14px/1.55 Georgia,serif; }
+.elroi-call-choose { display:flex; align-items:center; gap:8px; margin-top:auto; padding-top:24px; color:#bec8ff; font-size:13px; font-weight:600; }
+.elroi-call-signup { display:flex; align-items:center; justify-content:space-between; gap:34px; margin-top:18px; padding:26px 28px; border-radius:21px; border:1px solid #ffffff17; background:#ffffff0a; }
+.elroi-call-signup-copy { display:flex; align-items:center; gap:18px; }
+.elroi-call-signup-copy h3 { font-size:19px; font-weight:600; letter-spacing:-.03em; }
+.elroi-call-signup-copy p { max-width:590px; margin-top:7px; color:#aab5cc; font-size:14px; line-height:1.65; }
+.elroi-call-signup-actions { display:flex; align-items:center; gap:20px; flex-shrink:0; }
+.elroi-call-signup .elroi-text-link { color:#cbd4ff; }
+.elroi-call-signup .elroi-text-link:hover { color:white; }
+.elroi-call-proof { display:flex; justify-content:center; gap:50px; flex-wrap:wrap; margin-top:28px; color:#9eabc4; font-size:12px; }
+.elroi-call-proof span { display:flex; align-items:center; gap:8px; }
+.elroi-call-proof svg { color:#8d9df4; }
 .elroi-stories { background:#121b30; color:white; }
 .elroi-stories .elroi-kicker { color:#9eaefb; }
 .elroi-stories .elroi-section-heading > p { color:#a3aec5; }
@@ -164,6 +194,8 @@
   .elroi-story-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
   .elroi-story-card:nth-last-child(1) { grid-column:auto; }
   .elroi-steps { gap:16px; }.elroi-steps article { padding:24px; }
+  .elroi-call-format-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .elroi-call-signup { align-items:flex-start; flex-direction:column; }
   .elroi-return-grid,.elroi-faq-grid { gap:50px; }
   .elroi-gift-banner { padding:45px; gap:35px; }
   .elroi-product-content .elroi-intake-layout { gap:30px; }
@@ -178,6 +210,9 @@
   .elroi-section { padding-block:70px; }.elroi-section-heading { gap:24px; align-items:flex-start; flex-direction:column; }
   .elroi-steps { grid-template-columns:1fr; gap:15px; }.elroi-step-top { margin-bottom:20px; }
   .elroi-steps article { padding:25px; }.elroi-steps h3 { font-size:21px; }
+  .elroi-call-value .elroi-section-heading { align-items:flex-start; }
+  .elroi-call-signup-actions { flex-wrap:wrap; }
+  .elroi-call-proof { justify-content:flex-start; gap:18px 30px; }
   .elroi-return-grid,.elroi-faq-grid { grid-template-columns:1fr; gap:38px; }
   .elroi-story-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .elroi-gift-banner { align-items:flex-start; flex-direction:column; padding:38px; }
@@ -195,12 +230,20 @@
   .elroi-pill { font-size:11px; padding:7px 10px; }.elroi-hero-description { font-size:16px; line-height:1.8; }
   .elroi-hero-actions { margin-top:23px; gap:10px 17px; }.elroi-hero-actions .elroi-button { padding:15px 18px; }
   .elroi-hero-actions .elroi-text-link { font-size:13px; }.elroi-free-note { font-size:11px; }
+  .elroi-hero-actions .elroi-button { width:100%; font-size:13px; }
   .elroi-entry-art { display:none; }.elroi-entry { border-radius:20px; }
   .elroi-composer { padding:24px 20px 18px; }.elroi-composer-heading label { font-size:21px; }
   .elroi-composer textarea { min-height:95px; }.elroi-starters { padding:16px 20px 21px; }
   .elroi-trust-strip { font-size:12px; gap:15px; padding-block:22px; flex-direction:column; align-items:flex-start; }
   .elroi-section { padding-block:58px; }.elroi-section h2,.elroi-gift-banner h2 { font-size:34px; }
   .elroi-section-heading { margin-bottom:28px; }.elroi-section-heading > p { font-size:15px; }
+  .elroi-call-format-grid { grid-template-columns:1fr; }
+  .elroi-call-format[data-featured=true] { grid-column:auto; }
+  .elroi-call-format { min-height:290px; padding:23px; }
+  .elroi-call-signup { padding:23px; }
+  .elroi-call-signup-copy { align-items:flex-start; }
+  .elroi-call-signup-actions { align-items:flex-start; flex-direction:column; gap:7px; }
+  .elroi-call-proof { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
   .elroi-story-grid { gap:10px; }.elroi-story-card { padding:20px 16px; border-radius:14px; }.elroi-story-card h3 { font-size:23px; }.elroi-story-card > p { font-size:14px; }
   .elroi-story-card > span { font-size:11px; }.elroi-story-note { flex-direction:column; align-items:flex-start; gap:8px; font-size:13px; }
   .elroi-room-card { padding:23px; border-radius:20px; }.elroi-room-heading { gap:12px; }.elroi-room-heading h3 { font-size:20px; }

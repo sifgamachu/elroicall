@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ArrowRight, ArrowUpRight, BookOpen, Bookmark, Check, ChevronRight, CircleHelp, Heart, Lightbulb, ListChecks, Search, Share2, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, BookOpen, Bookmark, CalendarClock, Check, ChevronRight, CircleHelp, Heart, Lightbulb, ListChecks, Search, Share2, Sparkles, Trash2 } from 'lucide-react';
 import ProductShell from '@/components/ProductShell';
 import MomentListen from '@/components/MomentListen';
 import { dailyMoment, getMoment, nextPathMoment, passageUrl, SCRIPTURE_MOMENTS, searchMoments, SEVEN_DAY_PATH, type ScriptureMoment } from '@/lib/scripture-library';
@@ -9,6 +9,15 @@ import { useDraft } from '@/lib/draft';
 import '@/scripture.css';
 
 type Progress = ReturnType<typeof useReadingProgress>;
+
+function reflectionCallUrl(moment: ScriptureMoment) {
+  const params = new URLSearchParams({
+    source: 'reflection',
+    content: 'bible_study',
+    topic: `Help me study ${moment.passage}: ${moment.title}`,
+  });
+  return `/schedule/?${params.toString()}`;
+}
 
 function MomentReader({ moment, reading }: { moment: ScriptureMoment; reading: Progress }) {
   const [answer, setAnswer] = useState<number | null>(null);
@@ -42,7 +51,7 @@ function MomentReader({ moment, reading }: { moment: ScriptureMoment; reading: P
         <section className="moment-quiz"><p className="elroi-kicker">CHECK WHAT YOU NOTICED</p><h2>{moment.quiz.question}</h2><div>{moment.quiz.options.map((option, index) => <button key={option} type="button" aria-pressed={answer === index} data-selected={answer === index} onClick={() => setAnswer(index)}>{option}{answer === index && <Check size={16} />}</button>)}</div>{answer !== null && <p className="moment-quiz-answer" role="status"><strong>{answer === moment.quiz.answer ? 'That’s right. ' : 'Take another look. '}</strong>{moment.quiz.explanation}</p>}</section>
         <section className="moment-next"><ListChecks size={23} /><h2>Build a gentle rhythm.</h2><p>Read at your pace. Your bookmarks and completed readings stay in this browser.</p><button className="elroi-button elroi-button-primary" type="button" aria-pressed={completed} onClick={() => toggle('completed', moment.id)}>{completed ? <><Check size={17} />Completed · undo</> : 'Mark reflection complete'}</button>{completed && next && <Link className="elroi-text-link" to={`/explore/${next.id}/`}>Next in the seven-day path <ArrowRight size={16} /></Link>}{completed && !next && <p>You have completed all seven readings. Revisit any one whenever you need it.</p>}<Link className="elroi-text-link" to="/explore/#seven-days">See the seven-day path <ChevronRight size={16} /></Link></section>
       </aside></div>
-      <section className="moment-account"><span className="elroi-icon-tile"><Bookmark size={23} /></span><div><p className="elroi-kicker">YOUR NEXT CHAPTER</p><h2>A place for your own words.</h2><p>Create an account for private notes and your calling preferences. You choose what to save. These readings stay free.</p></div><Link className="elroi-button elroi-button-dark" to="/signup/">Create my account <ArrowUpRight size={17} /></Link></section>
+      <section className="moment-account"><span className="elroi-icon-tile"><CalendarClock size={23} /></span><div><p className="elroi-kicker">KEEP GOING BY PHONE</p><h2>Turn this reflection into a conversation.</h2><p>Choose a time, voice, and call length. We’ll start with {moment.passage} and the question you just considered. Create your free account when you confirm.</p></div><Link className="elroi-button elroi-button-dark" to={reflectionCallUrl(moment)}>Schedule a call about this <ArrowUpRight size={17} /></Link></section>
       <p className="moment-editorial">Scripture excerpts: KJV. Story summaries, reflections, and suggested prayers are original companion material, not additional Bible verses. Read the linked passage in its context.</p>
     </article>
   </ProductShell>;
@@ -73,7 +82,7 @@ export default function Explore() {
         {!moments.length && <div className="library-empty"><BookOpen size={28} /><h3>{onlySaved && !reading.progress.saved.length ? 'Your next good read can stay close.' : 'Try a different starting point.'}</h3><p>{onlySaved && !reading.progress.saved.length ? 'Open a reflection and choose “Bookmark on this device” to find it here later.' : 'Search a person, a passage, or a theme. You can also browse every reflection.'}</p><button type="button" className="elroi-text-link" onClick={() => { setOnlySaved(false); setQuery(''); setTheme('All'); }}>Show all reflections <ArrowRight size={16} /></button></div>}
       </section>
       <div className="library-storage"><p>Bookmarks and reading progress stay on this device. They are separate from account notes and do not sync between devices.</p>{(reading.progress.saved.length > 0 || reading.progress.completed.length > 0) && <button type="button" onClick={() => { if (reading.clear()) setNotice('Your bookmarks and completed readings were cleared from this browser.'); }}><Trash2 size={15} />Clear my browser progress</button>}{(reading.storageError || notice) && <p role="status">{reading.storageError || notice}</p>}</div>
-      <section className="moment-account"><span className="elroi-icon-tile"><Heart size={23} /></span><div><h2>Keep the conversation going.</h2><p>Your account gives your own reflections and calling preferences a place to live. Start with email whenever you are ready.</p></div><Link className="elroi-button elroi-button-dark" to="/signup/">Create my account <ArrowUpRight size={17} /></Link></section>
+      <section className="moment-account"><span className="elroi-icon-tile"><Heart size={23} /></span><div><p className="elroi-kicker">YOUR CALL, YOUR CHOICE</p><h2>Take Scripture with you.</h2><p>Choose a study, sermon, story, lecture, or Bible facts. We’ll call at your time with the voice and length you prefer.</p></div><div className="moment-account-actions"><Link className="elroi-button elroi-button-dark" to="/schedule/?source=library">Plan my first free call <CalendarClock size={17} /></Link><Link className="elroi-text-link" to="/account/?mode=signup&amp;source=library">Create free account <ArrowRight size={16} /></Link></div></section>
     </div>
   </ProductShell>;
 }

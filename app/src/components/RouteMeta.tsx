@@ -4,8 +4,8 @@ import { useDocumentMeta } from "@/hooks/use-document-meta";
 import { getMoment } from "@/lib/scripture-library";
 
 const HOME = {
-  title: "El Roi Call — A little space. A deeper conversation.",
-  description: "Start with what is true. El Roi listens first, reflects what it heard, and opens Scripture only when a biblical story actually fits.",
+  title: "El Roi Call — Bible encouragement, delivered at your time",
+  description: "Schedule a personalized Bible study, short sermon, biblical story, lecture, or Bible facts by phone. Choose your time, voice, and call length.",
   canonical: "https://elroicall.com/",
 };
 

@@ -5,3 +5,7 @@
 @media(prefers-reduced-motion:reduce){.library-card,.daily-moment-card{transition:none}.library-card:hover,.daily-moment-card:hover{transform:none}}
 
 .elroi-product-content .library-search input{border:0;background:transparent;border-radius:0;padding:14px 0}.elroi-product-content .library-search input:focus{outline:none}.elroi-product-content .moment-heading h1{font-size:clamp(2.1rem,4.6vw,3.4rem);line-height:1.1}.elroi-product-content .moment-scripture blockquote{font:1.65rem/1.5 Georgia,serif}.elroi-product-content .library-feature blockquote{font:normal clamp(1.5rem,2.5vw,2.1rem)/1.45 Georgia,serif}
+
+.moment-account>.moment-account-actions{flex:0 0 auto;display:flex;align-items:center;gap:18px}.moment-account-actions .elroi-button{font-size:.85rem}.moment-account-actions .elroi-text-link{white-space:nowrap}
+@media(max-width:1000px){.moment-account>.moment-account-actions{margin-left:65px}}
+@media(max-width:720px){.moment-account>.moment-account-actions{margin-left:0;flex-basis:100%;align-items:flex-start;flex-direction:column;gap:7px}}

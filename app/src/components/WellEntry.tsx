@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, BookOpen, Check, Heart, LockKeyhole, Phone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, CalendarClock, Check, Heart, LockKeyhole, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { PHONE_TEL } from "@/lib/phone";
 import { useDraft } from "@/lib/draft";
@@ -17,12 +17,12 @@ export default function WellEntry() {
     <section id="top" className="elroi-hero">
       <div className="elroi-container elroi-hero-grid">
         <div className="elroi-hero-copy">
-          <p className="elroi-pill"><BookOpen size={15} /> AI-guided biblical reflection</p>
-          <h1>A little space.<br /><span>A deeper<br className="elroi-desktop-break" /> conversation.</span></h1>
-          <p className="elroi-hero-description">Read a short Bible reflection, explore a story, or talk through what is on your heart. Leave with a thought to keep and a next step you can take.</p>
-          <div className="elroi-hero-actions"><Link to="/explore/" className="elroi-button elroi-button-primary"><BookOpen size={18} /> Find your moment<ArrowRight size={17} /></Link><a href={PHONE_TEL} className="elroi-text-link"><Phone size={18} /> Call El Roi<ArrowUpRight size={17} /></a></div>
-          <Link to="/schedule/" className="elroi-text-link" style={{ marginTop: 18 }}>Prefer a regular time? Schedule a call<ArrowRight size={16} /></Link>
-          <p className="elroi-free-note"><Check size={15} /> First call free <span>·</span> No card needed</p>
+          <p className="elroi-pill"><BookOpen size={15} /> Personalized Scripture, by phone</p>
+          <h1>Bible encouragement.<br /><span>Delivered at<br className="elroi-desktop-break" /> your time.</span></h1>
+          <p className="elroi-hero-description">Choose a Bible study, short sermon, biblical story, lecture, or Bible facts. Pick your time, voice, and call length. El Roi calls you.</p>
+          <div className="elroi-hero-actions"><Link to="/schedule/?source=home_hero" className="elroi-button elroi-button-primary"><CalendarClock size={18} /> Schedule my first free call<ArrowRight size={17} /></Link><a href={PHONE_TEL} className="elroi-text-link"><Phone size={18} /> Call now<ArrowUpRight size={17} /></a></div>
+          <Link to="/explore/?source=home_hero" className="elroi-text-link elroi-hero-reading-link"><BookOpen size={17} /> Try a free 3-minute reflection<ArrowRight size={16} /></Link>
+          <p className="elroi-free-note"><Check size={15} /> First call free <span>·</span> No card needed <span>·</span> Scripture cited</p>
           <div className="elroi-verse"><span className="elroi-verse-line" /><div><p>“You are the God who sees me.”</p><span>Genesis 16:13 · The heart behind El Roi</span></div></div>
         </div>
         <div className="elroi-entry" id="first-words">
