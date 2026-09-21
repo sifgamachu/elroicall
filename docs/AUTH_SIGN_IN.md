@@ -42,3 +42,9 @@ The 43 application tests pass, including nine new Auth regression tests. Lint, T
 - [Supabase passwordless email](https://supabase.com/docs/guides/auth/auth-email-passwordless)
 - [Supabase phone sign-in and linking](https://supabase.com/docs/guides/auth/phone-login)
 - [Supabase email templates](https://supabase.com/docs/guides/auth/auth-email-templates)
+
+## Signup repair — 21 September 2026
+
+Live settings and the authenticated dashboard confirm that signup is enabled but production SMTP is off and no email hook is configured. Supabase's built-in delivery only serves organization-team addresses, so ordinary visitors cannot reliably register. The new release makes signup explicit, distinguishes sign-in from account creation, disables unavailable SMS choices, correctly explains email-provider failures, preserves the allowlisted scheduling destination in the prepared template, and recovers expired email callbacks. Phone number and calling PIN are not prerequisites for creating the email account.
+
+A Resend sending domain has been created; DNS and hosted SMTP activation remain incomplete. See [the exact activation steps and DNS records](SIGNUP_EMAIL_ACTIVATION.md). The Cloudflare dashboard challenged this browser, preventing DNS edits. No inbox delivery is claimed. Current application verification: 83 tests pass, plus lint, TypeScript and build checks. Hosted email templates remain unchanged.

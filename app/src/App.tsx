@@ -53,7 +53,9 @@ export default function App() {
         <Route path="/account/" element={<MemberRoom />} />
         <Route path="/dashboard" element={<MemberRoom />} />
         <Route path="/dashboard/" element={<MemberRoom />} />
-        <Route path="/login" element={<Navigate to="/account" replace />} />
+        <Route path="/signup" element={<Navigate to="/account/?mode=signup" replace />} />
+        <Route path="/signup/" element={<Navigate to="/account/?mode=signup" replace />} />
+        <Route path="/login" element={<Navigate to="/account/?mode=signin" replace />} />
         <Route path="/portal" element={<Navigate to="/account" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

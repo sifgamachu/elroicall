@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { authReturnUrl, createAccountAuth, parseEmailCredential } from '../src/lib/account-auth.ts';
+import { authReturnUrl, authLinkError, confirmationDestination, createAccountAuth, parseEmailCredential } from '../src/lib/account-auth.ts';
 
 const config = { supabaseUrl: 'https://example.supabase.co', anonKey: 'public-key' };
 const hash = '0123456789abcdef'.repeat(4);
@@ -84,5 +84,42 @@ test('email sends request the canonical destination and provider failures cannot
 });
 test('method availability comes from Auth settings, not outbound calling readiness', async () => {
   const auth = createAccountAuth(config, async () => json({ external: { email: true, phone: false } }));
-  assert.deepEqual(await auth.methods(), { email: true, phone: false });
+  assert.deepEqual(await auth.methods(), { email: true, phone: false, signup: true });
+});
+
+test('sign-in cannot silently register a new account; signup explicitly permits it', async () => {
+  const bodies = [];
+  const auth = createAccountAuth(config, async (_url, init) => { bodies.push(JSON.parse(init.body)); return json({}); });
+  await auth.sendEmail('member@example.invalid', '/account/', 'signin');
+  await auth.sendEmail('member@example.invalid', '/account/', 'signup');
+  assert.deepEqual(bodies.map(body => body.create_user), [false, true]);
+});
+test('production email restrictions, provider failures and signup closure are actionable', async () => {
+  for (const [code, status, expected] of [
+    ['email_address_not_authorized', 403, /problem on our side/],
+    ['email_send_failed', 500, /could not send/],
+    ['unexpected_failure', 500, /could not send/],
+    ['email_provider_disabled', 400, /email service is unavailable/],
+    ['signup_disabled', 400, /New accounts are temporarily unavailable/],
+    ['user_not_found', 400, /choose Create account/],
+    ['otp_disabled', 422, /choose Create account/],
+  ]) {
+    const auth = createAccountAuth(config, async () => json({ error_code: code }, status));
+    await assert.rejects(auth.sendEmail('member@example.invalid', '/account/'), expected);
+  }
+  const auth = createAccountAuth(config, async () => json({ code: 'over_email_send_rate_limit' }, 429));
+  await assert.rejects(auth.sendEmail('member@example.invalid', '/account/'), error => error.retryAfter === 60);
+  const disabled = createAccountAuth(config, async () => json({ disable_signup: true, external: { email: true, phone: false } }));
+  assert.equal((await disabled.methods()).signup, false);
+});
+test('expired email redirects show safe recovery text without displaying provider input', () => {
+  assert.match(authLinkError('https://elroicall.com/account/#error=access_denied&error_description=untrusted'), /Request a new/);
+  assert.match(authLinkError('https://elroicall.com/account/?error=otp_expired'), /expired/);
+  assert.equal(authLinkError('https://elroicall.com/account/'), '');
+});
+test('confirmation returns to scheduling only for the exact production destination', () => {
+  assert.equal(confirmationDestination('https://elroicall.com/auth/confirm#next=https://elroicall.com/schedule/'), '/schedule/');
+  for (const next of ['https://attacker.invalid', 'http://localhost:3000', '//attacker.invalid', 'https://elroicall.com/schedule/?redirect=https://attacker.invalid']) {
+    assert.equal(confirmationDestination(`https://elroicall.com/auth/confirm#next=${encodeURIComponent(next)}`), '/account/');
+  }
 });

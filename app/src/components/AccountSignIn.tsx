@@ -2,13 +2,14 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowUpRight, Check, Link2, LoaderCircle, Mail, MessageSquare } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { accountAuth, acceptAccountSession } from '@/lib/account-auth-client';
-import type { AuthDestination, AuthMethods, AuthTokens } from '@/lib/account-auth';
+import { AccountAuthError, type AuthDestination, type AuthMethods, type AuthMode, type AuthTokens } from '@/lib/account-auth';
 import { normalizePhone } from '@/lib/phone';
 import '@/auth.css';
 
-export default function AccountSignIn({ destination = '/account/', initialError = '', embedded = false }: { destination?: AuthDestination; initialError?: string; embedded?: boolean }) {
+export default function AccountSignIn({ destination = '/account/', initialError = '', embedded = false, initialMode = 'signup' }: { destination?: AuthDestination; initialError?: string; embedded?: boolean; initialMode?: AuthMode }) {
   const id = useId();
   const [method, setMethod] = useState<'email' | 'phone'>('email');
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [methods, setMethods] = useState<AuthMethods | null>(null);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -45,7 +46,7 @@ export default function AccountSignIn({ destination = '/account/', initialError 
     if (pending.current) return;
     pending.current = true; setBusy(true); setError(''); setNotice('');
     try { await task(); }
-    catch (issue) { if (mounted.current) setError(issue instanceof Error ? issue.message : 'Verification could not be completed. Please try again.'); }
+    catch (issue) { if (mounted.current) { setError(issue instanceof Error ? issue.message : 'Verification could not be completed. Please try again.'); if (issue instanceof AccountAuthError && issue.retryAfter) setCooldown(issue.retryAfter); } }
     finally { pending.current = false; if (mounted.current) setBusy(false); }
   }
   async function send() {
@@ -53,12 +54,13 @@ export default function AccountSignIn({ destination = '/account/', initialError 
     await run(async () => {
       const recipient = identity();
       if (method === 'phone' && !methods?.phone) throw new Error('Phone sign-in is unavailable right now. Choose email to continue.');
-      setCooldown(60);
-      if (method === 'email') await accountAuth.sendEmail(recipient, destination);
+      if (method === 'email' && methods?.email === false) throw new Error('Email verification is unavailable right now. Please try again later.');
+      if (mode === 'signup' && methods?.signup === false) throw new Error('New accounts are temporarily unavailable. Existing members can choose Sign in.');
+      if (method === 'email') await accountAuth.sendEmail(recipient, destination, mode);
       else await accountAuth.sendPhone(recipient);
       if (!mounted.current) return;
-      setSent(true); setCredential('');
-      setNotice(method === 'email' ? 'Check your inbox and spam folder. Open your sign-in link, or paste it below to finish in this tab.' : 'If this number is linked to your account, a text message is on its way. Enter its code below.');
+      setCooldown(60); setSent(true); setCredential('');
+      setNotice(method === 'email' ? 'Check your inbox and spam folder. Tap the verification button in your latest El Roi email to continue. You can also use its link or code below.' : 'If this number is linked to your account, a text message is on its way. Enter its code below.');
     });
   }
   async function verify() {
@@ -81,11 +83,20 @@ export default function AccountSignIn({ destination = '/account/', initialError 
   const verifying = sent || recovery;
   const Form = embedded ? 'div' : 'form';
   return <div className="account-auth">
-    <h3>How would you like to verify?</h3>
-    <RadioGroup value={method} onValueChange={changeMethod} aria-label="Verification method" className="auth-methods" disabled={busy}>
-      <label data-selected={method === 'email'}><RadioGroupItem value="email" /><Mail size={20} /><span><strong>Email</strong><small>Link or email code</small></span></label>
-      <label data-selected={method === 'phone'}><RadioGroupItem value="phone" /><MessageSquare size={20} /><span><strong>Phone</strong><small>Code by text</small></span></label>
+    <RadioGroup value={mode} aria-label="Account access" className="auth-mode" disabled={busy} onValueChange={value => { setMode(value as AuthMode); changeMethod('email'); }}>
+      <label data-selected={mode === 'signup'}><RadioGroupItem value="signup" />Create account</label>
+      <label data-selected={mode === 'signin'}><RadioGroupItem value="signin" />Sign in</label>
     </RadioGroup>
+    <h3>{verifying ? 'Check your email or text message' : mode === 'signup' ? 'Start with your email.' : 'Welcome back.'}</h3>
+    <p className="auth-help">{mode === 'signup' ? 'Create your account with a verification email. No password or phone number needed to get started. Already registered? The same email will open your account.' : 'Use your account email, or a phone number you have already linked.'}</p>
+    {mode === 'signin' && <>
+    <RadioGroup value={method} onValueChange={changeMethod} aria-label="Verification method" className="auth-methods" disabled={busy}>
+      <label data-selected={method === 'email'}><RadioGroupItem value="email" disabled={methods?.email === false} /><Mail size={20} /><span><strong>Email</strong><small>Link or email code</small></span></label>
+      <label data-selected={method === 'phone'} data-unavailable={!methods?.phone}><RadioGroupItem value="phone" disabled={!methods?.phone} /><MessageSquare size={20} /><span><strong>Phone</strong><small>{methods?.phone ? 'Code by text' : 'Not available yet'}</small></span></label>
+    </RadioGroup>
+    </>}
+    {methods?.email === false && <p className="auth-error" role="alert">Email verification is unavailable right now. Please try again later.</p>}
+    {mode === 'signup' && methods?.signup === false && <p className="auth-error" role="alert">New accounts are temporarily unavailable. Existing members can choose Sign in.</p>}
     {method === 'phone' && <p className="auth-help" role="status">{methods?.phone ? 'Use a number already linked to your account. To add one, sign in with email and open Preferences.' : methods === null ? 'Checking text-message availability. You can use email now.' : 'Text-message sign-in is not available yet. Choose email to continue.'}</p>}
     <Form className="auth-form" onSubmit={event => { event.preventDefault(); void (verifying ? verify() : send()); }} onKeyDown={event => {
       if (embedded && event.key === 'Enter' && event.target instanceof HTMLInputElement) { event.preventDefault(); event.stopPropagation(); void (verifying ? verify() : send()); }
@@ -99,11 +110,12 @@ export default function AccountSignIn({ destination = '/account/', initialError 
           <span>{method === 'email' && entry === 'link' ? 'Copy the sign-in button’s link from your email. If its page failed to open, you can also copy the full address from that page.' : 'Use the code from your latest verification message.'}</span>
         </label>
       </>}
-      <button type={embedded ? 'button' : 'submit'} onClick={embedded ? () => void (verifying ? verify() : send()) : undefined} className="elroi-button elroi-button-primary" disabled={busy || method === 'phone' && !methods?.phone || !verifying && cooldown > 0 || verifying && !credential.trim()}>
-        {busy ? <><LoaderCircle size={18} className="animate-spin" />Please wait…</> : verifying ? <><Check size={18} />Verify and continue</> : cooldown ? `Try again in ${cooldown}s` : method === 'email' ? <>Send verification email <ArrowUpRight size={18} /></> : <>Text me a code <MessageSquare size={18} /></>}
+      <button type={embedded ? 'button' : 'submit'} onClick={embedded ? () => void (verifying ? verify() : send()) : undefined} className="elroi-button elroi-button-primary" disabled={busy || method === 'phone' && !methods?.phone || !verifying && (cooldown > 0 || method === 'email' && methods?.email === false || mode === 'signup' && methods?.signup === false) || verifying && !credential.trim()}>
+        {busy ? <><LoaderCircle size={18} className="animate-spin" />Please wait…</> : verifying ? <><Check size={18} />Verify and continue</> : cooldown ? `Try again in ${cooldown}s` : method === 'email' ? <>{mode === 'signup' ? 'Create account with email' : 'Email me a sign-in link'} <ArrowUpRight size={18} /></> : <>Text me a code <MessageSquare size={18} /></>}
       </button>
     </Form>
     {notice && <p role="status" className="auth-notice">{notice}</p>}{error && <p role="alert" className="auth-error">{error}</p>}
+    {!verifying && <p className="auth-help">Your email stays private. Phone verification and your six-digit calling PIN come later, when you set up calling.</p>}
     <div className="auth-actions">
       {!verifying && method === 'email' && <button type="button" className="elroi-text-link" disabled={busy} onClick={() => { setRecovery(true); setError(''); }}><Link2 size={16} />Already have an email? Use it here</button>}
       {verifying && <><button type="button" className="elroi-text-link" disabled={busy || cooldown > 0} onClick={() => void send()}>{cooldown ? `Send again in ${cooldown}s` : 'Send a new verification message'}</button><button type="button" className="elroi-text-link" disabled={busy} onClick={() => { setSent(false); setRecovery(false); setCredential(''); setNotice(''); setError(''); }}>Change {method === 'email' ? 'email' : 'phone number'}</button></>}
