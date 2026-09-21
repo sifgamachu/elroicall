@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import { PHONE_TEL } from "@/lib/phone";
 
+const Explore = lazy(() => import("./pages/Explore"));
 const Schedule = lazy(() => import("./pages/Schedule"));
 const About = lazy(() => import("./pages/About"));
 const BeginWell = lazy(() => import("./pages/BeginWell"));
@@ -38,6 +39,10 @@ export default function App() {
         <Route path="/auth/confirm" element={<AuthConfirm />} />
         <Route path="/auth/confirm/" element={<AuthConfirm />} />
         <Route path="/" element={<Home />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/explore/" element={<Explore />} />
+        <Route path="/explore/:momentId" element={<Explore />} />
+        <Route path="/explore/:momentId/" element={<Explore />} />
         <Route path="/begin" element={<BeginWell />} />
         <Route path="/begin/" element={<BeginWell />} />
         <Route path="/schedule" element={<Schedule />} />

@@ -6,7 +6,7 @@ import { PHONE_TEL } from "@/lib/phone";
 
 const links = [
   { label: "Schedule a call", href: "/schedule/" },
-  { label: "Explore Scripture", href: "/#stories" },
+  { label: "Explore Scripture", href: "/explore/" },
   { label: "Gift a conversation", href: "/gift/" },
 ];
 

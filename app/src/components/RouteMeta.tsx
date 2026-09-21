@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router";
 import { useDocumentMeta } from "@/hooks/use-document-meta";
+import { getMoment } from "@/lib/scripture-library";
 
 const HOME = {
   title: "El Roi Call — A little space. A deeper conversation.",
@@ -22,7 +23,10 @@ export default function RouteMeta() {
     return () => cancelAnimationFrame(frame);
   }, [pathname, hash, key]);
 
-  const meta = pathname.startsWith("/schedule")
+  const moment = pathname.startsWith("/explore/") ? getMoment(pathname.split("/")[2]) : undefined;
+  const meta = pathname.startsWith("/explore")
+    ? { title: moment ? `${moment.title} — El Roi Call` : "Free Bible reflections & stories — El Roi Call", description: moment ? `${moment.description} A short reflection on ${moment.passage}, with a prayer and a practical next step.` : "Explore ten free Bible reflections, Scripture facts, study questions, and a seven-day reading path. No account needed.", canonical: `https://elroicall.com/explore/${moment ? moment.id + "/" : ""}` }
+    : pathname.startsWith("/schedule")
     ? { title: "Schedule a Bible call — El Roi Call", description: "Choose Bible study, sermons, lectures, stories, or Bible facts, with your preferred voice and calling time.", canonical: "https://elroicall.com/schedule/", robots: "noindex,nofollow" }
     : pathname.startsWith("/begin")
     ? {

@@ -2,11 +2,11 @@
 
 Status checked 21 September 2026: public Auth signup and email are enabled, email confirmation is required, Auth SMS is disabled, custom SMTP is off, and no send-email Auth hook is configured. Supabase's default mailer only delivers to organization team addresses. Public registration is therefore not ready until production delivery is activated. No real signup email has been sent or verified during this repair.
 
-Resend domain `elroicall.com` has been created, ID `2e719e31-7082-4530-a137-8c481b9b9c9f`, region `us-east-1`, sending enabled, receiving disabled, open/click tracking disabled. Its state is `not_started`; creating a domain does not verify it or configure Supabase.
+Resend domain `elroicall.com` has been created, ID `2e719e31-7082-4530-a137-8c481b9b9c9f`, region `us-east-1`, sending enabled, receiving disabled, open/click tracking disabled. Its most recently checked state is `pending`; creating a domain does not verify it or configure Supabase.
 
 ## 1. Add sending records in Cloudflare
 
-The domain uses `corey.ns.cloudflare.com` and `ainsley.ns.cloudflare.com`. Cloudflare's dashboard security verification blocked the assistant browser, so these records have **not** been added. In the `elroicall.com` DNS zone, add the following exact provider-issued records. Use TTL Auto and DNS only for the CNAME. Leave existing website and inbox records intact; the MX below is for `send`, not the root domain.
+The domain uses `corey.ns.cloudflare.com` and `ainsley.ns.cloudflare.com`. Cloudflare's dashboard security verification blocked the assistant browser. The owner subsequently added the records, and **all four are now visible in public DNS**. Resend verification has been triggered; provider confirmation remains pending. In the `elroicall.com` DNS zone, add the following exact provider-issued records. Use TTL Auto and DNS only for the CNAME. Leave existing website and inbox records intact; the MX below is for `send`, not the root domain.
 
 | Type | Name | Value | Priority |
 | --- | --- | --- | --- |
