@@ -1,0 +1,23 @@
+/* This layer decorates the original public homepage only. The member dashboard
+   and all calling/account components keep their existing presentation. */
+.elroi-season-autumn>.elroi-nav{background:rgba(6,30,22,.97);border-color:#365343}
+.elroi-season-autumn>.elroi-nav .elroi-brand,.elroi-season-autumn>.elroi-nav .elroi-brand-call,.elroi-season-autumn>.elroi-nav .elroi-desktop-links a,.elroi-season-autumn>.elroi-nav .elroi-signin{color:#fcfaf2}
+.elroi-season-autumn>.elroi-nav .elroi-brand-icon{background:#edc66e;color:#163629}
+.elroi-season-autumn>.elroi-nav .elroi-nav-start{background:#edc66e;color:#132c21}
+.elroi-season-autumn>.elroi-nav .elroi-menu-button{border-color:#6c8676;color:#fff}
+.elroi-season-autumn .elroi-hero{background:linear-gradient(90deg,#041b13ed 0%,#092719c9 52%,#061e1655),url('/images/autumn-valley.webp') center/cover no-repeat}
+.elroi-season-autumn .elroi-hero-copy{color:#fcfaf2}
+.elroi-season-autumn .elroi-hero h1>span{color:#f0ca7d}
+.elroi-season-autumn .elroi-hero-description,.elroi-season-autumn .elroi-hero-copy .elroi-text-link,.elroi-season-autumn .elroi-free-note,.elroi-season-autumn .elroi-verse p,.elroi-season-autumn .elroi-verse div>span{color:#edf0e7}
+.elroi-season-autumn .elroi-pill{background:#163b2bcc;border-color:#7a8355;color:#ffe4a2}
+.elroi-season-autumn .elroi-hero-copy .elroi-button-primary{background:#edc66e;color:#162a1f;box-shadow:0 8px 26px #0002}
+.elroi-season-autumn .elroi-entry{background:#fffffff5;border-color:#d9ceac;backdrop-filter:blur(12px)}
+.elroi-season-autumn .elroi-trust-strip{color:#edf0e7;border-color:#81998566}
+.elroi-season-autumn .elroi-trust-strip svg{color:#f0ca7d}
+.elroi-seasonal-promotion{display:flex;align-items:center;justify-content:space-between;gap:35px;padding:28px 32px;margin-block:22px 45px;border:1px solid #d3b875;border-radius:18px;background:linear-gradient(110deg,#09291fed,#133f2beb),url('/images/autumn-valley-960.webp') center/cover;color:#fcfaf2}
+.elroi-seasonal-promotion .elroi-kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#f0ca7d;font-size:12px;margin-bottom:12px}
+.elroi-seasonal-promotion h2{font-size:clamp(1.7rem,3vw,2.2rem);font-weight:600;letter-spacing:-.04em;line-height:1.15;margin-bottom:12px}
+.elroi-seasonal-promotion p:not(.elroi-kicker){max-width:620px;color:#e1e8dc;font-size:15px;line-height:1.7}
+.elroi-seasonal-promotion>.elroi-button{flex:none;background:#edc66e;color:#172d21}
+@media(max-width:900px){.elroi-seasonal-promotion{align-items:flex-start;flex-direction:column;gap:22px;padding:26px}.elroi-season-autumn .elroi-hero{background-image:linear-gradient(90deg,#041b13ed,#092719c9),url('/images/autumn-valley-1280.webp')}}
+@media(max-width:640px){.elroi-season-autumn .elroi-hero{background-image:linear-gradient(180deg,#041b13d9,#092719e6),url('/images/autumn-valley-960.webp')}.elroi-seasonal-promotion{padding:22px}.elroi-seasonal-promotion>.elroi-button{width:100%}}

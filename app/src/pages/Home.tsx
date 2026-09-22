@@ -9,10 +9,11 @@ import Nav from "@/sections/Nav";
 import Gift from "@/sections/Gift";
 import Faq from "@/sections/Faq";
 import Footer from "@/sections/Footer";
-import AutumnHome from "@/pages/AutumnHome";
-import { AUTUMN_HOME_ENABLED } from "@/lib/autumn-readings";
+import SeasonalPromotion from "@/components/SeasonalPromotion";
+import "@/seasonal-promotion.css";
+import { useSeason } from "@/lib/seasonal-context";
 
 export default function Home() {
-  if (AUTUMN_HOME_ENABLED) return <AutumnHome />;
-  return <div className="elroi-site"><Nav /><main id="main-content"><WellEntry /><CallJourneys /><DailyMoment /><CallFormats /><DescentExperience /><StoryShelf /><ReturnRoomPreview /><Gift /><Faq /></main><Footer /></div>;
+  const season = useSeason();
+  return <div className={`elroi-site${season ? " elroi-season-autumn" : ""}`}><Nav /><main id="main-content"><WellEntry /><CallJourneys />{season && <SeasonalPromotion />}<DailyMoment /><CallFormats /><DescentExperience /><StoryShelf /><ReturnRoomPreview /><Gift /><Faq /></main><Footer /></div>;
 }

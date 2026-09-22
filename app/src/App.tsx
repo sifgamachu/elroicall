@@ -5,8 +5,10 @@ import RouteMeta from "@/components/RouteMeta";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import { PHONE_TEL } from "@/lib/phone";
+import SeasonalExperienceProvider from "@/components/SeasonalExperienceProvider";
 
 const Explore = lazy(() => import("./pages/Explore"));
+const BibleChallenge = lazy(() => import("./pages/AutumnHome"));
 const AutumnJourney = lazy(() => import("./pages/AutumnJourney"));
 const Schedule = lazy(() => import("./pages/Schedule"));
 const About = lazy(() => import("./pages/About"));
@@ -33,13 +35,15 @@ export default function App() {
     return()=>{active=false;unsubscribe?.();};
   },[draftOwner]);
   return (
-    <DraftContext.Provider value={{ draft, setDraft,setPrivateDraft:(text,owner)=>{setDraftOwner(owner);setDraft(text);} }}>
+    <SeasonalExperienceProvider><DraftContext.Provider value={{ draft, setDraft,setPrivateDraft:(text,owner)=>{setDraftOwner(owner);setDraft(text);} }}>
       <RouteMeta />
       <Suspense fallback={<main className="grid min-h-screen place-content-center gap-5 bg-[#f8f9fc] px-6 text-center text-parchment"><p role="status" className="text-lg">Opening your conversation…</p><a href={PHONE_TEL} className="min-h-11 text-gold-bright underline">Prefer voice? Call El Roi</a></main>}>
       <Routes>
         <Route path="/auth/confirm" element={<AuthConfirm />} />
         <Route path="/auth/confirm/" element={<AuthConfirm />} />
         <Route path="/" element={<Home />} />
+        <Route path="/bible-challenge" element={<BibleChallenge />} />
+        <Route path="/bible-challenge/" element={<BibleChallenge />} />
         <Route path="/journey" element={<AutumnJourney />} />
         <Route path="/journey/" element={<AutumnJourney />} />
         <Route path="/journey/:day" element={<AutumnJourney />} />
@@ -70,6 +74,6 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </Suspense>
-    </DraftContext.Provider>
+    </DraftContext.Provider></SeasonalExperienceProvider>
   );
 }

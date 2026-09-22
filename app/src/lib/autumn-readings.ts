@@ -591,7 +591,6 @@ export const AUTUMN_READINGS: AutumnReading[] = [
   }
 ];
 
-export const AUTUMN_HOME_ENABLED = true;
 export const AUTUMN_PROGRESS_KEY = 'elroi-autumn-2026-v1';
 export const AUTUMN_WEEKS = [
   'Beginnings & Rescue', 'Covenant & Promised Land', 'Judges & Kings',
