@@ -8,6 +8,7 @@ import { PHONE_TEL } from "@/lib/phone";
 import SeasonalExperienceProvider from "@/components/SeasonalExperienceProvider";
 
 const Explore = lazy(() => import("./pages/Explore"));
+const Watch = lazy(() => import("./pages/Watch"));
 const BibleChallenge = lazy(() => import("./pages/AutumnHome"));
 const AutumnJourney = lazy(() => import("./pages/AutumnJourney"));
 const Schedule = lazy(() => import("./pages/Schedule"));
@@ -42,6 +43,10 @@ export default function App() {
         <Route path="/auth/confirm" element={<AuthConfirm />} />
         <Route path="/auth/confirm/" element={<AuthConfirm />} />
         <Route path="/" element={<Home />} />
+        <Route path="/watch" element={<Watch />} />
+        <Route path="/watch/" element={<Watch />} />
+        <Route path="/watch/:slug" element={<Watch />} />
+        <Route path="/watch/:slug/" element={<Watch />} />
         <Route path="/bible-challenge" element={<BibleChallenge />} />
         <Route path="/bible-challenge/" element={<BibleChallenge />} />
         <Route path="/journey" element={<AutumnJourney />} />

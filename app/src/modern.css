@@ -11,7 +11,7 @@
 .elroi-brand-icon { width:37px; height:37px; border-radius:12px; display:grid; place-items:center; background:var(--elroi-blue); color:white; }
 .elroi-brand-call { font-weight:400; color:#68748b; letter-spacing:-1px; }
 .elroi-brand-light { color:white; }
-.elroi-desktop-links { display:flex; align-items:center; gap:32px; }
+.elroi-desktop-links { display:flex; align-items:center; gap:22px; white-space:nowrap; }
 .elroi-desktop-links a, .elroi-signin { color:#535e74; font-size:14px; font-weight:500; padding-block:12px; }
 .elroi-desktop-links a:hover, .elroi-signin:hover { color:var(--elroi-blue); }
 .elroi-nav-actions { display:flex; align-items:center; gap:25px; }
@@ -211,6 +211,7 @@
 .elroi-product-content [role=alert] { color:#ae4050; }
 .elroi-product-content .elroi-status-error { color:#ae4050; }
 @media(min-width:1500px) { .elroi-hero-grid { gap:95px; } }
+@media(max-width:1180px) { .elroi-desktop-links { display:none; }.elroi-menu-button { display:flex; } }
 @media(max-width:1100px) {
   .elroi-container { width:calc(100% - 56px); }
   .elroi-desktop-links { gap:20px; }.elroi-nav-actions { gap:18px; }

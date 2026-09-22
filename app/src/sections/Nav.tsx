@@ -7,6 +7,7 @@ import { PHONE_TEL } from "@/lib/phone";
 const links = [
   { label: "Schedule a call", href: "/schedule/" },
   { label: "Explore Scripture", href: "/explore/" },
+  { label: "Watch & reflect", href: "/watch/" },
   { label: "Gift a conversation", href: "/gift/" },
   { label: "Bible readings", href: "/journey/" },
 ];

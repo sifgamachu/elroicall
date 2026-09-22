@@ -8,6 +8,8 @@ import ReadingImage from '@/components/ReadingImage';
 import { artworkForDay } from '@/lib/reading-artwork';
 import { useSeason } from '@/lib/seasonal-context';
 import { speechChunks } from '@/lib/scripture-library';
+import { CHANNEL_MESSAGES, messagePath } from '@/lib/youtube-channel';
+import '@/watch.css';
 
 function ListenOverview({reading}:{reading:AutumnReading}) {
   const [playing,setPlaying]=useState(false);
@@ -32,10 +34,12 @@ function ListenOverview({reading}:{reading:AutumnReading}) {
 function DayReader({reading,completed,toggle,notice}:{reading:AutumnReading;completed:number[];toggle:(day:number)=>void;notice:string}) {
   const done=completed.includes(reading.day);
   const artwork = artworkForDay(reading.day)!;
+  const relatedMessages = CHANNEL_MESSAGES.filter(message => message.readingDays.includes(reading.day));
   return <div className="autumn-reader"><Link className="autumn-text-link" to={`/journey/#week-${Math.ceil(reading.day/7)}`}><ArrowLeft size={17}/>All readings</Link><div className="autumn-reader-progress"><span>DAY {String(reading.day).padStart(2,'0')} OF 84</span><progress value={completed.length} max={84} aria-label={`${completed.length} of 84 readings complete`}/></div><figure className="reading-artwork"><ReadingImage className="autumn-reader-image" artwork={artwork}/><figcaption>{artwork.title} · {artwork.reference}<span>Scripture-inspired artwork</span></figcaption></figure><header><p className="autumn-eyebrow">WEEK {Math.ceil(reading.day/7)} · {AUTUMN_WEEKS[Math.floor((reading.day-1)/7)]}</p><h1>{artwork.title}</h1><p>{reading.passage.replaceAll('-', '–')}</p></header>
     <Tabs defaultValue="read" className="autumn-tabs"><TabsList aria-label="Reading mode"><TabsTrigger value="read">Read</TabsTrigger><TabsTrigger value="listen">Listen</TabsTrigger><TabsTrigger value="reflect">Reflect</TabsTrigger></TabsList><TabsContent value="read"><div className="autumn-overview"><p className="autumn-eyebrow">THE BIG PICTURE</p><h2>{reading.concept}</h2><p>{reading.notice}</p><p className="autumn-reader-tip">Read the assigned chapters in your own Bible, or open them below. You can split the reading between morning and evening.</p></div></TabsContent><TabsContent value="listen"><ListenOverview reading={reading}/></TabsContent><TabsContent value="reflect"><div className="autumn-overview"><p className="autumn-eyebrow">PAUSE WITH THE STORY</p><h2>{reading.question}</h2><p>What does this passage show you about God? What would you like to understand more deeply?</p></div></TabsContent></Tabs>
     <a className="autumn-button autumn-reading-cta" href={readingPassageUrl(reading.passage)} target="_blank" rel="noopener noreferrer">Open the full Bible reading <ArrowUpRight size={18}/></a><p className="autumn-small">Opens Bible Gateway · King James Version</p><button type="button" className="autumn-complete" aria-pressed={done} onClick={()=>toggle(reading.day)}><Check size={18}/>{done?'Reading complete · undo':'Mark reading complete'}</button>{notice&&<p role="status" className="autumn-small">{notice}</p>}
     <section className="autumn-call-card"><Phone size={25}/><div><h2>Your guide, by phone</h2><p>A conversation about {reading.passage.replaceAll('-','–')}.</p></div><Link className="autumn-button autumn-button-outline" to={readingCallUrl(reading)}>Choose my call time</Link><p className="autumn-small">Review the time, voice, and call length before confirming.</p></section>
+    {relatedMessages.length > 0 && <section className="autumn-related-video"><p className="autumn-eyebrow">FROM EL ROI CALLS ON YOUTUBE</p><h2>Stay with today’s Scripture.</h2>{relatedMessages.map(message => <Link key={message.id} to={messagePath(message)}><span>{message.title}<small>{message.passage} · {message.duration} · Watch & reflect</small></span><Play size={20}/></Link>)}</section>}
     <nav className="autumn-day-pagination" aria-label="Reading days">{reading.day>1?<Link to={`/journey/${reading.day-1}/`}><ArrowLeft size={17}/>Day {reading.day-1}</Link>:<span/>}{reading.day<84?<Link to={`/journey/${reading.day+1}/`}>Day {reading.day+1}<ArrowRight size={17}/></Link>:<Link to="/journey/">View your journey<Check size={17}/></Link>}</nav><p className="autumn-reader-end"><Sprout size={19}/>Continue at your pace.</p>
   </div>;
 }

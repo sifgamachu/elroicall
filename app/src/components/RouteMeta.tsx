@@ -4,6 +4,7 @@ import { useDocumentMeta } from "@/hooks/use-document-meta";
 import { getMoment } from "@/lib/scripture-library";
 import { useSeason } from "@/lib/seasonal-context";
 import { readingForDay } from "@/lib/autumn-readings";
+import { channelMessage, messagePath } from "@/lib/youtube-channel";
 
 const FOUNDATION = {
   title: "El Roi Call — Bible encouragement at your time",
@@ -29,7 +30,10 @@ export default function RouteMeta() {
 
   const moment = pathname.startsWith("/explore/") ? getMoment(pathname.split("/")[2]) : undefined;
   const autumnReading = pathname.startsWith('/journey/') ? readingForDay(pathname.split('/')[2]) : undefined;
-  const meta = pathname.startsWith('/bible-challenge') ? { ...FOUNDATION, title: season ? 'The 84-day Bible challenge — El Roi Call' : 'Your Bible reading journey — El Roi Call', canonical: 'https://elroicall.com/bible-challenge/' } : pathname.startsWith('/journey')
+  const videoMessage = pathname.startsWith('/watch/') ? channelMessage(pathname.split('/')[2]) : undefined;
+  const meta = pathname === '/watch' || pathname.startsWith('/watch/')
+    ? { title: videoMessage ? `${videoMessage.title} Watch & reflect — El Roi Call` : 'Watch, reflect & talk — El Roi Call', description: videoMessage ? `${videoMessage.summary} Reflect on ${videoMessage.passage} and bring your questions to El Roi.` : 'Watch selected messages from El Roi Calls on YouTube, reflect with Scripture, and bring what stays with you into a conversation.', canonical: `https://elroicall.com${videoMessage ? messagePath(videoMessage) : '/watch/'}`, ...(pathname.split('/')[2] && !videoMessage ? { robots: 'noindex,follow' } : {}) }
+    : pathname.startsWith('/bible-challenge') ? { ...FOUNDATION, title: season ? 'The 84-day Bible challenge — El Roi Call' : 'Your Bible reading journey — El Roi Call', canonical: 'https://elroicall.com/bible-challenge/' } : pathname.startsWith('/journey')
     ? { title: autumnReading ? `Day ${autumnReading.day}: ${autumnReading.passage} — El Roi Call` : 'Your 84-day Bible journey — El Roi Call', description: 'Follow the full 84-day Bible reading plan, with daily passages, reflection questions and progress saved on your device.', canonical: `https://elroicall.com/journey/${autumnReading ? autumnReading.day + '/' : ''}` }
     : pathname.startsWith("/explore")
     ? { title: moment ? `${moment.title} — El Roi Call` : "Free Bible reflections & stories — El Roi Call", description: moment ? `${moment.description} A short reflection on ${moment.passage}, with a prayer and a practical next step.` : "Explore ten free Bible reflections, Scripture facts, study questions, and a seven-day reading path. No account needed.", canonical: `https://elroicall.com/explore/${moment ? moment.id + "/" : ""}` }
