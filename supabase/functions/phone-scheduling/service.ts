@@ -1,4 +1,4 @@
-import { CONTENT_TYPES, WEEKDAYS, escapeXml, validatePlan, type CallPlanInput } from '../_shared/scheduling.ts';
+import { CONTENT_TYPES, JOURNEYS, WEEKDAYS, escapeXml, validatePlan, type CallPlanInput } from '../_shared/scheduling.ts';
 import { equalSecret, fetchDeadline, verifyTwilio, type Secrets } from '../_shared/providers.ts';
 import { sha256 } from '../_shared/member.ts';
 
@@ -13,6 +13,8 @@ export function readback(draft:PhoneDraft):string {
   const p=draft.plan;
   const when=new Intl.DateTimeFormat('en-US',{timeZone:p.timezone,weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'long'}).format(new Date(draft.next_run_at));
   const repeat=p.recurrence==='once'?'This is a one-time call.':`It repeats every ${p.weekdays.map(n=>WEEKDAYS[n]).join(', ')} at the same local time.`;
+  const journey=JOURNEYS.find(item=>item.id===p.journey_slug);
+  if(journey)return `The ${journey.name} Call Journey: seven daily calls, about ${p.duration_minutes} minutes each, using the ${p.voice} AI voice. The first call is ${when}.`;
   return `A ${p.duration_minutes}-minute ${CONTENT_TYPES.find(t=>t.id===p.content_type)?.name}, about ${p.topic}, using the ${p.voice} AI voice. The first call is ${when}. ${repeat}`;
 }
 export function createPhoneSchedulingService(env:Secrets&{PHONE_BOOKING_VOICE_ENABLED?:string},client:typeof fetch=fetch){

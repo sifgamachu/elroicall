@@ -1,8 +1,8 @@
 import type { Session } from '@supabase/supabase-js';
 import { ApiError, fetchJson, SUPABASE_URL } from './api';
 import { SUPABASE_ANON_KEY } from './supabase';
-export { CONTENT_TYPES, VOICES, WEEKDAYS, localDate, validatePlan, planLabel } from '../../../supabase/functions/_shared/scheduling';
-export type { CallPlan, CallPlanInput } from '../../../supabase/functions/_shared/scheduling';
+export { CONTENT_TYPES, JOURNEYS, VOICES, WEEKDAYS, journeyName, localDate, validatePlan, planLabel } from '../../../supabase/functions/_shared/scheduling';
+export type { CallPlan, CallPlanInput, JourneySlug } from '../../../supabase/functions/_shared/scheduling';
 export const SCHEDULE_API = `${SUPABASE_URL}/functions/v1/scheduled-calls`;
 export async function schedulingRequest<T>(path: string, session?: Session | null, body?: unknown) {
   const result = await fetchJson<T>(`${SCHEDULE_API}${path}`, {

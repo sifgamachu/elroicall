@@ -9,17 +9,28 @@ export const VOICES = [
   { id: 'marin', name: 'Marin' }, { id: 'cedar', name: 'Cedar' },
   { id: 'coral', name: 'Coral' }, { id: 'onyx', name: 'Onyx' },
 ] as const;
+export const JOURNEYS = [
+  { id: 'peace', name: 'Peace in Seven Days', need: 'I feel anxious or overwhelmed', description: 'Seven gentle calls through Psalms, the words of Jesus, prayer, and practices for returning to peace.', topic: 'A seven-day Scripture journey for anxiety, overwhelm, and lasting peace', duration: 10 },
+  { id: 'grief', name: 'Held Through Grief', need: 'I am carrying grief or loss', description: 'Scripture for lament, remembrance, honest prayer, and hope—without rushing the healing process.', topic: 'A seven-day Scripture journey through grief, lament, comfort, and hope', duration: 10 },
+  { id: 'sleep', name: 'Rest With Scripture', need: 'I need help slowing down at night', description: 'A quiet evening rhythm of Scripture, reflection, and prayer to help release the day.', topic: 'A seven-day evening Scripture journey for rest, trust, and peaceful sleep', duration: 5 },
+  { id: 'purpose', name: 'Purpose for This Season', need: 'I need direction or purpose', description: 'Explore calling, patience, wise next steps, and faithfulness in the season you are in.', topic: 'A seven-day Scripture journey for purpose, direction, and faithful next steps', duration: 10 },
+  { id: 'courage', name: 'Courage for What Is Ahead', need: 'I am facing something difficult', description: 'Stories and passages about faithful courage when the outcome is still uncertain.', topic: 'A seven-day Scripture journey for courage, endurance, and trust', duration: 10 },
+  { id: 'foundations', name: 'Bible Foundations', need: 'I want to understand the Bible', description: 'A welcoming introduction to the Bible’s central story, major themes, and how to keep learning.', topic: 'A seven-day introduction to the Bible, its central story, and its major themes', duration: 10 },
+] as const;
 export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
 export type ContentType = typeof CONTENT_TYPES[number]['id'];
 export type Voice = typeof VOICES[number]['id'];
+export type JourneySlug = typeof JOURNEYS[number]['id'];
 export type CallPlanInput = {
   content_type: ContentType; topic: string; voice: Voice; local_time: string;
   timezone: string; recurrence: 'once' | 'weekly'; weekdays: number[];
   start_date: string; duration_minutes: number; consent: boolean; request_id: string;
+  journey_slug?: JourneySlug | null; journey_total?: number | null;
 };
 export type CallPlan = CallPlanInput & {
   id: string; active: boolean; next_run_at: string | null; phone_last4: string;
   created_at: string; last_status?: string; last_called_at?: string; references?: string[];
+  journey_completed?: number; journey_answered?: number; occurrences_created?: number;
 };
 export function validTimezone(value: string): boolean {
   try { new Intl.DateTimeFormat('en-US', { timeZone: value }).format(); return value.length <= 100; }
@@ -49,12 +60,22 @@ export function validatePlan(value: unknown, now = new Date()): string | null {
   if (![5, 10, 15].includes(p.duration_minutes)) return 'Choose a 5, 10, or 15 minute call.';
   if (p.consent !== true) return 'Confirm that you want these automated calls.';
   if (typeof p.request_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.request_id)) return 'Refresh and try saving again.';
+  const hasJourney = p.journey_slug !== undefined && p.journey_slug !== null;
+  const hasJourneyTotal = p.journey_total !== undefined && p.journey_total !== null;
+  if (hasJourney !== hasJourneyTotal) return 'Choose a complete Call Journey.';
+  if (hasJourney) {
+    if (!JOURNEYS.some(journey => journey.id === p.journey_slug) || p.journey_total !== 7) return 'Choose an available Call Journey.';
+    if (p.recurrence !== 'weekly' || new Set(p.weekdays).size !== 7) return 'Call Journeys are seven daily calls.';
+  }
   return null;
 }
 export function planLabel(plan: Pick<CallPlanInput, 'recurrence' | 'weekdays' | 'start_date'>): string {
   if (plan.recurrence === 'once') return `Once on ${plan.start_date}`;
   if (plan.weekdays.length === 7) return 'Every day';
   return plan.weekdays.map(day => WEEKDAYS[day]?.slice(0,3)).join(', ');
+}
+export function journeyName(slug?: string | null): string | null {
+  return JOURNEYS.find(journey => journey.id === slug)?.name ?? null;
 }
 export function splitSpeech(text: string, limit = 2800): string[] {
   if (limit < 100) throw new Error('Speech chunk limit is too small');

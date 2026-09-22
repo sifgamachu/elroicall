@@ -83,6 +83,31 @@
 .elroi-icon-tile { display:grid; place-items:center; width:52px; height:52px; flex-shrink:0; border:1px solid #e1e6fa; background:#f0f3ff; border-radius:15px; color:#5769db; }
 .elroi-steps h3 { font-size:21px; font-weight:600; letter-spacing:-.04em; margin-bottom:13px; }
 .elroi-steps article > p { color:#6e7890; font-size:16px; line-height:1.8; }
+.elroi-journeys { background:linear-gradient(180deg,#f8f9fc 0,#eef1fb 100%); }
+.elroi-journeys-heading { align-items:flex-end; }
+.elroi-journeys-heading .elroi-kicker { display:flex; align-items:center; gap:8px; }
+.elroi-journeys-heading>div:last-child { max-width:470px; }
+.elroi-journeys-heading>div:last-child>p { color:#5c6880; font-size:16px; line-height:1.8; }
+.elroi-journeys-heading>div:last-child>span { display:flex; align-items:center; gap:8px; margin-top:14px; color:#4054bc; font-size:12px; font-weight:650; }
+.elroi-journey-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:15px; }
+.elroi-journey-card { min-width:0; min-height:292px; display:flex; flex-direction:column; padding:27px; border:1px solid #dfe4f1; border-radius:22px; background:#fff; box-shadow:0 14px 40px -34px #203566; transition:transform .2s,border-color .2s,box-shadow .2s; }
+.elroi-journey-card:hover { transform:translateY(-4px); border-color:#8091e5; box-shadow:0 22px 48px -30px #3049a15c; }
+.elroi-journey-card[data-featured=true] { background:linear-gradient(145deg,#465bd5,#273b92); border-color:transparent; color:white; }
+.elroi-journey-card>div { display:flex; align-items:center; justify-content:space-between; gap:15px; }
+.elroi-journey-icon { width:44px; height:44px; display:grid; place-items:center; border-radius:13px; background:#edf0fd; color:#5265ce; }
+.elroi-journey-card[data-featured=true] .elroi-journey-icon { background:#ffffff18; color:#eef1ff; }
+.elroi-journey-count { font-size:10px; letter-spacing:.12em; font-weight:700; color:#7b88a4; }
+.elroi-journey-card[data-featured=true] .elroi-journey-count { color:#d4dcff; }
+.elroi-journey-card>p { margin-top:24px; color:#657087; font-size:12px; font-weight:600; }
+.elroi-journey-card[data-featured=true]>p { color:#d6ddff; }
+.elroi-journey-card h3 { margin-top:8px; font-size:23px; line-height:1.2; letter-spacing:-.045em; font-weight:600; }
+.elroi-journey-card>span:not(.elroi-journey-count) { margin-top:13px; color:#647188; font-size:14px; line-height:1.7; }
+.elroi-journey-card[data-featured=true]>span:not(.elroi-journey-count) { color:#dde3ff; }
+.elroi-journey-card>strong { display:flex; align-items:center; gap:8px; margin-top:auto; padding-top:22px; color:#4358c4; font-size:13px; }
+.elroi-journey-card[data-featured=true]>strong { color:white; }
+.elroi-journey-footer { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-top:18px; padding:22px 26px; border:1px solid #dfe4f1; border-radius:18px; background:#ffffff9c; }
+.elroi-journey-footer>div { display:flex; flex-direction:column; gap:5px; }
+.elroi-journey-footer strong { font-size:15px; }.elroi-journey-footer span { color:#68748a; font-size:13px; }
 .elroi-call-value { background:#111b32; color:white; overflow:hidden; position:relative; }
 .elroi-call-value::before { content:""; position:absolute; width:620px; height:620px; right:-220px; top:-290px; border-radius:50%; background:radial-gradient(circle,#5268e044 0,transparent 68%); pointer-events:none; }
 .elroi-call-value .elroi-container { position:relative; }
@@ -195,6 +220,7 @@
   .elroi-story-card:nth-last-child(1) { grid-column:auto; }
   .elroi-steps { gap:16px; }.elroi-steps article { padding:24px; }
   .elroi-call-format-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .elroi-journey-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .elroi-call-signup { align-items:flex-start; flex-direction:column; }
   .elroi-return-grid,.elroi-faq-grid { gap:50px; }
   .elroi-gift-banner { padding:45px; gap:35px; }
@@ -211,6 +237,7 @@
   .elroi-steps { grid-template-columns:1fr; gap:15px; }.elroi-step-top { margin-bottom:20px; }
   .elroi-steps article { padding:25px; }.elroi-steps h3 { font-size:21px; }
   .elroi-call-value .elroi-section-heading { align-items:flex-start; }
+  .elroi-journey-footer { align-items:flex-start; flex-direction:column; }
   .elroi-call-signup-actions { flex-wrap:wrap; }
   .elroi-call-proof { justify-content:flex-start; gap:18px 30px; }
   .elroi-return-grid,.elroi-faq-grid { grid-template-columns:1fr; gap:38px; }
@@ -231,6 +258,7 @@
   .elroi-hero-actions { margin-top:23px; gap:10px 17px; }.elroi-hero-actions .elroi-button { padding:15px 18px; }
   .elroi-hero-actions .elroi-text-link { font-size:13px; }.elroi-free-note { font-size:11px; }
   .elroi-hero-actions .elroi-button { width:100%; font-size:13px; }
+  .elroi-journey-grid { grid-template-columns:1fr; }.elroi-journey-card { min-height:265px; }.elroi-journey-footer { padding:20px; }.elroi-journey-footer .elroi-button { width:100%; }
   .elroi-entry-art { display:none; }.elroi-entry { border-radius:20px; }
   .elroi-composer { padding:24px 20px 18px; }.elroi-composer-heading label { font-size:21px; }
   .elroi-composer textarea { min-height:95px; }.elroi-starters { padding:16px 20px 21px; }
@@ -283,6 +311,17 @@
 .elroi-field input:focus { outline:2px solid #4c5fe2; outline-offset:2px; }
 .elroi-schedule-card .elroi-small { margin-top:12px; line-height:1.6; }
 .elroi-schedule-help { margin:0 0 18px; color:#5c6478; line-height:1.7; }
+.elroi-journey-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.elroi-journey-options>button { min-width:0; display:flex; flex-direction:column; align-items:flex-start; text-align:left; gap:7px; padding:17px; border:1px solid #dfe4ef; border-radius:16px; background:#fbfcff; }
+.elroi-journey-options>button:hover { border-color:#8998e4; }
+.elroi-journey-options>button[data-selected=true] { border-color:#4c5fe2; background:#eef1ff; box-shadow:inset 0 0 0 1px #4c5fe2; }
+.elroi-journey-options>button>span { display:flex; align-items:center; gap:7px; color:#5c6dc7; font-size:.75rem; font-weight:650; }
+.elroi-journey-options>button>strong { font-size:1rem; }
+.elroi-journey-options>button>small { color:#647087; font-size:.78rem; line-height:1.55; }
+.elroi-choice-divider { display:flex; align-items:center; gap:14px; margin:25px 0 18px; color:#7a8498; font-size:.75rem; }
+.elroi-choice-divider::before,.elroi-choice-divider::after { content:""; height:1px; flex:1; background:#e2e6ef; }
+.elroi-journey-cadence { display:flex; align-items:flex-start; gap:13px; padding:16px; border:1px solid #cfd7f3; border-radius:14px; background:#f1f3ff; color:#3d50b6; }
+.elroi-journey-cadence p { margin-top:5px; color:#5f6b83; font-size:.82rem; line-height:1.55; }
 .elroi-voice-options { grid-template-columns:1fr 1fr; gap:10px; }
 .elroi-voice-option { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; border:1px solid #e1e5ef; border-radius:16px; padding:10px 14px; }
 .elroi-voice-option label { display:flex; gap:10px; align-items:center; min-height:44px; cursor:pointer; }
@@ -323,10 +362,13 @@
 .elroi-plan-card { display:grid; gap:18px; padding:24px; background:white; border:1px solid #e1e5ef; border-radius:20px; }
 .elroi-plan-card h3 { font-size:1.3rem; margin-top:8px; }
 .elroi-plan-card p { line-height:1.7; font-size:.875rem; overflow-wrap:anywhere; }
+.elroi-plan-progress { position:relative; height:7px; border-radius:999px; background:#e8ebf4; margin-bottom:20px; }
+.elroi-plan-progress>span { position:absolute; inset:0 auto 0 0; border-radius:inherit; background:#5267dc; }
+.elroi-plan-progress>small { position:absolute; top:12px; left:0; color:#68748a; font-size:.7rem; }
 .elroi-schedule-invite { display:flex; align-items:center; gap:24px; padding:26px; margin:28px 0; border:1px solid #dce1ed; border-radius:20px; background:white; }
 .elroi-schedule-invite h3 { font-size:1.2rem; margin-bottom:8px; }
 .elroi-schedule-invite p { font-size:.875rem; line-height:1.7; color:#5c6478; }
 .elroi-schedule-invite .elroi-button { flex-shrink:0; margin-left:auto; }
 @media(max-width:1050px) { .elroi-schedule-layout { grid-template-columns:minmax(0,1fr) 250px; gap:20px; } .elroi-content-options,.elroi-voice-options { grid-template-columns:1fr; } }
 @media(max-width:850px) { .elroi-schedule-layout { grid-template-columns:1fr; } .elroi-schedule-summary { position:static; } .elroi-content-options,.elroi-voice-options { grid-template-columns:1fr 1fr; } .elroi-schedule-invite { flex-wrap:wrap; } .elroi-schedule-invite .elroi-button { margin-left:0; } }
-@media(max-width:520px) { .elroi-schedule-card { padding:18px; } .elroi-content-options,.elroi-voice-options,.elroi-schedule-fields,.elroi-plans-grid { grid-template-columns:1fr; } .elroi-schedule-card legend { font-size:1rem; } }
+@media(max-width:520px) { .elroi-schedule-card { padding:18px; } .elroi-content-options,.elroi-voice-options,.elroi-schedule-fields,.elroi-plans-grid,.elroi-journey-options { grid-template-columns:1fr; } .elroi-schedule-card legend { font-size:1rem; } }

@@ -14,6 +14,8 @@ test('valid content, voice, local time, selected days, date, and consent are req
  assert.equal(validatePlan(plan()),null);
  for(const change of [{content_type:'random'},{voice:'celebrity'},{weekdays:[]},{weekdays:[1,1]},{local_time:'25:30'},{timezone:'Moon/Sea'},{consent:false},{start_date:'2027-02-30'},{duration_minutes:90},{topic:''}])assert.ok(validatePlan({...plan(),...change}));
  assert.equal(validatePlan({...plan(),recurrence:'once',weekdays:[]}),null);
+ assert.equal(validatePlan({...plan(),journey_slug:'peace',journey_total:7,recurrence:'weekly',weekdays:[0,1,2,3,4,5,6]}),null);
+ for(const change of [{journey_slug:'unknown',journey_total:7},{journey_slug:'peace'},{journey_total:7},{journey_slug:'peace',journey_total:8},{journey_slug:'peace',journey_total:7,weekdays:[1,2,3]}])assert.ok(validatePlan({...plan(),...change}));
 });
 test('speech chunks preserve words and respect provider input limits',()=>{
  const text=Array.from({length:1700},(_,i)=>`word${i}`).join(' ');const chunks=splitSpeech(text);

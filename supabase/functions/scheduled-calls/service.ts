@@ -3,8 +3,8 @@ import { validatePlan, VOICES, type CallPlanInput, type Voice } from '../_shared
 import { equalSecret, fetchDeadline, generateLesson, generateSpeech, lessonTwiml, placeCall, verifyTwilio, type Secrets } from '../_shared/providers.ts';
 import { DEFAULT_PREFERENCES, publicPreferences, sha256, validatePreferences, type MemberPreferences } from '../_shared/member.ts';
 
-type ScheduleRow = CallPlanInput & { id: string; user_id: string; phone: string; active: boolean; next_run_at: string | null; created_at: string };
-type Job = { id: string; schedule_id: string; due_at: string; status: string; script_chunks: string[]; audio_paths: string[]; call_sid: string | null; accepted: boolean; lesson_finished: boolean; failures: number; reference_list: string[]; title: string | null };
+type ScheduleRow = CallPlanInput & { id: string; user_id: string; phone: string; active: boolean; next_run_at: string | null; created_at: string; occurrences_created: number };
+type Job = { id: string; schedule_id: string; due_at: string; status: string; script_chunks: string[]; audio_paths: string[]; call_sid: string | null; accepted: boolean; lesson_finished: boolean; failures: number; reference_list: string[]; title: string | null; session_number: number | null; takeaway_truth: string | null; takeaway_action: string | null; takeaway_prayer: string | null };
 class HttpError extends Error { status: number; constructor(status: number, message: string) { super(message); this.status=status; } }
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const BUCKET = 'scheduled-call-audio';
@@ -58,7 +58,7 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
     const related=jobs.filter(item=>item.schedule_id===plan.id);
     const pending=related.filter(item=>['queued','preparing','ready','dialing','submitted'].includes(item.status)).map(item=>item.due_at).sort()[0];
     const last=related.filter(item=>terminal.includes(item.status)||item.status==='uncertain').sort((a,b)=>b.due_at.localeCompare(a.due_at))[0];
-    return {id:plan.id,request_id:plan.request_id,content_type:plan.content_type,topic:plan.topic,voice:plan.voice,local_time:plan.local_time,timezone:plan.timezone,recurrence:plan.recurrence,weekdays:plan.weekdays,start_date:plan.start_date,duration_minutes:plan.duration_minutes,active:plan.active,created_at:plan.created_at,phone_last4:plan.phone.slice(-4),next_run_at:plan.active&&pending&&(!plan.next_run_at||pending<plan.next_run_at)?pending:plan.next_run_at,last_status:last?.status==='completed'?(last.lesson_finished?'lesson_finished':last.accepted?'call_ended':'not_started'):last?.status,last_called_at:last?.due_at,references:last?.reference_list??[]};
+    return {id:plan.id,request_id:plan.request_id,content_type:plan.content_type,topic:plan.topic,voice:plan.voice,local_time:plan.local_time,timezone:plan.timezone,recurrence:plan.recurrence,weekdays:plan.weekdays,start_date:plan.start_date,duration_minutes:plan.duration_minutes,active:plan.active,created_at:plan.created_at,phone_last4:plan.phone.slice(-4),next_run_at:plan.active&&pending&&(!plan.next_run_at||pending<plan.next_run_at)?pending:plan.next_run_at,last_status:last?.status==='completed'?(last.lesson_finished?'lesson_finished':last.accepted?'call_ended':'not_started'):last?.status,last_called_at:last?.due_at,references:last?.reference_list??[],journey_slug:plan.journey_slug??null,journey_total:plan.journey_total??null,occurrences_created:plan.occurrences_created??0,journey_completed:related.filter(item=>item.lesson_finished).length,journey_answered:related.filter(item=>item.accepted).length};
   }
   async function signedAudio(path:string):Promise<string> {
     const response=await fetchDeadline(`${env.SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/${path}`,{method:'POST',headers:serviceHeaders,body:JSON.stringify({expiresIn:3600})},10000,client);
@@ -77,8 +77,8 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
       if(!plan?.active) return;
       if(!item.script_chunks.length) {
         const recent=await db<{title:string}[]>(`lesson_jobs?schedule_id=eq.${plan.id}&title=not.is.null&order=due_at.desc&limit=5&select=title`);
-        const lesson=await generateLesson(env,plan,client,recent.map(item=>item.title));
-        await db(`lesson_jobs?id=eq.${item.id}&status=eq.preparing`,'PATCH',{title:lesson.title,reference_list:lesson.references,script_chunks:lesson.chunks,status:'queued',lease_until:null});
+        const lesson=await generateLesson(env,plan,client,recent.map(item=>item.title),item.session_number);
+        await db(`lesson_jobs?id=eq.${item.id}&status=eq.preparing`,'PATCH',{title:lesson.title,reference_list:lesson.references,script_chunks:lesson.chunks,takeaway_truth:lesson.takeaway.truth,takeaway_action:lesson.takeaway.action,takeaway_prayer:lesson.takeaway.prayer,status:'queued',lease_until:null});
       } else {
         const indexes=Array.from({length:Math.min(3,item.script_chunks.length-item.audio_paths.length)},(_,i)=>item.audio_paths.length+i);
         if(!indexes.length) throw new Error('audio_sequence_invalid');
@@ -195,7 +195,7 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
         const [preferences,stats]=await Promise.all([db<MemberPreferences[]>(`member_preferences?user_id=eq.${owner}&limit=1`),rpc('lesson_dashboard_stats',{p_user:owner})]);
         const history=jobs.filter(item=>terminal.includes(item.status)||item.status==='uncertain').slice(0,50).map(item=>{
           const plan=plans.find(plan=>plan.id===item.schedule_id)!;
-          return {id:item.id,plan_id:plan.id,topic:plan.topic,content_type:plan.content_type,voice:plan.voice,due_at:item.due_at,title:item.title,status:item.status==='completed'?(item.lesson_finished?'lesson_finished':item.accepted?'call_ended':'not_started'):item.status,references:item.reference_list};
+          return {id:item.id,plan_id:plan.id,topic:plan.topic,content_type:plan.content_type,voice:plan.voice,due_at:item.due_at,title:item.title,status:item.status==='completed'?(item.lesson_finished?'lesson_finished':item.accepted?'call_ended':'not_started'):item.status,references:item.reference_list,journey_slug:plan.journey_slug??null,session_number:item.session_number,takeaway:item.accepted&&item.takeaway_truth&&item.takeaway_action&&item.takeaway_prayer?{truth:item.takeaway_truth,action:item.takeaway_action,prayer:item.takeaway_prayer}:null};
         });
         return json({plans:plans.map(plan=>publicPlan(plan,jobs)),history,preferences:publicPreferences(preferences[0]||DEFAULT_PREFERENCES),stats});
       }
@@ -216,7 +216,7 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
         const existing=await db<ScheduleRow[]>(`lesson_schedules?user_id=eq.${owner}&request_id=eq.${payload.request_id}&limit=1`);
         if(existing.length) {
           const old=existing[0];
-          if(old.content_type!==payload.content_type||old.topic!==payload.topic||old.voice!==payload.voice||old.local_time.slice(0,5)!==payload.local_time||old.timezone!==payload.timezone||old.recurrence!==payload.recurrence||old.start_date!==payload.start_date||old.duration_minutes!==payload.duration_minutes||JSON.stringify(old.weekdays)!==JSON.stringify(payload.weekdays)||old.phone!==phone) throw new HttpError(409,'This request was already used for different choices.');
+          if(old.content_type!==payload.content_type||old.topic!==payload.topic||old.voice!==payload.voice||old.local_time.slice(0,5)!==payload.local_time||old.timezone!==payload.timezone||old.recurrence!==payload.recurrence||old.start_date!==payload.start_date||old.duration_minutes!==payload.duration_minutes||JSON.stringify(old.weekdays)!==JSON.stringify(payload.weekdays)||old.phone!==phone||(old.journey_slug??null)!==(payload.journey_slug??null)||(old.journey_total??null)!==(payload.journey_total??null)) throw new HttpError(409,'This request was already used for different choices.');
           return json({plan:publicPlan(old)});
         }
         const plan=await rpc<ScheduleRow>('lesson_create_plan',{p_user:owner,p_phone:phone,p_plan:payload});

@@ -4,8 +4,8 @@ import { useDocumentMeta } from "@/hooks/use-document-meta";
 import { getMoment } from "@/lib/scripture-library";
 
 const HOME = {
-  title: "El Roi Call — Bible encouragement, delivered at your time",
-  description: "Schedule a personalized Bible study, short sermon, biblical story, lecture, or Bible facts by phone. Choose your time, voice, and call length.",
+  title: "El Roi Call — Bible encouragement at your time",
+  description: "Choose a personalized Bible call or a seven-day Call Journey for peace, grief, rest, purpose, courage, or Bible foundations.",
   canonical: "https://elroicall.com/",
 };
 
@@ -27,7 +27,7 @@ export default function RouteMeta() {
   const meta = pathname.startsWith("/explore")
     ? { title: moment ? `${moment.title} — El Roi Call` : "Free Bible reflections & stories — El Roi Call", description: moment ? `${moment.description} A short reflection on ${moment.passage}, with a prayer and a practical next step.` : "Explore ten free Bible reflections, Scripture facts, study questions, and a seven-day reading path. No account needed.", canonical: `https://elroicall.com/explore/${moment ? moment.id + "/" : ""}` }
     : pathname.startsWith("/schedule")
-    ? { title: "Schedule a Bible call — El Roi Call", description: "Choose Bible study, sermons, lectures, stories, or Bible facts, with your preferred voice and calling time.", canonical: "https://elroicall.com/schedule/", robots: "noindex,nofollow" }
+    ? { title: "Choose a Bible Call Journey — El Roi Call", description: "Choose a seven-day Scripture journey or schedule a Bible study, sermon, lecture, story, or Bible facts call at your time.", canonical: "https://elroicall.com/schedule/", robots: "noindex,nofollow" }
     : pathname.startsWith("/begin")
     ? {
         title: "What’s on your heart? — El Roi Call",

@@ -4,11 +4,12 @@ import StoryShelf from "@/components/StoryShelf";
 import WellEntry from "@/components/WellEntry";
 import DailyMoment from "@/components/DailyMoment";
 import CallFormats from "@/components/CallFormats";
+import CallJourneys from "@/components/CallJourneys";
 import Nav from "@/sections/Nav";
 import Gift from "@/sections/Gift";
 import Faq from "@/sections/Faq";
 import Footer from "@/sections/Footer";
 
 export default function Home() {
-  return <div className="elroi-site"><Nav /><main id="main-content"><WellEntry /><DailyMoment /><CallFormats /><DescentExperience /><StoryShelf /><ReturnRoomPreview /><Gift /><Faq /></main><Footer /></div>;
+  return <div className="elroi-site"><Nav /><main id="main-content"><WellEntry /><CallJourneys /><DailyMoment /><CallFormats /><DescentExperience /><StoryShelf /><ReturnRoomPreview /><Gift /><Faq /></main><Footer /></div>;
 }

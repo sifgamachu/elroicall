@@ -6,10 +6,11 @@ import { AccountAuthError, type AuthDestination, type AuthMethods, type AuthMode
 import { normalizePhone } from '@/lib/phone';
 import '@/auth.css';
 
-export default function AccountSignIn({ destination = '/account/', initialError = '', embedded = false, initialMode = 'signup' }: { destination?: AuthDestination; initialError?: string; embedded?: boolean; initialMode?: AuthMode }) {
+export default function AccountSignIn({ destination = '/account/', initialError = '', embedded = false, initialMode = 'signup', mode: controlledMode, onModeChange }: { destination?: AuthDestination; initialError?: string; embedded?: boolean; initialMode?: AuthMode; mode?: AuthMode; onModeChange?: (mode: AuthMode) => void }) {
   const id = useId();
   const [method, setMethod] = useState<'email' | 'phone'>('email');
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [localMode, setMode] = useState<AuthMode>(initialMode);
+  const mode = controlledMode ?? localMode;
   const [methods, setMethods] = useState<AuthMethods | null>(null);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -60,7 +61,8 @@ export default function AccountSignIn({ destination = '/account/', initialError 
       else await accountAuth.sendPhone(recipient);
       if (!mounted.current) return;
       setCooldown(60); setSent(true); setCredential('');
-      setNotice(method === 'email' ? 'Check your inbox and spam folder. Tap the verification button in your latest El Roi email to continue. You can also use its link or code below.' : 'If this number is linked to your account, a text message is on its way. Enter its code below.');
+      setRecovery(false);
+      setNotice(method === 'email' ? 'Open your latest El Roi email and tap its verification button. Check spam if you do not see it. Keep this page open while you check.' : 'If this number is linked to your account, a text message is on its way. Enter its code below.');
     });
   }
   async function verify() {
@@ -80,15 +82,16 @@ export default function AccountSignIn({ destination = '/account/', initialError 
     if (pending.current) return;
     setMethod(value as 'email' | 'phone'); setSent(false); setRecovery(false); setCredential(''); setError(''); setNotice('');
   }
-  const verifying = sent || recovery;
+  const waitingForEmail = sent && method === 'email' && !recovery;
+  const verifying = recovery || sent && method === 'phone';
   const Form = embedded ? 'div' : 'form';
   return <div className="account-auth">
-    <RadioGroup value={mode} aria-label="Account access" className="auth-mode" disabled={busy} onValueChange={value => { setMode(value as AuthMode); changeMethod('email'); }}>
+    <RadioGroup value={mode} aria-label="Account access" className="auth-mode" disabled={busy} onValueChange={value => { if (pending.current) return; setMode(value as AuthMode); onModeChange?.(value as AuthMode); changeMethod('email'); }}>
       <label data-selected={mode === 'signup'}><RadioGroupItem value="signup" />Create account</label>
       <label data-selected={mode === 'signin'}><RadioGroupItem value="signin" />Sign in</label>
     </RadioGroup>
-    <h3>{verifying ? 'Check your email or text message' : mode === 'signup' ? 'Start with your email.' : 'Welcome back.'}</h3>
-    <p className="auth-help">{mode === 'signup' ? 'Create your account with a verification email. No password or phone number needed to get started. Already registered? The same email will open your account.' : 'Use your account email, or a phone number you have already linked.'}</p>
+    <h3>{waitingForEmail ? 'Check your inbox.' : verifying ? method === 'phone' ? 'Enter your text-message code.' : 'Use your email link or code.' : mode === 'signup' ? 'Start with your email.' : 'Sign in with your email.'}</h3>
+    {!sent && !recovery && <p className="auth-help">{mode === 'signup' ? 'We’ll email a secure verification link. No password or phone number needed to get started. Already registered? The same email will open your account.' : 'We’ll send a secure sign-in link. No password needed. You can also use a phone number already linked to your account.'}</p>}
     {mode === 'signin' && <>
     <RadioGroup value={method} onValueChange={changeMethod} aria-label="Verification method" className="auth-methods" disabled={busy}>
       <label data-selected={method === 'email'}><RadioGroupItem value="email" disabled={methods?.email === false} /><Mail size={20} /><span><strong>Email</strong><small>Link or email code</small></span></label>
@@ -98,7 +101,8 @@ export default function AccountSignIn({ destination = '/account/', initialError 
     {methods?.email === false && <p className="auth-error" role="alert">Email verification is unavailable right now. Please try again later.</p>}
     {mode === 'signup' && methods?.signup === false && <p className="auth-error" role="alert">New accounts are temporarily unavailable. Existing members can choose Sign in.</p>}
     {method === 'phone' && <p className="auth-help" role="status">{methods?.phone ? 'Use a number already linked to your account. To add one, sign in with email and open Preferences.' : methods === null ? 'Checking text-message availability. You can use email now.' : 'Text-message sign-in is not available yet. Choose email to continue.'}</p>}
-    <Form className="auth-form" onSubmit={event => { event.preventDefault(); void (verifying ? verify() : send()); }} onKeyDown={event => {
+    {waitingForEmail && <div className="auth-waiting" role="status"><Mail size={25}/><div><strong>Verification email requested</strong><p>{email.trim()}</p><span>Finish using the button in your email. You do not need to paste its link here.</span></div></div>}
+    {!waitingForEmail && <Form className="auth-form" onSubmit={event => { event.preventDefault(); void (verifying ? verify() : send()); }} onKeyDown={event => {
       if (embedded && event.key === 'Enter' && event.target instanceof HTMLInputElement) { event.preventDefault(); event.stopPropagation(); void (verifying ? verify() : send()); }
     }}>
       {method === 'email' ? <label className="auth-field" htmlFor={`${id}-email`}>Email address<input id={`${id}-email`} type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} disabled={busy} readOnly={sent} required placeholder="you@example.com" /></label>
@@ -113,12 +117,12 @@ export default function AccountSignIn({ destination = '/account/', initialError 
       <button type={embedded ? 'button' : 'submit'} onClick={embedded ? () => void (verifying ? verify() : send()) : undefined} className="elroi-button elroi-button-primary" disabled={busy || method === 'phone' && !methods?.phone || !verifying && (cooldown > 0 || method === 'email' && methods?.email === false || mode === 'signup' && methods?.signup === false) || verifying && !credential.trim()}>
         {busy ? <><LoaderCircle size={18} className="animate-spin" />Please wait…</> : verifying ? <><Check size={18} />Verify and continue</> : cooldown ? `Try again in ${cooldown}s` : method === 'email' ? <>{mode === 'signup' ? 'Create account with email' : 'Email me a sign-in link'} <ArrowUpRight size={18} /></> : <>Text me a code <MessageSquare size={18} /></>}
       </button>
-    </Form>
+    </Form>}
     {notice && <p role="status" className="auth-notice">{notice}</p>}{error && <p role="alert" className="auth-error">{error}</p>}
-    {!verifying && <p className="auth-help">Your email stays private. Phone verification and your six-digit calling PIN come later, when you set up calling.</p>}
+    {!verifying && !sent && <p className="auth-help">Your email stays private. Phone verification and your six-digit calling PIN come later, when you set up calling.</p>}
     <div className="auth-actions">
-      {!verifying && method === 'email' && <button type="button" className="elroi-text-link" disabled={busy} onClick={() => { setRecovery(true); setError(''); }}><Link2 size={16} />Already have an email? Use it here</button>}
-      {verifying && <><button type="button" className="elroi-text-link" disabled={busy || cooldown > 0} onClick={() => void send()}>{cooldown ? `Send again in ${cooldown}s` : 'Send a new verification message'}</button><button type="button" className="elroi-text-link" disabled={busy} onClick={() => { setSent(false); setRecovery(false); setCredential(''); setNotice(''); setError(''); }}>Change {method === 'email' ? 'email' : 'phone number'}</button></>}
+      {!verifying && method === 'email' && <button type="button" className="elroi-text-link" disabled={busy} onClick={() => { setRecovery(true); setError(''); setNotice(''); }}><Link2 size={16} />{sent ? 'Need help? Use an email link or code' : 'Already received a verification email?'}</button>}
+      {(verifying || sent) && <><button type="button" className="elroi-text-link" disabled={busy || cooldown > 0} onClick={() => void send()}>{cooldown ? `Send again in ${cooldown}s` : 'Send a new verification message'}</button><button type="button" className="elroi-text-link" disabled={busy} onClick={() => { setSent(false); setRecovery(false); setCredential(''); setNotice(''); setError(''); }}>Change {method === 'email' ? 'email' : 'phone number'}</button></>}
     </div>
   </div>;
 }

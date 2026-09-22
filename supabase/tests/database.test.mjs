@@ -9,6 +9,7 @@ const other='22222222-2222-4222-8222-222222222222';
 before(async()=>{
  await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key); insert into auth.users values('${user}'),('${other}'); create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
  await db.exec(await readFile(new URL('../migrations/20260908170059_scheduled_lessons.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../migrations/20260922035909_call_journeys_takeaways.sql',import.meta.url),'utf8'));
 });
 beforeEach(async()=>{await db.exec('truncate lesson_jobs,lesson_schedules,lesson_rate_limits cascade');});
 after(()=>db.close());
@@ -45,6 +46,17 @@ test('repeated cron ticks create one occurrence and advance a recurring plan',as
  await db.query('select lesson_enqueue()');await db.query('select lesson_enqueue()');
  assert.equal((await db.query('select count(*)::int as n from lesson_jobs')).rows[0].n,1);
  assert.equal((await db.query('select next_run_at>now()+interval \'20 minutes\' as future from lesson_schedules')).rows[0].future,true);
+});
+test('a seven-call journey creates numbered sessions and stops after call seven',async()=>{
+ const data={...input(),recurrence:'weekly',weekdays:[0,1,2,3,4,5,6],journey_slug:'peace',journey_total:7};
+ const plan=await create(data);
+ for(let number=1;number<=7;number++){
+  await db.query("update lesson_schedules set next_run_at=now()+interval '10 minutes'+$2*interval '1 second' where id=$1",[plan.id,number]);
+  await db.query('select lesson_enqueue()');
+ }
+ const saved=(await db.query('select occurrences_created,next_run_at from lesson_schedules where id=$1',[plan.id])).rows[0];
+ assert.equal(saved.occurrences_created,7);assert.equal(saved.next_run_at,null);
+ assert.deepEqual((await db.query('select session_number from lesson_jobs order by session_number')).rows.map(row=>row.session_number),[1,2,3,4,5,6,7]);
 });
 test('pausing is owner-scoped and cancels prepared occurrences',async()=>{
  const {id,plan}=await readyJob();assert.equal((await db.query('select lesson_pause_plan($1,$2) as paused',[other,plan.id])).rows[0].paused,false);

@@ -12,6 +12,7 @@ before(async()=>{
  create table portal_accounts(user_id uuid primary key,email text,phone text unique,phone_verified boolean not null default false,verify_code text,verify_expires timestamptz,created_at timestamptz default now(),updated_at timestamptz default now());alter table portal_accounts enable row level security;`);
  await db.exec(await readFile(new URL('../migrations/20260908170059_scheduled_lessons.sql',import.meta.url),'utf8'));
  await db.exec(await readFile(new URL('../migrations/20260908172553_member_dashboard.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../migrations/20260922035909_call_journeys_takeaways.sql',import.meta.url),'utf8'));
 });
 beforeEach(async()=>{await db.exec('truncate portal_accounts,call_schedules,lesson_schedules,lesson_jobs,member_preferences cascade');});
 after(()=>db.close());

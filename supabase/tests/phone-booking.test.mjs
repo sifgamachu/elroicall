@@ -11,7 +11,7 @@ before(async()=>{
  create table calls(id uuid primary key default gen_random_uuid(),caller_id uuid,created_at timestamptz default now());
  create table call_schedules(id uuid primary key default gen_random_uuid(),phone text,active boolean default true);
  create table portal_accounts(user_id uuid primary key,email text,phone text unique,phone_verified boolean not null default false,verify_code text,verify_expires timestamptz,created_at timestamptz default now(),updated_at timestamptz default now());alter table portal_accounts enable row level security;`);
- for(const file of ['20260908170059_scheduled_lessons.sql','20260908172553_member_dashboard.sql','20260908191019_phone_learning_booking.sql'])await db.exec(await readFile(new URL('../migrations/'+file,import.meta.url),'utf8'));
+ for(const file of ['20260908170059_scheduled_lessons.sql','20260908172553_member_dashboard.sql','20260908191019_phone_learning_booking.sql','20260922035909_call_journeys_takeaways.sql'])await db.exec(await readFile(new URL('../migrations/'+file,import.meta.url),'utf8'));
 });
 beforeEach(async()=>{await db.exec('truncate portal_accounts,call_schedules,lesson_schedules,lesson_jobs,phone_booking_drafts cascade;update auth.users set phone=null,phone_confirmed_at=null;');});
 after(()=>db.close());

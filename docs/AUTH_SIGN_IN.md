@@ -1,5 +1,13 @@
 # Email redirects and verification choice
 
+## Sign-in QA — 22 September 2026
+
+- Live `/login/` opens the sign-in screen. Public Auth settings return HTTP 200 with email and signup enabled and SMS disabled. A deliberately invalid email token redirects to `https://elroicall.com/account/` with `otp_expired`, not localhost. No email or text message was sent for these probes.
+- Resend reported the sending domain as `partially_failed`: DKIM and the CNAME were verified while the `send` MX and SPF TXT checks failed. Public DNS returned the required MX and TXT values. A new provider verification was started and is pending. The Supabase SMTP dashboard requires owner sign-in; its current saved credentials have not been verified in this QA.
+- Prepared code fixes make dashboard headings follow the Create account/Sign in selection, default a direct account visit to sign-in, explain the inbox step before offering optional link/code recovery, bound session restoration to twelve seconds, and preserve account data when Auth repeats a sign-in event for the same session. Account switching and sign-out still clear private page data.
+- Six new session regression tests cover duplicate events, token refresh, account changes, stale initial reads, timeouts, Auth errors, and unmount cleanup. All 95 application tests pass; lint, TypeScript, and production build pass.
+- These website fixes are local until the owner explicitly approves the existing GitHub deployment destination, as requested by automatic approval review. No real inbox delivery or full browser sign-in is claimed.
+
 ## Confirmed incident
 
 On 8 September 2026, read-only probes using deliberately invalid tokens and no redirect following confirmed that Supabase redirected all three requested production destinations (`/account`, `/account/`, `/schedule/`) to `http://localhost:3000`. No real member link was inspected or consumed. Public Auth settings reported email enabled and phone disabled.

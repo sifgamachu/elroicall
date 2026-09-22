@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { CalendarClock, Check, Clock3, Headphones, LoaderCircle, Pause, Phone, Play, Volume2 } from 'lucide-react';
+import { CalendarClock, Check, Clock3, Headphones, LoaderCircle, Pause, Phone, Play, Sparkles, Volume2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import ProductShell from '@/components/ProductShell';
 import AccountSignIn from '@/components/AccountSignIn';
@@ -8,10 +8,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/lib/supabase';
+import { watchAccountSession } from '@/lib/account-session';
 import { getPortalMember, type PortalMember } from '@/lib/portal';
 import { PHONE_TEL } from '@/lib/phone';
 import { ApiError, fetchJson, SUPABASE_URL } from '@/lib/api';
-import { CONTENT_TYPES, VOICES, WEEKDAYS, localDate, planLabel, schedulingRequest, validatePlan, type CallPlan, type CallPlanInput } from '@/lib/scheduled-calls';
+import { CONTENT_TYPES, JOURNEYS, VOICES, WEEKDAYS, journeyName, localDate, planLabel, schedulingRequest, validatePlan, type CallPlan, type CallPlanInput, type JourneySlug } from '@/lib/scheduled-calls';
 import type { MemberPreferences } from '@/lib/dashboard';
 
 const detectedZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -21,21 +22,24 @@ export default function Schedule() {
   const location=useLocation();
   const query=new URLSearchParams(location.search);
   const fromPlan=query.get('from');
+  const requestedJourney=JOURNEYS.find(journey=>journey.id===query.get('journey'));
+  const requestedJourneyRef=useRef(requestedJourney);
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [member, setMember] = useState<PortalMember | null>(null);
   const [ready, setReady] = useState<boolean | null>(null);
   const [voiceReady,setVoiceReady]=useState(false);
   const [phoneReady,setPhoneReady]=useState(false);
-  const [contentType, setContentType] = useState(()=>CONTENT_TYPES.some(type=>type.id===query.get('content'))?query.get('content')!:'');
-  const [topic, setTopic] = useState(()=>(query.get('topic')||'').slice(0,160));
+  const [journeySlug,setJourneySlug]=useState<JourneySlug|''>(()=>requestedJourney?.id||'');
+  const [contentType, setContentType] = useState(()=>requestedJourney?'bible_study':CONTENT_TYPES.some(type=>type.id===query.get('content'))?query.get('content')!:'');
+  const [topic, setTopic] = useState(()=>(query.get('topic')||requestedJourney?.topic||'').slice(0,160));
   const [voice, setVoice] = useState('');
   const [time, setTime] = useState('');
   const [timezone, setTimezone] = useState(detectedZone);
   const [recurrence, setRecurrence] = useState<'once' | 'weekly'>('weekly');
-  const [weekdays, setWeekdays] = useState<number[]>([]);
+  const [weekdays, setWeekdays] = useState<number[]>(()=>requestedJourney?[0,1,2,3,4,5,6]:[]);
   const [startDate, setStartDate] = useState(() => localDate(new Date(), detectedZone()));
-  const [duration, setDuration] = useState('10');
+  const [duration, setDuration] = useState(()=>String(requestedJourney?.duration||10));
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -54,14 +58,17 @@ export default function Schedule() {
   const zones = useMemo(() => Array.from(new Set([detectedZone(), 'UTC', ...Intl.supportedValuesOf('timeZone')])).sort(), []);
 
   useEffect(() => {
-    let active = true;let authEvent=false;
+    let active = true;
     const playback = previewSequence;
     const currentAudio = audio;
     void fetchJson<{ready:boolean}>(`${SUPABASE_URL}/functions/v1/phone-scheduling/capabilities`,{},12000).then(result=>{if(active)setPhoneReady(result.status===200&&result.data.ready===true);}).catch(()=>{if(active)setPhoneReady(false);});
     void schedulingRequest<{ ready: boolean;voice_ready:boolean }>('/capabilities').then(data => { if (active) {setReady(data.ready === true);setVoiceReady(data.voice_ready===true);} }).catch(() => { if (active) setReady(false); });
-    void supabase.auth.getSession().then(({ data }) => { if (active&&!authEvent) { accountId.current=data.session?.user.id||null;setSession(data.session); setAuthLoading(false); } }).catch(() => { if (active&&!authEvent) { setAuthLoading(false); setError('Please sign in to manage scheduled calls.'); } });
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, next) => { if (active) { authEvent=true;accountId.current=next?.user.id||null;setSession(next);setAuthLoading(false); setMember(null); setPlans([]);setNotice('');setError(''); } });
-    return () => { active = false; subscription.subscription.unsubscribe(); playback.current++; currentAudio.current?.pause(); };
+    const stop = watchAccountSession(supabase.auth, (next, accountChanged) => {
+      accountId.current=next?.user.id||null;setSession(next);setAuthLoading(false);
+      if(accountChanged){setMember(null);setPlans([]);setNotice('');}
+      if(next)setError('');
+    }, () => {setAuthLoading(false);setError('We could not restore your session. Sign in again or reload this page.');});
+    return () => { active = false; stop(); playback.current++; currentAudio.current?.pause(); };
   }, []);
 
   useEffect(() => {
@@ -72,7 +79,7 @@ export default function Schedule() {
       setPlans(data.plans); setPlansError(false);
       if(fromPlan&&defaultsApplied.current!==fromPlan&&!edited.current){
         const plan=data.plans.find(plan=>plan.id===fromPlan);defaultsApplied.current=fromPlan;
-        if(plan){setContentType(plan.content_type);setTopic(plan.topic);setVoice(plan.voice);setTime(plan.local_time.slice(0,5));setTimezone(plan.timezone);setRecurrence(plan.recurrence);setWeekdays(plan.weekdays);setStartDate(localDate(new Date(),plan.timezone));setDuration(String(plan.duration_minutes));setNotice('Your previous choices are ready. Review the new date and confirm your schedule.');}
+        if(plan){setJourneySlug(plan.journey_slug||'');setContentType(plan.content_type);setTopic(plan.topic);setVoice(plan.voice);setTime(plan.local_time.slice(0,5));setTimezone(plan.timezone);setRecurrence(plan.recurrence);setWeekdays(plan.weekdays);setStartDate(localDate(new Date(),plan.timezone));setDuration(String(plan.duration_minutes));setNotice('Your previous choices are ready. Review the new date and confirm your schedule.');}
         else setError('That schedule was not found in your account. You can create a new one below.');
       }
     } }).catch(() => { if (active) setPlansError(true); });
@@ -82,7 +89,7 @@ export default function Schedule() {
       if(p.default_voice)setVoice(current=>current||p.default_voice!);
       if(p.default_content_type)setContentType(current=>current||p.default_content_type!);
       if(p.timezone){setTimezone(p.timezone);setStartDate(localDate(new Date(),p.timezone));}
-      setDuration(String(p.duration_minutes));
+      if(!requestedJourneyRef.current)setDuration(String(p.duration_minutes));
     }).catch(()=>{});
     return () => { active = false; };
   }, [session, ready, fromPlan]);
@@ -110,7 +117,7 @@ export default function Schedule() {
   async function save() {
     if (saving.current || !session || !ready) return;
     setError(''); setNotice('');
-    const choices = { content_type: contentType, topic: topic.trim(), voice, local_time: time, timezone, recurrence, weekdays: recurrence === 'once' ? [] : [...weekdays].sort(), start_date: startDate, duration_minutes: Number(duration), consent };
+    const choices = { content_type: contentType, topic: topic.trim(), voice, local_time: time, timezone, recurrence, weekdays: recurrence === 'once' ? [] : [...weekdays].sort(), start_date: startDate, duration_minutes: Number(duration), consent, ...(journeySlug?{journey_slug:journeySlug,journey_total:7}:{}) };
     const fingerprint = JSON.stringify(choices);
     if (request.current?.fingerprint !== fingerprint) request.current = { fingerprint, id: crypto.randomUUID() };
     const payload = { ...choices, request_id: request.current.id } as CallPlanInput;
@@ -123,7 +130,7 @@ export default function Schedule() {
       if(accountId.current!==session.user.id)return;
       if (!data.plan?.id || !data.plan.next_run_at) throw new Error('Unconfirmed schedule');
       setPlans(previous => [data.plan, ...previous.filter(plan => plan.id !== data.plan.id)]);
-      setNotice(`Scheduled. Your next ${contentName(data.plan.content_type).toLowerCase()} call is ${new Intl.DateTimeFormat(undefined, { timeZone: data.plan.timezone, dateStyle: 'full', timeStyle: 'short' }).format(new Date(data.plan.next_run_at))} (${data.plan.timezone.replaceAll('_', ' ')}).`);
+      setNotice(`Scheduled. Your next ${journeyName(data.plan.journey_slug)||contentName(data.plan.content_type).toLowerCase()} call is ${new Intl.DateTimeFormat(undefined, { timeZone: data.plan.timezone, dateStyle: 'full', timeStyle: 'short' }).format(new Date(data.plan.next_run_at))} (${data.plan.timezone.replaceAll('_', ' ')}).`);
       request.current = null; setConsent(false);
     } catch (issue) {
       setError(issue instanceof ApiError && issue.status === 400 ? issue.message : issue instanceof ApiError && issue.status === 409 ? 'This schedule conflicts with an existing call or needs a later time. Check your saved calls below.' : 'We could not confirm the schedule. Check your saved calls before trying again.');
@@ -142,20 +149,27 @@ export default function Schedule() {
     finally { saving.current = false; setBusy(false); }
   }
   function reuse(plan: CallPlan) {
-    setContentType(plan.content_type); setTopic(plan.topic); setVoice(plan.voice); setTime(plan.local_time.slice(0,5)); setTimezone(plan.timezone); setRecurrence(plan.recurrence); setWeekdays(plan.weekdays); setStartDate(localDate(new Date(), plan.timezone)); setDuration(String(plan.duration_minutes)); setConsent(false); setNotice('These choices are ready to schedule again. Review the date and confirm below.');
+    setJourneySlug(plan.journey_slug||'');setContentType(plan.content_type); setTopic(plan.topic); setVoice(plan.voice); setTime(plan.local_time.slice(0,5)); setTimezone(plan.timezone); setRecurrence(plan.recurrence); setWeekdays(plan.weekdays); setStartDate(localDate(new Date(), plan.timezone)); setDuration(String(plan.duration_minutes)); setConsent(false); setNotice('These choices are ready to schedule again. Review the date and confirm below.');
     document.getElementById('schedule-form')?.scrollIntoView({ behavior: 'smooth' });
+  }
+  function chooseJourney(slug:JourneySlug){
+    const journey=JOURNEYS.find(item=>item.id===slug);if(!journey)return;
+    setJourneySlug(slug);setContentType('bible_study');setTopic(journey.topic);setRecurrence('weekly');setWeekdays([0,1,2,3,4,5,6]);setDuration(String(journey.duration));setConsent(false);setNotice('');setError('');
   }
 
   return <ProductShell eyebrow="ON YOUR SCHEDULE" title="Make room for Scripture." description="Choose what you want to hear and when. We call you at the time you choose. You can also call El Roi anytime.">
-    <section className="elroi-phone-booking" aria-labelledby="phone-booking-title"><span className="elroi-icon-tile"><Phone size={22}/></span><div><h2 id="phone-booking-title">Prefer to arrange it over the phone?</h2><p>Tell the guide what you want to learn, your voice, and when to call. Review the details, then confirm on a brief callback. Your saved plan appears in your dashboard.</p><p className="elroi-small">{phoneReady ? 'For example: “A ten-minute Bible study on forgiveness, Tuesdays at 7 p.m.” Allow at least 40 minutes before your first lesson.' : 'Phone scheduling is being connected alongside online booking. You can still call for a conversation now.'}</p></div><a href={PHONE_TEL} className="elroi-button elroi-button-secondary">Call El Roi <Phone size={16}/></a></section>
+    <section className="elroi-phone-booking" aria-labelledby="phone-booking-title"><span className="elroi-icon-tile"><Phone size={22}/></span><div><h2 id="phone-booking-title">Prefer to arrange it over the phone?</h2><p>Tell the guide what you need, your voice, and when to call. You can choose a seven-call journey or one custom call. Review the details, then confirm on a brief callback.</p><p className="elroi-small">{phoneReady ? 'For example: “Call me every evening for the Peace in Seven Days journey.” Allow at least 40 minutes before your first call.' : 'Phone scheduling is being connected alongside online booking. You can still call for a conversation now.'}</p></div><a href={PHONE_TEL} className="elroi-button elroi-button-secondary">Call El Roi <Phone size={16}/></a></section>
     <div className="elroi-schedule-layout">
       <form id="schedule-form" className="elroi-schedule-form" onChange={()=>{edited.current=true;}} onClick={()=>{edited.current=true;}} onSubmit={event => { event.preventDefault(); void save(); }}>
-        <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>1</span> What is this call for?</legend>
-          <RadioGroup value={contentType} onValueChange={setContentType} className="elroi-content-options" aria-label="Call content">
+        <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>1</span> What do you need right now?</legend>
+          <p className="elroi-schedule-help">Start a guided seven-day rhythm. One call each day, then the journey ends automatically.</p>
+          <div className="elroi-journey-options" role="group" aria-label="Call Journeys">{JOURNEYS.map(journey=><button type="button" key={journey.id} data-selected={journeySlug===journey.id} onClick={()=>chooseJourney(journey.id)}><span><Sparkles size={17}/>{journey.need}</span><strong>{journey.name}</strong><small>{journey.description}</small></button>)}</div>
+          <div className="elroi-choice-divider"><span>Or build one call your way</span></div>
+          <RadioGroup value={contentType} onValueChange={value=>{setJourneySlug('');setContentType(value);}} className="elroi-content-options" aria-label="Call content">
             {CONTENT_TYPES.map(type => <label className="elroi-choice" data-selected={contentType === type.id} key={type.id}><RadioGroupItem value={type.id} /><span><strong>{type.name}</strong><span>{type.description}</span></span></label>)}
           </RadioGroup>
-          <label className="elroi-field" htmlFor="lesson-topic">Topic or Bible passage<input id="lesson-topic" value={topic} onChange={event => setTopic(event.target.value)} maxLength={160} placeholder="For example: the life of Jesus, prayer, or Psalm 23" required /></label>
-          <p className="elroi-small">Tell us what you want to learn. Each call follows the format you choose.</p>
+          <label className="elroi-field" htmlFor="lesson-topic">{journeySlug?'What should this journey hold for you?':'Topic or Bible passage'}<input id="lesson-topic" value={topic} onChange={event => setTopic(event.target.value)} maxLength={160} placeholder="For example: the life of Jesus, prayer, or Psalm 23" required /></label>
+          <p className="elroi-small">{journeySlug?'You can personalize the focus while keeping the seven-day path.':'Tell us what you want to learn. Each call follows the format you choose.'}</p>
         </fieldset>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>2</span> Choose your voice</legend><p className="elroi-schedule-help">The same El Roi Guide, in the voice you prefer. All voices are AI generated.</p>
           <RadioGroup value={voice} onValueChange={setVoice} className="elroi-voice-options" aria-label="Narration voice">
@@ -163,8 +177,7 @@ export default function Schedule() {
           </RadioGroup><p className="elroi-small">{voiceReady ? session ? 'Listen to the same short sample in each voice.' : 'Sign in below to listen to voice samples.' : 'Voice samples will be available when the voice service is connected.'}</p>
         </fieldset>
         <fieldset className="elroi-schedule-card" disabled={busy}><legend><span>3</span> When should we call?</legend>
-          <RadioGroup value={recurrence} onValueChange={value => setRecurrence(value as 'once' | 'weekly')} className="elroi-recurrence" aria-label="Repeat"><label><RadioGroupItem value="weekly" />Repeat on chosen days</label><label><RadioGroupItem value="once" />Just once</label></RadioGroup>
-          {recurrence === 'weekly' && <div className="elroi-days" role="group" aria-label="Days to call">{WEEKDAYS.map((day, index) => <label key={day} data-selected={weekdays.includes(index)}><Checkbox checked={weekdays.includes(index)} onCheckedChange={checked => setWeekdays(previous => checked ? [...previous, index].sort() : previous.filter(item => item !== index))} aria-label={day} /><span>{day.slice(0,3)}</span></label>)}</div>}
+          {journeySlug?<div className="elroi-journey-cadence"><Sparkles size={20}/><div><strong>Seven daily calls</strong><p>Your journey begins on the date below and ends automatically after call seven.</p></div></div>:<><RadioGroup value={recurrence} onValueChange={value => setRecurrence(value as 'once' | 'weekly')} className="elroi-recurrence" aria-label="Repeat"><label><RadioGroupItem value="weekly" />Repeat on chosen days</label><label><RadioGroupItem value="once" />Just once</label></RadioGroup>{recurrence === 'weekly' && <div className="elroi-days" role="group" aria-label="Days to call">{WEEKDAYS.map((day, index) => <label key={day} data-selected={weekdays.includes(index)}><Checkbox checked={weekdays.includes(index)} onCheckedChange={checked => setWeekdays(previous => checked ? [...previous, index].sort() : previous.filter(item => item !== index))} aria-label={day} /><span>{day.slice(0,3)}</span></label>)}</div>}</>}
           <div className="elroi-schedule-fields"><label className="elroi-field" htmlFor="call-date">{recurrence === 'once' ? 'Call date' : 'Start on or after'}<input id="call-date" type="date" required value={startDate} min={localDate(new Date(), timezone)} onChange={event => setStartDate(event.target.value)} /></label><label className="elroi-field" htmlFor="call-time">Call time<input id="call-time" type="time" required value={time} onChange={event => setTime(event.target.value)} /></label></div>
           <div className="elroi-schedule-fields"><div className="elroi-field"><label htmlFor="call-zone">Time zone</label><Select value={timezone} onValueChange={setTimezone}><SelectTrigger id="call-zone"><SelectValue /></SelectTrigger><SelectContent className="max-h-80" position="popper">{zones.map(zone => <SelectItem key={zone} value={zone}>{zone.replaceAll('_',' ')}</SelectItem>)}</SelectContent></Select></div><div className="elroi-field"><label htmlFor="call-length">Approximate length</label><Select value={duration} onValueChange={setDuration}><SelectTrigger id="call-length"><SelectValue /></SelectTrigger><SelectContent>{['5','10','15'].map(minutes => <SelectItem key={minutes} value={minutes}>{minutes} minutes</SelectItem>)}</SelectContent></Select></div></div>
           <p className="elroi-small">Choose a time at least 20 minutes away so we can prepare your audio. Recurring calls follow this time zone when clocks change. If your time is skipped by daylight saving, that day's call is skipped.</p>
@@ -177,8 +190,8 @@ export default function Schedule() {
           <button type="submit" disabled={busy || !ready || !session || !member?.phone_verified || !consent} className="elroi-button elroi-button-primary elroi-schedule-save"><CalendarClock size={19} />{busy ? 'Saving…' : ready === null ? 'Checking availability…' : 'Confirm my schedule'}</button>
         </fieldset>
       </form>
-      <aside className="elroi-schedule-summary"><span className="elroi-icon-tile"><Headphones size={24} /></span><p className="elroi-kicker">YOUR CALL</p><h2>{contentType ? contentName(contentType) : 'A moment to grow.'}</h2><p>{topic || 'Your chosen topic or passage will guide the call.'}</p><dl><div><dt>Voice</dt><dd>{VOICES.find(item => item.id === voice)?.name || 'Choose a voice'}</dd></div><div><dt>Time</dt><dd>{time || 'Choose a time'}</dd></div><div><dt>Days</dt><dd>{recurrence === 'once' ? `Once · ${startDate}` : weekdays.length ? planLabel({ recurrence, weekdays, start_date: startDate }) : 'Choose your days'}</dd></div><div><dt>Length</dt><dd>About {duration} minutes</dd></div></dl><p className="elroi-small"><Clock3 size={14} />{timezone.replaceAll('_',' ')}</p><div className="elroi-schedule-anytime"><Phone size={20} /><strong>Something on your heart now?</strong><p>You can always start your own conversation.</p><a href={PHONE_TEL} className="elroi-text-link">Call El Roi anytime</a></div></aside>
+      <aside className="elroi-schedule-summary"><span className="elroi-icon-tile"><Headphones size={24} /></span><p className="elroi-kicker">{journeySlug?'YOUR CALL JOURNEY':'YOUR CALL'}</p><h2>{journeyName(journeySlug)|| (contentType ? contentName(contentType) : 'A moment to grow.')}</h2><p>{topic || 'Your chosen topic or passage will guide the call.'}</p><dl><div><dt>Voice</dt><dd>{VOICES.find(item => item.id === voice)?.name || 'Choose a voice'}</dd></div><div><dt>Time</dt><dd>{time || 'Choose a time'}</dd></div><div><dt>{journeySlug?'Rhythm':'Days'}</dt><dd>{journeySlug?'7 daily calls':recurrence === 'once' ? `Once · ${startDate}` : weekdays.length ? planLabel({ recurrence, weekdays, start_date: startDate }) : 'Choose your days'}</dd></div><div><dt>Length</dt><dd>About {duration} minutes</dd></div></dl><p className="elroi-small"><Clock3 size={14} />{timezone.replaceAll('_',' ')}</p><div className="elroi-schedule-anytime"><Phone size={20} /><strong>Something on your heart now?</strong><p>You can always start your own conversation.</p><a href={PHONE_TEL} className="elroi-text-link">Call El Roi anytime</a></div></aside>
     </div>
-    {session && <section className="elroi-saved-plans"><div className="elroi-saved-heading"><div><p className="elroi-kicker">YOU'RE IN CONTROL</p><h2>Your scheduled calls</h2></div><button type="button" className="elroi-text-link" onClick={() => void refreshPlans()}>Refresh</button></div>{plansError ? <p role="alert">We could not load your schedules. Refresh to try again.</p> : !plans.length ? <p>No scheduled calls yet. Your call-anytime service is always separate.</p> : <div className="elroi-plans-grid">{plans.map(plan => <article key={plan.id} className="elroi-plan-card"><div><span className="elroi-kicker">{plan.active && plan.next_run_at ? 'SCHEDULED' : plan.active ? 'FINISHED' : 'PAUSED'}</span><h3>{contentName(plan.content_type)}</h3><p>{plan.topic}</p></div><p>{plan.local_time.slice(0,5)} · {plan.timezone.replaceAll('_',' ')}<br />{planLabel(plan)} · {plan.voice} · about {plan.duration_minutes} min</p>{plan.next_run_at && <p>Next: {new Intl.DateTimeFormat(undefined, { timeZone: plan.timezone, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(plan.next_run_at))}</p>}{plan.last_status && <p className="elroi-small">Last call: {plan.last_status.replaceAll('_',' ')}</p>}{Boolean(plan.references?.length) && <p className="elroi-small">Scripture references: {plan.references?.join('; ')}</p>}<button type="button" disabled={busy} className="elroi-text-link" onClick={() => plan.active && plan.next_run_at ? void pause(plan) : reuse(plan)}>{plan.active && plan.next_run_at ? <><Pause size={15} />Pause future calls</> : 'Schedule again'}</button></article>)}</div>}</section>}
+    {session && <section className="elroi-saved-plans"><div className="elroi-saved-heading"><div><p className="elroi-kicker">YOU'RE IN CONTROL</p><h2>Your scheduled calls</h2></div><button type="button" className="elroi-text-link" onClick={() => void refreshPlans()}>Refresh</button></div>{plansError ? <p role="alert">We could not load your schedules. Refresh to try again.</p> : !plans.length ? <p>No scheduled calls yet. Your call-anytime service is always separate.</p> : <div className="elroi-plans-grid">{plans.map(plan => <article key={plan.id} className="elroi-plan-card"><div><span className="elroi-kicker">{plan.active && plan.next_run_at ? 'SCHEDULED' : plan.active ? 'FINISHED' : 'PAUSED'}</span><h3>{journeyName(plan.journey_slug)||contentName(plan.content_type)}</h3><p>{plan.topic}</p></div>{plan.journey_slug&&<div className="elroi-plan-progress"><span style={{width:`${Math.min(100,((plan.journey_completed||0)/(plan.journey_total||7))*100)}%`}}/><small>{plan.journey_completed||0} of {plan.journey_total||7} calls completed</small></div>}<p>{plan.local_time.slice(0,5)} · {plan.timezone.replaceAll('_',' ')}<br />{plan.journey_slug?'Daily · ends after call seven':planLabel(plan)} · {plan.voice} · about {plan.duration_minutes} min</p>{plan.next_run_at && <p>Next: {new Intl.DateTimeFormat(undefined, { timeZone: plan.timezone, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(plan.next_run_at))}</p>}{plan.last_status && <p className="elroi-small">Last call: {plan.last_status.replaceAll('_',' ')}</p>}{Boolean(plan.references?.length) && <p className="elroi-small">Scripture references: {plan.references?.join('; ')}</p>}<button type="button" disabled={busy} className="elroi-text-link" onClick={() => plan.active && plan.next_run_at ? void pause(plan) : reuse(plan)}>{plan.active && plan.next_run_at ? <><Pause size={15} />Pause future calls</> : 'Schedule again'}</button></article>)}</div>}</section>}
   </ProductShell>;
 }

@@ -4,7 +4,7 @@ This is an additional service. The inbound El Roi telephone number, on-demand re
 
 ## What is implemented
 
-`/schedule/` provides Bible study, sermon, Bible lecture, biblical story, and Bible facts. The caller explicitly selects the content and a topic or passage, then selects Marin, Cedar, Coral, or Onyx. They choose an exact local minute, an IANA time zone, a one-time date or selected recurring weekdays, and an approximate 5, 10, or 15 minute duration. The flow uses the existing Supabase email authentication and the verified phone returned by the existing authenticated portal. A browser cannot select someone else's destination by modifying the request.
+`/schedule/` provides Bible study, sermon, Bible lecture, biblical story, and Bible facts. The caller can build a custom plan or choose one of six need-led Call Journeys: peace, grief, rest, purpose, courage, or Bible foundations. A Call Journey is seven daily calls and stops automatically after the seventh session. The caller selects Marin, Cedar, Coral, or Onyx, an exact local time, an IANA time zone, a starting date, and an approximate 5, 10, or 15 minute duration. The flow uses the existing Supabase email authentication and the verified phone returned by the existing authenticated portal. A browser cannot select someone else's destination by modifying the request.
 
 The new function `scheduled-calls` owns separate `lesson_schedules`, `lesson_jobs`, `lesson_runtime`, and `lesson_rate_limits` tables. The service checks the user's access token with Supabase Auth and scopes every account operation to that verified user. Tables and RPCs are unavailable directly to browser roles. Privileged server requests use the service role; SQL functions run as their invoker and have explicit execution grants.
 
@@ -15,6 +15,8 @@ A saved plan must receive a real server ID and next-call timestamp before the we
 The lesson worker creates an original narration with OpenAI Responses (`gpt-4.1-mini`, configurable), splits it into bounded text chunks, and renders it with `gpt-4o-mini-tts` in the selected voice. The topic is passed as untrusted data. Format-specific instructions require Scripture references, distinguish interpretation from fact, prefer labeled paraphrase, avoid invented dialogue, and do not impersonate real people or biblical figures. Recent lesson titles are included to encourage variation. References appear with the last call in the schedule page. Automated checks validate output structure, reference presence, and length; these do not replace a theological/content-quality review.
 
 Audio is generated before the due time and stored in a private Supabase Storage bucket. Twilio places the outbound phone call and plays short-lived signed audio URLs. Twilio is still necessary for the telephone connection; OpenAI provides the narrated voice. No ElevenLabs API is used for scheduled lessons.
+
+Accepted Journey calls save three private dashboard takeaways: one truth to remember, one next step, and a short prayer. They are returned only through the authenticated, owner-scoped dashboard service and are not stored in browser-accessible tables.
 
 These are narrated lessons, not interactive Realtime conversations. The greeting discloses the AI voice and asks the listener to press 1 to begin. Silence ends the call, avoiding delivery of a full lesson to voicemail. Pressing 9 during a greeting or lesson pauses that schedule. The service does not record scheduled calls. A separate, tested migration is required before replacing the existing on-demand voice stack with OpenAI Realtime.
 
@@ -29,18 +31,18 @@ These are narrated lessons, not interactive Realtime conversations. The greeting
 - Preparation errors may retry within a bounded budget. An ambiguous Twilio create-call result is marked uncertain and is never automatically redialed. Reconcile such cases against Twilio call logs before retrying manually.
 - Initial workers are bounded: two preparation jobs per tick, up to three audio chunks concurrently per job, and three deliveries per tick. Monitor queue age and missed jobs, and increase dispatch capacity before broader launch. Calls with different recurring patterns can eventually overlap even when their first occurrences do not; delivery suppresses overlaps rather than ringing twice.
 
-## Deployment status — 8 September 2026
+## Deployment status — 22 September 2026
 
-The two migrations, `scheduled-calls`, and the secured member `portal` are deployed to `mkocnufwmsfchivfbhuf`. Both minute cron jobs are installed and report fresh heartbeats. The incoming `voice` function and its Twilio incoming-number configuration were not modified.
+The scheduler foundation, secured member `portal`, worker jobs, and phone-booking confirmation service are deployed to `mkocnufwmsfchivfbhuf`. The Call Journey migration and updated worker services add bounded seven-call programs, progress counts, and private post-call takeaways. The incoming `voice` function and its Twilio incoming-number configuration are not replaced by this change; the reviewed phone-guide adapter must be installed only after the legacy function's embedded credentials have been moved into Edge Function secrets.
 
 The dashboard at `/account/` (also `/dashboard/`) integrates legacy journeys with the new learning plans, account-scoped history, saved preferences, and phone verification. Preferences can be saved even while outbound calls are disabled. The planner applies these defaults to a new plan, and a paused/completed plan can be used as the starting point for a new booking. The dashboard reports finished lessons only when playback reached the end. It does not equate a completed telephone connection with a completed lesson.
 
-Production reports `ready:false`, `voice_ready:false`, and `phone_ready:false`. The active function lacks OpenAI speech configuration and a complete outbound Twilio credential pair. Incoming calls use the existing provider arrangement and are independent of these new secrets. No voice sample or real outbound call has been verified.
+Production reports `ready:false`, `voice_ready:false`, and `phone_ready:false`. The active function lacks OpenAI speech configuration and a complete outbound Twilio credential pair. Incoming calls use the existing provider arrangement and are independent of these new secrets. No voice sample or real outbound Call Journey has been verified.
 
 ### Remaining activation
 
 1. In [Supabase Edge Function Secrets](https://supabase.com/dashboard/project/mkocnufwmsfchivfbhuf/functions/secrets), set `OPENAI_API_KEY`, `TWILIO_ACCOUNT_SID`, and `TWILIO_AUTH_TOKEN` with the project's authorized provider credentials. Set `TWILIO_FROM_NUMBER` if it differs from the existing `+18556197337` number. Secrets never belong in the browser or this repository.
-2. Verify provider account access, a real voice sample, email sign-in, and the explicitly requested phone-verification call through the dashboard. The hosted Auth redirect currently falls back to localhost; apply the URL/template settings in [AUTH_SIGN_IN.md](AUTH_SIGN_IN.md). Email-link recovery and an email/phone sign-in selector are implemented. Auth SMS configuration is separate from outbound calling credentials.
+2. Verify provider account access, a real voice sample, email sign-in, and the explicitly requested phone-verification call through the dashboard. The production Auth redirect and templates must remain set to `https://elroicall.com`; see [AUTH_SIGN_IN.md](AUTH_SIGN_IN.md). Email-link recovery and an email/phone sign-in selector are implemented. Auth SMS configuration is separate from outbound calling credentials.
 3. Enable the new scheduler by updating the single row in `public.lesson_service_settings` to `enabled=true` through an authorized database connection, or by setting `SCHEDULED_CALLS_ENABLED=true` in Edge Function secrets. Configuration is cached for up to 15 seconds. Both provider configuration and fresh worker heartbeats remain required before booking opens.
 4. With a consenting test member, book a one-time call and verify the selected voice/content, press 1, press 9, status callbacks, timing, and reference display. The service reserves 20 minutes for lesson preparation. Until this happens, do not represent real telephone delivery as tested.
 
@@ -56,7 +58,7 @@ The portal, preferences, service settings, and lesson tables have RLS enabled an
 
 ### Verified and not verified
 
-- 34 application/provider tests and 22 PostgreSQL tests pass, covering validation, authentication, cross-account isolation, code limits, replacement-number behavior, idempotency, DST, preparation leases and call deduplication.
+- 89 application/provider tests and 59 PostgreSQL tests pass, covering Journey validation and completion, authentication, cross-account isolation, code limits, replacement-number behavior, idempotency, DST, preparation leases and call deduplication.
 - Frontend lint, type checking, production build, and backend type checking pass.
 - Live database checks confirm RLS and denied direct browser access; minute cron workers report fresh heartbeats; unauthenticated API checks are performed without exposing member data.
 - After explicit owner authorization, 17 live checks passed using two temporary synthetic accounts: password sessions, authenticated portal/dashboard access, saved preferences, isolation when a request supplies another account's ID, denied direct table access, validation, unavailable-service errors, and sign-out. The fixture passwords were hashed before database insertion. Both accounts, identities, sessions, saved preferences, and rate-limit fixtures were removed, with zero remaining rows confirmed. No emails or calls were sent.
