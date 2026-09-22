@@ -2,10 +2,11 @@ import { useEffect } from "react";
 import { useLocation } from "react-router";
 import { useDocumentMeta } from "@/hooks/use-document-meta";
 import { getMoment } from "@/lib/scripture-library";
+import { AUTUMN_HOME_ENABLED, readingForDay } from "@/lib/autumn-readings";
 
 const HOME = {
-  title: "El Roi Call — Bible encouragement at your time",
-  description: "Choose a personalized Bible call or a seven-day Call Journey for peace, grief, rest, purpose, courage, or Bible foundations.",
+  title: AUTUMN_HOME_ENABLED ? "The whole Bible. One unfolding story. — El Roi Call" : "El Roi Call — Bible encouragement at your time",
+  description: AUTUMN_HOME_ENABLED ? "Read the whole Bible in 84 reading days. Join the October–December journey with daily reading guides, reflection, and optional calls at your chosen time." : "Choose a personalized Bible call or a seven-day Call Journey for peace, grief, rest, purpose, courage, or Bible foundations.",
   canonical: "https://elroicall.com/",
 };
 
@@ -24,7 +25,10 @@ export default function RouteMeta() {
   }, [pathname, hash, key]);
 
   const moment = pathname.startsWith("/explore/") ? getMoment(pathname.split("/")[2]) : undefined;
-  const meta = pathname.startsWith("/explore")
+  const autumnReading = pathname.startsWith('/journey/') ? readingForDay(pathname.split('/')[2]) : undefined;
+  const meta = pathname.startsWith('/journey')
+    ? { title: autumnReading ? `Day ${autumnReading.day}: ${autumnReading.passage} — El Roi Call` : 'Your 84-day Bible journey — El Roi Call', description: 'Follow the full 84-day Bible reading plan, with daily passages, reflection questions and progress saved on your device.', canonical: `https://elroicall.com/journey/${autumnReading ? autumnReading.day + '/' : ''}` }
+    : pathname.startsWith("/explore")
     ? { title: moment ? `${moment.title} — El Roi Call` : "Free Bible reflections & stories — El Roi Call", description: moment ? `${moment.description} A short reflection on ${moment.passage}, with a prayer and a practical next step.` : "Explore ten free Bible reflections, Scripture facts, study questions, and a seven-day reading path. No account needed.", canonical: `https://elroicall.com/explore/${moment ? moment.id + "/" : ""}` }
     : pathname.startsWith("/schedule")
     ? { title: "Choose a Bible Call Journey — El Roi Call", description: "Choose a seven-day Scripture journey or schedule a Bible study, sermon, lecture, story, or Bible facts call at your time.", canonical: "https://elroicall.com/schedule/", robots: "noindex,nofollow" }
