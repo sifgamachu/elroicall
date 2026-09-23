@@ -1,0 +1,40 @@
+/* Layout additions only. The existing El Roi palette, glass treatment and seasonal assets remain unchanged. */
+.account-auth .auth-mode>button{flex:1;padding:.8rem 1rem;border:0;border-radius:999px;background:transparent;color:inherit;font:inherit;font-weight:650;cursor:pointer}
+.account-auth .auth-mode>button[aria-pressed=true]{background:var(--elroi-ink,#122e39);color:white}
+.account-auth .auth-mode>button:disabled{opacity:.6;cursor:wait}
+.flow-password-input{display:flex!important;align-items:center;gap:.4rem}
+.flow-password-input input{min-width:0;flex:1}
+.flow-password-input button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;border:0;border-radius:12px;background:transparent;color:inherit;cursor:pointer}
+.flow-planner-top,.flow-step-actions{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:1.5rem 0;flex-wrap:wrap}
+.flow-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;margin:1.5rem 0 2rem}
+.flow-steps button{display:flex;align-items:center;justify-content:flex-start;gap:.65rem;padding:1rem;border:1px solid currentColor;border-radius:16px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.flow-steps button:disabled{opacity:.5;cursor:default}
+.flow-steps button[aria-current=step]{font-weight:750;box-shadow:inset 0 -3px currentColor}
+.flow-steps button>span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;flex:none;border:1px solid currentColor;border-radius:50%;font-size:.85rem}
+.flow-step-title{margin:.25rem 0 1.2rem;font-size:1.65rem;scroll-margin-top:90px}
+.flow-step-title:focus{outline:none}
+.flow-details{margin:1.1rem 0}
+.flow-details>summary,.flow-plan-group>summary{cursor:pointer;font-weight:650;padding:.9rem 0;line-height:1.6}
+.flow-details[open]>summary{margin-bottom:1rem}
+.flow-review{margin:1.4rem 0;display:grid;gap:1rem}
+.flow-review>div{display:grid;grid-template-columns:minmax(100px,.65fr) minmax(0,2fr);gap:1rem;padding:.65rem 0;border-bottom:1px solid rgb(127 127 127 / .2)}
+.flow-review dt{font-weight:650}
+.flow-review dd{margin:0;overflow-wrap:anywhere;line-height:1.65}
+.flow-review dd .elroi-text-link{display:flex;margin-top:.45rem}
+.flow-confirmation{max-width:800px;margin:auto;padding:clamp(1.4rem,4vw,3rem)}
+.flow-confirmation>.elroi-text-link{display:flex;margin-top:1.25rem}
+.flow-overview-links{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.4rem}
+.flow-overview-links>a{text-decoration:none;color:inherit;display:block}
+.flow-overview-links h2{margin:.8rem 0 .4rem}
+.flow-plan-group{padding:.5rem 0}
+.flow-plan-group>summary span{font-size:.85em;opacity:.75;margin-left:.5rem}
+.flow-plan-group .dash-plan-grid{margin:1rem 0}
+.flow-settings-nav{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin:0 0 1.5rem}
+.flow-settings-nav a{color:inherit;text-underline-offset:5px}
+#website-password,#calling-identity,#calling-preferences,#call-defaults{scroll-margin-top:100px}
+.flow-pause-confirm{margin-top:1rem;border-top:1px solid rgb(127 127 127 / .2);padding-top:1rem}
+.flow-pause-confirm .elroi-text-link{margin-left:.75rem}
+.elroi-schedule-form select{width:100%;min-height:48px;padding:.8rem;border:1px solid rgb(127 127 127 / .35);border-radius:12px;font:inherit;color:inherit;background:transparent}
+.elroi-schedule-form input[type=radio],.elroi-schedule-form input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--elroi-ink,#122e39)}
+.elroi-schedule-form .dash-card{max-width:100%}
+@media(max-width:760px){.flow-steps{grid-template-columns:1fr 1fr;gap:.5rem}.flow-steps button{padding:.75rem;font-size:.9rem}.flow-overview-links{grid-template-columns:1fr}.flow-review>div{grid-template-columns:1fr;gap:.25rem}.flow-step-actions .elroi-button{flex:1;justify-content:center}.flow-pause-confirm .elroi-text-link{display:flex;margin:1rem 0 0}}

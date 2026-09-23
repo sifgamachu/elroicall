@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { passwordIssue, passwordError } from '../src/lib/account-flow.ts';
+import { readScheduleDraft, writeScheduleDraft, clearScheduleDraft, SCHEDULE_DRAFT_KEY, DRAFT_LIFETIME, scheduleDraftEntry, scheduleDraftMatches } from '../src/lib/schedule-draft.ts';
+const uuid = '12345678-1234-4234-8234-123456789abc';
+const choices = { content_type:'bible_study',topic:'Psalm 23',voice:'marin',local_time:'18:30',timezone:'America/New_York',recurrence:'once',weekdays:[],start_date:'2026-10-01',duration_minutes:10,journey_slug:null };
+function storage() { const m = new Map(); return { getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k) }; }
+const draft = (owner = null) => ({ owner,savedAt:1000,choices,requestId:uuid,step:2 });
+test('calling PIN is not accepted as a new website password',()=>assert.ok(passwordIssue('123456','123456')));
+test('password confirmation must match',()=>assert.ok(passwordIssue('a sufficiently long password','different')));
+test('a long matching passphrase is accepted',()=>assert.equal(passwordIssue('a sufficiently long password','a sufficiently long password'),''));
+test('sign-in failure does not disclose account existence',()=>assert.match(passwordError({code:'invalid_credentials'}),/not recognized/));
+test('unconfirmed email has an actionable verification path',()=>assert.match(passwordError({code:'email_not_confirmed'}),/Confirm your email/));
+test('guest choices survive account creation without storing consent',()=>{const s=storage();writeScheduleDraft(s,{...draft(),choices:{...choices,consent:true,password:'secret',phone:'+12025550123'}});const value=readScheduleDraft(s,'user-a',2000);assert.equal(value.owner,'user-a');assert.equal(value.choices.topic,'Psalm 23');assert.equal(value.requestId,uuid);const raw=s.getItem(SCHEDULE_DRAFT_KEY);assert.ok(!raw.includes('secret'));assert.ok(!raw.includes('consent'));assert.ok(!raw.includes('phone'));});
+test('one account cannot restore another account draft',()=>{const s=storage();writeScheduleDraft(s,draft('user-a'));assert.equal(readScheduleDraft(s,'user-b',2000),null);assert.equal(s.getItem(SCHEDULE_DRAFT_KEY),null);});
+test('signed-out visitors cannot restore an account-owned draft',()=>{const s=storage();writeScheduleDraft(s,draft('user-a'));assert.equal(readScheduleDraft(s,null,2000),null);});
+test('draft expires after thirty minutes',()=>{const s=storage();writeScheduleDraft(s,draft());assert.equal(readScheduleDraft(s,null,1001+DRAFT_LIFETIME),null);});
+test('corrupt draft does not break scheduling',()=>{const s=storage();s.setItem(SCHEDULE_DRAFT_KEY,'{');assert.equal(readScheduleDraft(s,null,2000),null);});
+test('invalid time zone is discarded instead of crashing the form',()=>{const s=storage();s.setItem(SCHEDULE_DRAFT_KEY,JSON.stringify({...draft(),choices:{...choices,timezone:'bad/timezone'}}));assert.equal(readScheduleDraft(s,null,2000),null);});
+test('request id survives reload so retry can remain idempotent',()=>{const s=storage();writeScheduleDraft(s,draft('user-a'));assert.equal(readScheduleDraft(s,'user-a',2000).requestId,uuid);});
+test('signout and confirmed save can clear the draft',()=>{const s=storage();writeScheduleDraft(s,draft());clearScheduleDraft(s);assert.equal(s.getItem(SCHEDULE_DRAFT_KEY),null);});
+test('blocked browser storage does not throw',()=>{const s={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');},removeItem(){throw Error('blocked');}};assert.equal(readScheduleDraft(s,null),null);assert.equal(writeScheduleDraft(s,draft()),false);assert.doesNotThrow(()=>clearScheduleDraft(s));});
+test('explicit new passage is not overwritten by an unrelated draft',()=>assert.equal(scheduleDraftMatches({entry:'topic=Psalm+23'},'?topic=John+3'),false));
+test('copied-plan reload keeps the same draft and request id',()=>{const s=storage();writeScheduleDraft(s,{...draft('user-a'),entry:'from=plan-a'});const d=readScheduleDraft(s,'user-a',2000);assert.ok(scheduleDraftMatches(d,'?from=plan-a'));assert.equal(d.requestId,uuid);});
+test('canonical sign-in return restores choices regardless of initial campaign query',()=>assert.ok(scheduleDraftMatches({entry:'journey=peace'},'')));
+test('URL credentials and arbitrary tracking are excluded from draft metadata',()=>{assert.equal(scheduleDraftEntry('?topic=Psalm+23&access_token=secret&code=secret&email=private'), 'topic=Psalm+23');const s=storage();writeScheduleDraft(s,{...draft(),entry:'from=plan-a&access_token=secret'});assert.ok(!s.getItem(SCHEDULE_DRAFT_KEY).includes('secret'));});
