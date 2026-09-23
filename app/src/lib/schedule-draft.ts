@@ -3,7 +3,8 @@ export type ScheduleChoices = {
   recurrence: 'once' | 'weekly'; weekdays: number[]; start_date: string;
   duration_minutes: number; journey_slug: string | null;
 };
-export type SavedScheduleDraft = { owner: string | null; savedAt: number; choices: ScheduleChoices; requestId: string; step: number; entry?: string };
+// Restored request IDs pass the UUID-v4 check below before leaving this module.
+export type SavedScheduleDraft = { owner: string | null; savedAt: number; choices: ScheduleChoices; requestId: ReturnType<Crypto['randomUUID']>; step: number; entry?: string };
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 export const SCHEDULE_DRAFT_KEY = 'elroi:schedule-draft:v1';
 export const DRAFT_LIFETIME = 30 * 60 * 1000;
