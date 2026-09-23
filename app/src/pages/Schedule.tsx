@@ -5,6 +5,8 @@ import { Link, useLocation } from 'react-router';
 import ProductShell from '@/components/ProductShell';
 import AccountSignIn from '@/components/AccountSignIn';
 import MemberControls from '@/components/MemberControls';
+import CallingIdentity from '@/components/CallingIdentity';
+import { getCallingProfile, type CallingIdentity as CallingProfile } from '@/lib/calling-profile';
 import { supabase } from '@/lib/supabase';
 import { watchAccountSession } from '@/lib/account-session';
 import { getPortalMember, type PortalMember } from '@/lib/portal';
@@ -12,11 +14,11 @@ import { PHONE_TEL } from '@/lib/phone';
 import { ApiError, fetchJson, SUPABASE_URL } from '@/lib/api';
 import { CONTENT_TYPES, JOURNEYS, VOICES, WEEKDAYS, journeyName, localDate, planLabel, schedulingRequest, validatePlan, type CallPlan, type CallPlanInput } from '@/lib/scheduled-calls';
 import { formatMoment, type Capabilities, type MemberPreferences } from '@/lib/dashboard';
-import { clearScheduleDraft, readScheduleDraft, writeScheduleDraft, type ScheduleChoices } from '@/lib/schedule-draft';
+import { clearScheduleDraft, readScheduleDraft, writeScheduleDraft, scheduleDraftEntry, scheduleDraftMatches, type ScheduleChoices } from '@/lib/schedule-draft';
 import '@/dashboard.css';
 import '@/account-flow.css';
 
-const steps = ['Content & voice', 'Date & time', 'Your number', 'Review & confirm'];
+const steps = ['Content & voice', 'Date & time', 'Account & phone', 'Review & confirm'];
 const zoneNow = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 const contentName = (id: string) => CONTENT_TYPES.find(type => type.id === id)?.name || 'Scripture call';
 const voiceName = (id: string) => VOICES.find(voice => voice.id === id)?.name || 'Choose a voice';
@@ -42,6 +44,7 @@ export default function Schedule() {
   const [draftReady, setDraftReady] = useState(false);
   const [member, setMember] = useState<PortalMember|null>(null);
   const [memberError, setMemberError] = useState('');
+  const [callingProfile, setCallingProfile] = useState<CallingProfile|null>(null);
   const [caps, setCaps] = useState<Capabilities|null>(null);
   const [availabilityError, setAvailabilityError] = useState(false);
   const [phoneReady, setPhoneReady] = useState(false);
@@ -77,14 +80,14 @@ export default function Schedule() {
       if(!initialised.current || switched) {
         try {
           const restored = readScheduleDraft(window.localStorage,owner);
-          if(restored && !new URLSearchParams(entrySearch.current).has('from') && !leavingAccount) {
+          if(restored && scheduleDraftMatches(restored,entrySearch.current) && !leavingAccount) {
             setChoices(restored.choices); setStep(restored.step); requestId.current=restored.requestId; dirty.current=true;
             setNotice('Your choices are restored. Nothing is booked until you review and confirm.');
           }
         } catch { /* Booking still works without browser storage. */ }
         initialised.current=true; setDraftReady(true); setConsent(false);
       }
-      if(accountChanged || switched) { previewSequence.current++; audio.current?.pause(); setPreviewVoice(''); setPreviewLoading(false); setMember(null); setMemberError(''); setConsent(false); }
+      if(accountChanged || switched) { previewSequence.current++; audio.current?.pause(); setPreviewVoice(''); setPreviewLoading(false); setMember(null); setCallingProfile(null); setMemberError(''); setConsent(false); }
       accountId.current=owner; setSession(next); setAuthLoading(false);
     },() => { setAuthLoading(false); setError('We could not restore your sign-in. Try signing in again. Your choices are still here.'); });
     return () => { mounted.current=false; stop(); playback.current++; sound.current?.pause(); };
@@ -92,13 +95,13 @@ export default function Schedule() {
 
   useEffect(() => {
     if(!draftReady || success || !dirty.current) return;
-    try { writeScheduleDraft(window.localStorage,{owner:session?.user.id || null,savedAt:Date.now(),choices,requestId:requestId.current,step}); } catch { /* Storage is optional. */ }
+    try { writeScheduleDraft(window.localStorage,{owner:session?.user.id || null,entry:scheduleDraftEntry(entrySearch.current),savedAt:Date.now(),choices,requestId:requestId.current,step}); } catch { /* Storage is optional. */ }
   },[choices,step,session?.user.id,draftReady,success]);
 
   useEffect(() => {
     if(!session) return;
     let active=true; const owner=session.user.id;
-    void getPortalMember(session).then(value=>{if(active && accountId.current===owner){setMember(value);setMemberError('');}}).catch(()=>{if(active)setMemberError('Your calling number could not be loaded. Try again below.');});
+    void Promise.all([getPortalMember(session),getCallingProfile(session)]).then(([value,profile])=>{if(active && accountId.current===owner){setMember(value);setCallingProfile(profile);setMemberError('');}}).catch(()=>{if(active)setMemberError('Your calling access could not be loaded. Try again below.');});
     if(fromPlan && defaultsApplied.current!==fromPlan) {
       void schedulingRequest<{plans:CallPlan[]}>('/plans',session).then(({plans})=>{
         if(!active || accountId.current!==owner || defaultsApplied.current===fromPlan || dirty.current) return;
@@ -139,12 +142,13 @@ export default function Schedule() {
       if(issue){setError(issue);return;}
     }
     if(step===2 && (!session || !member?.phone_verified)){setError('Sign in and verify your calling number before continuing.');return;}
+    if(step===2 && (!callingProfile || (callingProfile.phone_ready&&!callingProfile.pin_set))){setError('Set your nickname and calling PIN below, then continue.');return;}
     setStep(value=>Math.min(3,value+1));
   }
   async function refreshMember() {
     if(!session)return;
     const owner=session.user.id; setMemberError('');
-    try {const value=await getPortalMember(session);if(mounted.current && accountId.current===owner){setMember(value);setConsent(false);}}
+    try {const [value,profile]=await Promise.all([getPortalMember(session),getCallingProfile(session)]);if(mounted.current && accountId.current===owner){setMember(value);setCallingProfile(profile);setConsent(false);}}
     catch {if(mounted.current && accountId.current===owner)setMemberError('We could not refresh your number. Please try again.');}
   }
   async function preview(id:string) {
@@ -168,6 +172,7 @@ export default function Schedule() {
   async function save() {
     if(saving.current || success || !session || !caps?.ready)return;
     if(!member?.phone_verified){setError('Verify your calling number first.');setStep(2);return;}
+    if(!callingProfile || (callingProfile.phone_ready&&!callingProfile.pin_set)){setError('Finish your calling PIN setup first.');setStep(2);return;}
     const payload=withJourney(choices,requestId.current,consent);
     const issue=validatePlan(payload);if(issue){setError(issue);return;}
     const owner=session.user.id; saving.current=true;setBusy(true);setError('');
@@ -198,10 +203,10 @@ export default function Schedule() {
           <fieldset className="elroi-schedule-card" disabled={busy}><legend>Choose your voice</legend><p className="elroi-schedule-help">All voices are AI generated. You can change your choice for any new schedule.</p><div className="elroi-voice-options">{VOICES.map(voice=><div key={voice.id} className="elroi-voice-option" data-selected={choices.voice===voice.id}><label><input type="radio" name="call-voice" checked={choices.voice===voice.id} onChange={()=>change({voice:voice.id})}/><strong>{voice.name}</strong></label><button type="button" disabled={!caps?.voice_ready || !session} onClick={()=>void preview(voice.id)} aria-label={`${previewVoice===voice.id?'Stop':'Preview'} ${voice.name}`}>{previewVoice===voice.id?previewLoading?<LoaderCircle size={16} className="animate-spin"/>:<Pause size={16}/>:<Play size={16}/>}Listen</button></div>)}</div><p className="elroi-small">{!session?'Sign in at the number step to unlock voice samples; you can return here before confirming.':caps?.voice_ready?'Listen to a sample before choosing.':'Voice samples are currently unavailable.'}</p></fieldset>
         </>}
         {step===1&&<fieldset className="elroi-schedule-card" disabled={busy}><legend>When should we call?</legend>{choices.journey_slug?<p className="elroi-schedule-help">Seven daily calls at your chosen time. The journey ends automatically after call seven.</p>:<><div className="elroi-recurrence"><label><input type="radio" name="recurrence" checked={choices.recurrence==='once'} onChange={()=>change({recurrence:'once',weekdays:[]})}/>Just once</label><label><input type="radio" name="recurrence" checked={choices.recurrence==='weekly'} onChange={()=>change({recurrence:'weekly'})}/>Repeat on chosen days</label></div>{choices.recurrence==='weekly'&&<div className="elroi-days" role="group" aria-label="Days to call">{WEEKDAYS.map((day,index)=><label key={day} data-selected={choices.weekdays.includes(index)}><input type="checkbox" checked={choices.weekdays.includes(index)} onChange={event=>change({weekdays:event.target.checked?[...choices.weekdays,index].sort():choices.weekdays.filter(value=>value!==index)})}/>{day.slice(0,3)}</label>)}</div>}</>}<div className="elroi-schedule-fields"><label className="elroi-field" htmlFor="call-date">{choices.recurrence==='once'?'Call date':'Start on or after'}<input id="call-date" type="date" min={localDate(new Date(),choices.timezone)} required value={choices.start_date} onChange={event=>change({start_date:event.target.value})}/></label><label className="elroi-field" htmlFor="call-time">Local call time<input id="call-time" type="time" value={choices.local_time} onChange={event=>change({local_time:event.target.value})} required/></label></div><div className="elroi-schedule-fields"><label className="elroi-field" htmlFor="call-zone">Time zone<select id="call-zone" value={choices.timezone} onChange={event=>change({timezone:event.target.value})}>{zones.map(zone=><option key={zone} value={zone}>{zone.replaceAll('_',' ')}</option>)}</select></label><label className="elroi-field" htmlFor="call-length">Approximate length<select id="call-length" value={choices.duration_minutes} onChange={event=>change({duration_minutes:Number(event.target.value)})}>{[5,10,15].map(value=><option key={value} value={value}>{value} minutes</option>)}</select></label></div><p className="elroi-small">Allow at least 20 minutes to prepare your call. Recurring calls follow this time zone when clocks change. A local time skipped by daylight saving is skipped for that day.</p></fieldset>}
-        {step===2&&<section className="elroi-schedule-card"><h3>Your account and calling number</h3><p className="elroi-schedule-help">Signing in opens your account. Verifying your phone proves that the calling number is yours. You give permission for scheduled calls at the final review.</p>{authLoading?<p role="status">Checking your sign-in…</p>:!session?<AccountSignIn destination="/schedule/" initialMode="signin"/>:member?<><p className="elroi-verified"><Check size={18}/>Signed in{session.user.email?` as ${session.user.email}`:''}.</p><MemberControls key={`${session.user.id}-${member.phone}-${member.phone_verified}`} session={session} member={member} onRefresh={refreshMember}/></>:<p role="status">{memberError||'Loading your calling number…'}</p>}{session&&<button type="button" className="elroi-text-link" onClick={()=>void refreshMember()}>Refresh calling number</button>}<p className="elroi-small">Your six-digit calling PIN is managed in Preferences. It is not your website password or the temporary verification code.</p></section>}
+        {step===2&&<section className="elroi-schedule-card"><h3>Your account and calling number</h3><p className="elroi-schedule-help">Signing in opens your account. Verifying your phone proves that the calling number is yours. You give permission for scheduled calls at the final review.</p>{authLoading?<p role="status">Checking your sign-in…</p>:!session?<AccountSignIn destination="/schedule/" initialMode="signin"/>:member?<><p className="elroi-verified"><Check size={18}/>Signed in{session.user.email?` as ${session.user.email}`:''}.</p><MemberControls key={`${session.user.id}-${member.phone}-${member.phone_verified}`} session={session} member={member} onRefresh={refreshMember}/>{member.phone_verified&&(callingProfile?.pin_set?<p className="elroi-verified"><Check size={18}/>Your calling PIN is set. Keep it ready for your phone keypad.</p>:<CallingIdentity key={`pin-${session.user.id}`} session={session} onSaved={refreshMember}/>)}</>:<p role="status">{memberError||'Loading your calling number…'}</p>}{session&&<button type="button" className="elroi-text-link" onClick={()=>void refreshMember()}>Refresh calling access</button>}<p className="elroi-small">Your calling PIN is used only on your phone keypad. It is not your website password or the temporary verification code. You can reset it later in Preferences.</p></section>}
         {step===3&&<section className="elroi-schedule-card"><h3>Review your call</h3><p className="elroi-schedule-help">Nothing has been booked yet. Confirm only when these choices are right.</p><dl className="flow-review"><div><dt>Content</dt><dd>{journeyName(choices.journey_slug)||contentName(choices.content_type)}<br/>{choices.topic}<button type="button" onClick={()=>setStep(0)} className="elroi-text-link" disabled={busy}>Edit content & voice</button></dd></div><div><dt>Voice & length</dt><dd>{voiceName(choices.voice)} · about {choices.duration_minutes} minutes</dd></div><div><dt>When</dt><dd>{choices.local_time} · {choices.journey_slug?'Every day, seven calls':planLabel(choices)}<br/>{choices.timezone.replaceAll('_',' ')}{choices.recurrence==='weekly'&&<><br/>Starting on or after {choices.start_date}</>}<button type="button" onClick={()=>setStep(1)} className="elroi-text-link" disabled={busy}>Edit date & time</button></dd></div><div><dt>Calling</dt><dd>{member?.phone_verified?`Verified number ending in ${member.phone?.slice(-4)}`:'Your number still needs verification'}<button type="button" onClick={()=>setStep(2)} className="elroi-text-link" disabled={busy}>Check calling number</button></dd></div></dl><label className="elroi-schedule-consent"><input type="checkbox" checked={consent} disabled={busy} onChange={event=>setConsent(event.target.checked)}/><span>I want El Roi Call to place AI-narrated calls to my verified number for the content, days, and time shown above. I can pause future calls or press 9 during a scheduled call to stop this schedule. Consent is not a condition of purchase. Carrier charges may apply.</span></label>{(!caps?.ready || availabilityError)&&<p className="elroi-availability" role="status">{caps===null&&!availabilityError?'Checking scheduling availability…':'Scheduling is unavailable right now. Your choices are saved, but no call is booked.'}</p>}</section>}
         {error&&<p className="elroi-status-error" role="alert">{error}</p>}
-        <div className="flow-step-actions">{step>0&&<button type="button" className="elroi-button elroi-button-secondary" disabled={busy} onClick={()=>{setStep(value=>value-1);setError('');}}><ArrowLeft size={16}/>Back</button>}{step<3?<button type="button" className="elroi-button elroi-button-primary" disabled={busy||authLoading} onClick={continueStep}>Continue <ArrowRight size={16}/></button>:<button type="button" className="elroi-button elroi-button-primary" disabled={busy||!caps?.ready||!session||!member?.phone_verified||!consent} onClick={()=>void save()}><CalendarClock size={18}/>{busy?'Confirming…':'Confirm my schedule'}</button>}</div>
+        <div className="flow-step-actions">{step>0&&<button type="button" className="elroi-button elroi-button-secondary" disabled={busy} onClick={()=>{setStep(value=>value-1);setError('');}}><ArrowLeft size={16}/>Back</button>}{step<3?<button type="button" className="elroi-button elroi-button-primary" disabled={busy||authLoading} onClick={continueStep}>Continue <ArrowRight size={16}/></button>:<button type="button" className="elroi-button elroi-button-primary" disabled={busy||!caps?.ready||!session||!member?.phone_verified||!callingProfile||(callingProfile.phone_ready&&!callingProfile.pin_set)||!consent} onClick={()=>void save()}><CalendarClock size={18}/>{busy?'Confirming…':'Confirm my schedule'}</button>}</div>
         <p className="elroi-small">Draft choices are kept on this browser for up to 30 minutes. Permission is never preselected. A draft is not a booking.</p>
       </div>
       <aside className="elroi-schedule-summary"><span className="elroi-icon-tile"><Headphones size={24}/></span><p className="elroi-kicker">NOT BOOKED YET</p><h2>{journeyName(choices.journey_slug)||contentName(choices.content_type)}</h2><p>{choices.topic||'Your topic will guide the call.'}</p><dl><div><dt>Voice</dt><dd>{voiceName(choices.voice)}</dd></div><div><dt>Time</dt><dd>{choices.local_time||'Choose a time'}</dd></div><div><dt>Time zone</dt><dd>{choices.timezone.replaceAll('_',' ')}</dd></div><div><dt>Length</dt><dd>About {choices.duration_minutes} minutes</dd></div></dl><div className="elroi-schedule-anytime"><Phone size={20}/><strong>Need a conversation now?</strong><p>Calling El Roi yourself is separate from this scheduled call.</p><a href={PHONE_TEL} className="elroi-text-link">Call now</a></div><Link to="/account/?view=schedules" className="elroi-text-link">Manage existing calls</Link></aside>

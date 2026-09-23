@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { passwordIssue, passwordError } from '../src/lib/account-flow.ts';
-import { readScheduleDraft, writeScheduleDraft, clearScheduleDraft, SCHEDULE_DRAFT_KEY, DRAFT_LIFETIME } from '../src/lib/schedule-draft.ts';
+import { readScheduleDraft, writeScheduleDraft, clearScheduleDraft, SCHEDULE_DRAFT_KEY, DRAFT_LIFETIME, scheduleDraftEntry, scheduleDraftMatches } from '../src/lib/schedule-draft.ts';
 const uuid = '12345678-1234-4234-8234-123456789abc';
 const choices = { content_type:'bible_study',topic:'Psalm 23',voice:'marin',local_time:'18:30',timezone:'America/New_York',recurrence:'once',weekdays:[],start_date:'2026-10-01',duration_minutes:10,journey_slug:null };
 function storage() { const m = new Map(); return { getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k) }; }
@@ -20,3 +20,7 @@ test('invalid time zone is discarded instead of crashing the form',()=>{const s=
 test('request id survives reload so retry can remain idempotent',()=>{const s=storage();writeScheduleDraft(s,draft('user-a'));assert.equal(readScheduleDraft(s,'user-a',2000).requestId,uuid);});
 test('signout and confirmed save can clear the draft',()=>{const s=storage();writeScheduleDraft(s,draft());clearScheduleDraft(s);assert.equal(s.getItem(SCHEDULE_DRAFT_KEY),null);});
 test('blocked browser storage does not throw',()=>{const s={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');},removeItem(){throw Error('blocked');}};assert.equal(readScheduleDraft(s,null),null);assert.equal(writeScheduleDraft(s,draft()),false);assert.doesNotThrow(()=>clearScheduleDraft(s));});
+test('explicit new passage is not overwritten by an unrelated draft',()=>assert.equal(scheduleDraftMatches({entry:'topic=Psalm+23'},'?topic=John+3'),false));
+test('copied-plan reload keeps the same draft and request id',()=>{const s=storage();writeScheduleDraft(s,{...draft('user-a'),entry:'from=plan-a'});const d=readScheduleDraft(s,'user-a',2000);assert.ok(scheduleDraftMatches(d,'?from=plan-a'));assert.equal(d.requestId,uuid);});
+test('canonical sign-in return restores choices regardless of initial campaign query',()=>assert.ok(scheduleDraftMatches({entry:'journey=peace'},'')));
+test('URL credentials and arbitrary tracking are excluded from draft metadata',()=>{assert.equal(scheduleDraftEntry('?topic=Psalm+23&access_token=secret&code=secret&email=private'), 'topic=Psalm+23');const s=storage();writeScheduleDraft(s,{...draft(),entry:'from=plan-a&access_token=secret'});assert.ok(!s.getItem(SCHEDULE_DRAFT_KEY).includes('secret'));});

@@ -3,10 +3,18 @@ export type ScheduleChoices = {
   recurrence: 'once' | 'weekly'; weekdays: number[]; start_date: string;
   duration_minutes: number; journey_slug: string | null;
 };
-export type SavedScheduleDraft = { owner: string | null; savedAt: number; choices: ScheduleChoices; requestId: string; step: number };
+export type SavedScheduleDraft = { owner: string | null; savedAt: number; choices: ScheduleChoices; requestId: string; step: number; entry?: string };
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 export const SCHEDULE_DRAFT_KEY = 'elroi:schedule-draft:v1';
 export const DRAFT_LIFETIME = 30 * 60 * 1000;
+export function scheduleDraftEntry(search: string): string {
+  const input=new URLSearchParams(search);const safe=new URLSearchParams();
+  for(const key of ['content','from','journey','topic']) {const value=input.get(key);if(value)safe.set(key,value.slice(0,160));}
+  return safe.toString();
+}
+export function scheduleDraftMatches(draft: Pick<SavedScheduleDraft,'entry'>, search: string): boolean {
+  const requested=scheduleDraftEntry(search);return !requested || requested===scheduleDraftEntry(draft.entry||'');
+}
 function cleanChoices(raw: unknown): ScheduleChoices | null {
   if (!raw || typeof raw !== 'object') return null;
   const c = raw as Record<string, unknown>;
@@ -33,7 +41,7 @@ export function readScheduleDraft(storage: StorageLike, owner: string | null, no
     if (!choices || !Number.isFinite(d.savedAt) || d.savedAt > now || now - d.savedAt > DRAFT_LIFETIME || (d.owner !== null && d.owner !== owner) || typeof d.requestId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(d.requestId)) {
       clearScheduleDraft(storage); return null;
     }
-    return { owner, savedAt: d.savedAt, choices, requestId: d.requestId, step: Number.isInteger(d.step) ? Math.min(3, Math.max(0, d.step)) : 0 };
+    return { owner, entry:scheduleDraftEntry(typeof d.entry==='string'?d.entry:''), savedAt: d.savedAt, choices, requestId: d.requestId, step: Number.isInteger(d.step) ? Math.min(3, Math.max(0, d.step)) : 0 };
   } catch { clearScheduleDraft(storage); return null; }
 }
 export function writeScheduleDraft(storage: StorageLike, draft: SavedScheduleDraft): boolean {
@@ -41,7 +49,7 @@ export function writeScheduleDraft(storage: StorageLike, draft: SavedScheduleDra
   if (!choices) return false;
   try {
     // Explicit allowlist: never store credentials, phone numbers, or calling consent.
-    storage.setItem(SCHEDULE_DRAFT_KEY, JSON.stringify({ owner: draft.owner, savedAt: draft.savedAt, choices, requestId: draft.requestId, step: draft.step }));
+    storage.setItem(SCHEDULE_DRAFT_KEY, JSON.stringify({ owner: draft.owner, entry:scheduleDraftEntry(draft.entry||''), savedAt: draft.savedAt, choices, requestId: draft.requestId, step: draft.step }));
     return true;
   } catch { return false; }
 }
