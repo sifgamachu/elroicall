@@ -1,5 +1,5 @@
-import { fetchDeadline, type Secrets } from '../_shared/providers.ts';
-import { sha256 } from '../_shared/member.ts';
+import { fetchDeadline, sha256, type PortalEnv } from './transport.ts';
+import { callingSetup, connectionTestIssue, requestConnectionTest } from './call-test.ts';
 import { progressFor } from './legacy-progress.ts';
 type Account={user_id:string;email:string;phone:string|null;phone_verified:boolean;pending_phone:string|null;verify_code:string|null;verify_expires:string|null;created_at:string};
 type Track={mode:string;active:boolean;journey_day:number;hour_local:number;minute_local:number;tz:string;days:string;caller_name:string|null;last_called_date:string|null};
@@ -14,7 +14,7 @@ export function normalizePortalPhone(raw:unknown):string|null {
  if(digits.length===11&&digits.startsWith('1'))return `+${digits}`;
  return null;
 }
-export function createPortalService(env:Secrets,client:typeof fetch=fetch) {
+export function createPortalService(env:PortalEnv,client:typeof fetch=fetch) {
  const headers={apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json'};
  const response=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':env.SITE_ORIGIN||'https://elroicall.com','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'GET,POST,OPTIONS',Vary:'Origin'}});
  async function db<T>(path:string,method='GET',body?:unknown):Promise<T>{
@@ -28,16 +28,18 @@ export function createPortalService(env:Secrets,client:typeof fetch=fetch) {
  return async(request:Request):Promise<Response>=>{
   try{
    if(request.method==='OPTIONS')return response({ok:true});
+   const path=new URL(request.url).pathname.split('/portal')[1]||'/';
+   // Public configuration flags only. No credentials, user data, or outbound requests.
+   if(path==='/capabilities'&&request.method==='GET')return response(callingSetup(env));
    const authorization=request.headers.get('authorization');
    if(!authorization?.startsWith('Bearer '))throw new PortalError(401,'unauthorized');
    const auth=await fetchDeadline(`${env.SUPABASE_URL}/auth/v1/user`,{headers:{Authorization:authorization,apikey:env.SUPABASE_ANON_KEY}},10000,client);
    if(!auth.ok)throw new PortalError(401,'unauthorized');
    const user=await auth.json();if(typeof user.id!=='string'||!UUID.test(user.id))throw new PortalError(401,'unauthorized');
-   const path=new URL(request.url).pathname.split('/portal')[1]||'/';
    let body:Record<string,unknown>={};
    if(request.method==='POST'){const raw=await request.text();if(raw.length>8192)throw new PortalError(413,'request_too_large');try{body=JSON.parse(raw);if(!body||typeof body!=='object'||Array.isArray(body))throw Error();}catch{throw new PortalError(400,'invalid_request');}}
    const acct=await account(user.id);
-   const phoneReady=Boolean(env.TWILIO_ACCOUNT_SID&&env.TWILIO_AUTH_TOKEN&&env.TWILIO_FROM_NUMBER);
+   const setup=callingSetup(env);const phoneReady=setup.verification_ready;
    if(path==='/me'&&request.method==='GET'){
     let schedules:unknown[]=[],history:unknown[]=[],total=0,callerName:string|null=null;
     // An entered phone is not proof of ownership. Never read its history until verified.
@@ -52,10 +54,25 @@ export function createPortalService(env:Secrets,client:typeof fetch=fetch) {
       history=await r.json();total=Number(r.headers.get('content-range')?.split('/')[1])||history.length;
      }
     }
-    return response({email:user.email||acct?.email||'',phone:acct?.phone||null,phone_verified:acct?.phone_verified===true,pending_phone:acct?.pending_phone||null,verification_pending:Boolean(acct?.pending_phone&&acct.verify_expires&&new Date(acct.verify_expires).getTime()>Date.now()),member_since:acct?.created_at||null,caller_name:callerName,schedules,history,total_calls:total,verify_ready:phoneReady});
+    return response({email:user.email||acct?.email||'',phone:acct?.phone||null,phone_verified:acct?.phone_verified===true,pending_phone:acct?.pending_phone||null,verification_pending:Boolean(acct?.pending_phone&&acct.verify_expires&&new Date(acct.verify_expires).getTime()>Date.now()),member_since:acct?.created_at||null,caller_name:callerName,schedules,history,total_calls:total,verify_ready:phoneReady,test_call_ready:setup.test_call_ready,verify_unavailable_reason:setup.reason});
+   }
+   if(path==='/test-call'&&request.method==='POST'){
+    if(!phoneReady)throw new PortalError(503,'test_call_unavailable');
+    const issue=connectionTestIssue(body,acct,env.TWILIO_FROM_NUMBER);if(issue)throw new PortalError(issue.status,issue.error);
+    // At most one attempt per request ID within the existing hourly limiter window.
+    // This is an immediate connection test, not a lesson job. Never auto-retry it.
+    if(!await rpc<boolean>('lesson_rate_limit',{p_key:`test-request:${user.id}:${body.request_id}`,p_limit:1}))throw new PortalError(409,'test_already_requested');
+    await limit(`test-user:${user.id}`,3);await limit(`test-phone:${await sha256(acct!.phone!)}`,3);
+    // Re-read ownership after rate checks so a changed number is never silently substituted.
+    const latest=await account(user.id);
+    if(!latest?.phone_verified||latest.phone!==acct!.phone)throw new PortalError(409,'calling_number_changed');
+    const result=await requestConnectionTest(env,latest.phone!,client);
+    if(result==='rejected')throw new PortalError(503,'test_call_failed');
+    return response({test:result,phone_last4:latest.phone!.slice(-4),lesson_booked:false},result==='uncertain'?202:200);
    }
    if(path==='/phone'&&request.method==='POST'){
     const phone=normalizePortalPhone(body.phone);if(!phone)throw new PortalError(400,'invalid_phone');
+    if(phone===env.TWILIO_FROM_NUMBER)throw new PortalError(400,'service_number_not_allowed');
     if(!phoneReady)throw new PortalError(503,'verification_unavailable');
     if(body.consent!==true)throw new PortalError(400,'consent_required');
     await limit(`verify-user:${user.id}`,3);await limit(`verify-phone:${await sha256(phone)}`,3);
@@ -67,7 +84,10 @@ export function createPortalService(env:Secrets,client:typeof fetch=fetch) {
     let result:Response;
     try{result=await fetchDeadline(`https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Calls.json`,{method:'POST',headers:{Authorization:`Basic ${btoa(`${env.TWILIO_ACCOUNT_SID}:${env.TWILIO_AUTH_TOKEN}`)}`,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({To:phone,From:env.TWILIO_FROM_NUMBER,Twiml:twiml,Record:'false',Timeout:'25',TimeLimit:'90'})},15000,client);}
     catch{return response({ok:false,verify:'uncertain'},202);}
+    if(result.status>=500)return response({ok:false,verify:'uncertain'},202);
     if(!result.ok){await db(`portal_accounts?user_id=eq.${user.id}&verify_code=eq.${hash}`,'PATCH',{verify_code:null,verify_expires:null});throw new PortalError(503,'verification_call_failed');}
+    const provider=await result.json().catch(()=>null);
+    if(typeof provider?.sid!=='string'||!/^CA[0-9a-f]{32}$/i.test(provider.sid))return response({ok:false,verify:'uncertain'},202);
     return response({ok:true,verify:'calling'});
    }
    if(path==='/verify'&&request.method==='POST'){
@@ -83,7 +103,6 @@ export function createPortalService(env:Secrets,client:typeof fetch=fetch) {
     await db(`call_schedules?phone=eq.${encodeURIComponent(acct.phone)}${filter}`,'PATCH',{active:false});
     return response({ok:true});
    }
-   // New bookings use the single planner; existing journeys remain visible and can be paused.
    if(path==='/schedule'&&request.method==='POST')throw new PortalError(410,'use_schedule_planner');
    throw new PortalError(404,'not_found');
   }catch(error){return response({error:error instanceof PortalError?error.message:'account_unavailable'},error instanceof PortalError?error.status:503);}
