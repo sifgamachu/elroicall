@@ -5,7 +5,10 @@ import { isNativeApp, isAppShell, appLinkPath } from "@/lib/native";
 export default function NativeBridge() {
   const navigate = useNavigate();
   useEffect(() => {
-    if (isAppShell()) document.documentElement.classList.add("elroi-native");
+    if (isAppShell()) {
+      document.documentElement.classList.add("elroi-native");
+      void import("@/elroi-app.css");
+    }
     if (!isNativeApp()) return;
     let alive = true;
     const removers: (() => Promise<void>)[] = [];

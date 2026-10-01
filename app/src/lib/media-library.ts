@@ -106,7 +106,8 @@ export async function getMediaLibrary(editor = false): Promise<MediaItem[]> {
     .select("*")
     .order("position")
     .order("title")
-    .limit(250);
+    .limit(250)
+    .abortSignal(AbortSignal.timeout(12000));
   if (!editor) query = query.in("status", ["published", "coming_soon"]);
   const { data, error } = await query;
   if (error)

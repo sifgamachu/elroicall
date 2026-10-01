@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { Link } from "react-router";
 import { Check, Crown, RefreshCw } from "lucide-react";
 import type { PurchasesPackage } from "@revenuecat/purchases-capacitor";
@@ -154,7 +155,7 @@ export default function AppMembership({ userId }: { userId?: string }) {
           <a
             className="erc-link"
             href={
-              isNativeApp() && /iPad|iPhone/.test(navigator.userAgent)
+              Capacitor.getPlatform() === "ios"
                 ? "https://apps.apple.com/account/subscriptions"
                 : "https://play.google.com/store/account/subscriptions"
             }
