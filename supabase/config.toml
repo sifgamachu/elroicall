@@ -4,6 +4,11 @@ verify_jwt = false
 [functions.portal]
 verify_jwt = true
 
+# Free films use the public catalog; member playback verifies Auth and the store
+# entitlement inside the handler before signing any private media URL.
+[functions.media-access]
+verify_jwt = false
+
 # Desired hosted Auth settings. Committing this file does not apply them to the
 # hosted project; apply through Auth settings or an authorized configuration push.
 [auth]

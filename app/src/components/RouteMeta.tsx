@@ -31,7 +31,9 @@ export default function RouteMeta() {
   const moment = pathname.startsWith("/explore/") ? getMoment(pathname.split("/")[2]) : undefined;
   const autumnReading = pathname.startsWith('/journey/') ? readingForDay(pathname.split('/')[2]) : undefined;
   const videoMessage = pathname.startsWith('/watch/') ? channelMessage(pathname.split('/')[2]) : undefined;
-  const meta = pathname === '/watch' || pathname.startsWith('/watch/')
+  const meta = pathname.startsWith('/app')
+    ? { title: 'Elroi Calls — Watch, study & talk', description: 'Bible messages, cinematic stories beginning with Genesis, your 84-day reading plan, and Elroi Calls in one app.', canonical: 'https://elroicall.com/app/', ...(pathname.startsWith('/app/you') || pathname.startsWith('/app/studio') || pathname.startsWith('/app/membership') || pathname.startsWith('/app/study') ? { robots: 'noindex,nofollow' } : {}) }
+    : pathname === '/watch' || pathname.startsWith('/watch/')
     ? { title: videoMessage ? `${videoMessage.title} Watch & reflect — El Roi Call` : 'Watch, reflect & talk — El Roi Call', description: videoMessage ? `${videoMessage.summary} Reflect on ${videoMessage.passage} and bring your questions to El Roi.` : 'Watch selected messages from El Roi Calls on YouTube, reflect with Scripture, and bring what stays with you into a conversation.', canonical: `https://elroicall.com${videoMessage ? messagePath(videoMessage) : '/watch/'}`, ...(pathname.split('/')[2] && !videoMessage ? { robots: 'noindex,follow' } : {}) }
     : pathname.startsWith('/bible-challenge') ? { ...FOUNDATION, title: season ? 'The 84-day Bible challenge — El Roi Call' : 'Your Bible reading journey — El Roi Call', canonical: 'https://elroicall.com/bible-challenge/' } : pathname.startsWith('/journey')
     ? { title: autumnReading ? `Day ${autumnReading.day}: ${autumnReading.passage} — El Roi Call` : 'Your 84-day Bible journey — El Roi Call', description: 'Follow the full 84-day Bible reading plan, with daily passages, reflection questions and progress saved on your device.', canonical: `https://elroicall.com/journey/${autumnReading ? autumnReading.day + '/' : ''}` }

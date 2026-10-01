@@ -5,6 +5,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTi
 import { PHONE_TEL } from "@/lib/phone";
 
 const links = [
+  { label: 'Elroi App', href: '/app/' },
   { label: "Schedule a call", href: "/schedule/" },
   { label: "Explore Scripture", href: "/explore/" },
   { label: "Watch & reflect", href: "/watch/" },

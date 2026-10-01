@@ -6,6 +6,9 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import { PHONE_TEL } from "@/lib/phone";
 import SeasonalExperienceProvider from "@/components/SeasonalExperienceProvider";
+import NativeBridge from '@/components/NativeBridge';
+import AppDock from '@/components/AppDock';
+import { isAppShell } from '@/lib/native';
 
 const Explore = lazy(() => import("./pages/Explore"));
 const Watch = lazy(() => import("./pages/Watch"));
@@ -18,6 +21,7 @@ const Gift = lazy(() => import("./pages/Gift"));
 const GiftRedeem = lazy(() => import("./pages/GiftRedeem"));
 const MemberRoom = lazy(() => import("./pages/MemberRoom"));
 const AuthConfirm = lazy(() => import("./pages/AuthConfirm"));
+const ElroiApp = lazy(() => import('./pages/ElroiApp'));
 
 export default function App() {
   const [draft, setDraft] = useState("");
@@ -38,11 +42,13 @@ export default function App() {
   return (
     <SeasonalExperienceProvider><DraftContext.Provider value={{ draft, setDraft,setPrivateDraft:(text,owner)=>{setDraftOwner(owner);setDraft(text);} }}>
       <RouteMeta />
+      <NativeBridge />
       <Suspense fallback={<main className="grid min-h-screen place-content-center gap-5 bg-[#f8f9fc] px-6 text-center text-parchment"><p role="status" className="text-lg">Opening your conversation…</p><a href={PHONE_TEL} className="min-h-11 text-gold-bright underline">Prefer voice? Call El Roi</a></main>}>
       <Routes>
         <Route path="/auth/confirm" element={<AuthConfirm />} />
         <Route path="/auth/confirm/" element={<AuthConfirm />} />
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={isAppShell() ? <Navigate to="/app/" replace/> : <Home />} />
+        <Route path="/app/*" element={<ElroiApp />} />
         <Route path="/watch" element={<Watch />} />
         <Route path="/watch/" element={<Watch />} />
         <Route path="/watch/:slug" element={<Watch />} />
@@ -79,6 +85,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </Suspense>
+      {isAppShell() && <AppDock />}
     </DraftContext.Provider></SeasonalExperienceProvider>
   );
 }

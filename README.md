@@ -30,3 +30,11 @@ See:
 **[Meet the guide →](https://elroicall.com/begin/)** · **[Gift a call →](https://elroicall.com/gift/)**
 
 A product of Teregna LLC.
+
+## Android, iPhone, and iPad app
+
+The `/app/` experience combines Bible videos, Genesis Bible Cinema, Bible study,
+membership, and the existing Elroi Calls account and calling features. Native
+projects are under `app/android` and `app/ios`. See
+[`docs/NATIVE_APP.md`](docs/NATIVE_APP.md) for the delivered behavior, posting
+workflow, build commands, and the remaining store/signing configuration.
