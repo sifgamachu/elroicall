@@ -3,6 +3,8 @@ App/Pods
 App/output
 App/App/public
 DerivedData
+/build
+/Elroi-Calls-Apple-Simulator.zip
 xcuserdata
 
 # Cordova plugins for Capacitor

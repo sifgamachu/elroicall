@@ -32,13 +32,15 @@ npm run native:ios
 
 Run PostgreSQL policy and calling regressions with `npm ci --ignore-scripts && npm test` from `supabase/tests/`.
 
-Native dependencies use locked versions. Android requires JDK 21 and Android SDK 36. iOS requires macOS and Xcode 26 or later. Open `app/ios/App/App.xcodeproj`; Swift Package Manager resolves Capacitor and RevenueCat. The native CI workflow builds a debug Android APK and a simulator build without distribution signing. These checks do not submit anything to a store.
+Native dependencies use locked versions. Android requires JDK 21 and Android SDK 36. iOS requires macOS and Xcode 26 or later. Open `app/ios/App/App.xcodeproj`; Swift Package Manager resolves Capacitor and RevenueCat. The native CI workflow builds a debug Android APK and packages an unsigned iPhone/iPad simulator app as `Elroi-Calls-Apple-Simulator.zip`. These checks do not submit anything to a store or test playback on a real device. Store listing drafts, remaining release dependencies, and simulator installation steps are in [APP_STORE_RELEASE.md](APP_STORE_RELEASE.md).
 
 ## Existing account integration
 
 Password sign-in uses the existing Supabase account. App study data is owned by the same Auth user. Switching accounts remounts the private workspace before loading another person's data. Reflections and completion updates use one account-scoped RPC that preserves each field independently.
 
 The native app opens at `/app/`, retains the bottom navigation on existing account/calling pages, handles Android back, and opens external Scripture and policy links in the system browser. Android device backups are disabled so application session data is not included in a routine backup.
+
+Native YouTube playback loads the public, script-free HTTPS wrapper `/app-player/youtube/:id/`. Its nested privacy-enhanced player receives an HTTPS site Referer and the fixed `com.elroicall.app` widget identity. The wrapper accepts only validated video IDs, no query parameters, and GET/HEAD; it never receives Auth tokens or private media URLs. A narrow CSP permits only the app's native origins and the Elroi website to frame that page. Account routes keep their no-framing and no-cache headers. The web player remains click-to-load; published public videos also provide a direct YouTube fallback. All players keep a minimum 200-pixel height.
 
 The account, calling profile, saved-note, and scheduling services accept the exact native origins used by Capacitor. Their existing token and account ownership checks remain enforced. Live native-origin preflights and unauthenticated-read rejection were verified on all four services.
 
@@ -58,13 +60,13 @@ Drafts are studio-only. Coming-soon stories appear without a playback button. A 
 2. Configure subscription products and final prices in App Store Connect and Play Console. Link both apps to one RevenueCat project and the `elroi_plus` entitlement. Use the Supabase Auth UUID as the RevenueCat app user ID.
 3. Set the public native build keys `VITE_REVENUECAT_APPLE_KEY` and `VITE_REVENUECAT_ANDROID_KEY`. Set `REVENUECAT_SECRET_KEY` only in the Supabase Edge Function environment, never Vite or GitHub source.
 4. Publish actual member films before selling a subscription for that catalog. Test purchase, cancellation, expiration/grace period, restoration, account switching, and access from both platforms with store sandbox accounts.
-5. Complete privacy declarations, age ratings, store screenshots, and store review. This source change does not publish the app to the App Store or Google Play.
+5. Complete account-and-data deletion, privacy declarations, age ratings, physical-device checks, store screenshots, and store review. This source change does not publish the app to the App Store or Google Play.
 
 Server playback revalidates the Auth token and RevenueCat entitlement for each member-film request. Expired memberships, missing verification configuration, unauthorized users, unknown access levels, and unpublished films cannot obtain signed media links. The link expires after one hour. A link already issued remains usable until expiry; DRM and immediate URL revocation are not included.
 
 ## Browser installation
 
-`/app/` also has an installable manifest and icons. Android browsers can offer installation; on iPhone or iPad, use Safari's Add to Home Screen. The app shell service worker only caches public scripts, CSS, and artwork. Auth responses, account data, signed videos, APIs, and external content never enter this cache. Reading requires an online Bible source; films and account sync need connectivity. Store purchases are enabled only in configured native builds.
+`/app/` also has an installable manifest and icons. **Install app** opens accessible device instructions and, when the browser actually offers one, a native browser installation prompt after a user click. Each browser prompt is used once; dismissing it preserves web access. On iPhone/iPad the instructions explain Safari's Share, Add to Home Screen, and Open as Web App controls. Native and standalone app windows hide the installation promotion. The app shell service worker only caches public scripts, CSS, and artwork. Auth responses, account data, signed videos, APIs, and external content never enter this cache. Reading requires an online Bible source; films and account sync need connectivity. Store purchases are enabled only in configured native builds.
 
 ## Backend
 

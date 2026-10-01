@@ -74,7 +74,7 @@ export default function AppMembership({ userId }: { userId?: string }) {
           through Scripture.
         </h1>
         <p>
-          One membership for the private films you publish in the Elroi Calls
+          Explore Scripture through the member films released in the Elroi Calls
           library.
         </p>
       </div>
@@ -95,14 +95,7 @@ export default function AppMembership({ userId }: { userId?: string }) {
             <Check size={19} /> Restore purchases on your store account
           </li>
         </ul>
-        {!userId ? (
-          <Link
-            className="erc-button erc-button-gold"
-            to="/account/?mode=signin"
-          >
-            Sign in to see membership
-          </Link>
-        ) : !ready ? (
+        {!ready ? (
           <div className="erc-note">
             <strong>Memberships are not on sale yet.</strong>
             <p>
@@ -110,7 +103,17 @@ export default function AppMembership({ userId }: { userId?: string }) {
                 ? "Store plans will appear here when the release is ready."
                 : "Membership purchases will be available in the iPhone and Android apps when they launch."}
             </p>
+            <Link className="erc-link" to="/app/watch/">
+              Explore the free library
+            </Link>
           </div>
+        ) : !userId ? (
+          <Link
+            className="erc-button erc-button-gold"
+            to="/account/?mode=signin"
+          >
+            Sign in to see membership
+          </Link>
         ) : packages.length ? (
           <div className="erc-plans">
             {packages.map(item => (
