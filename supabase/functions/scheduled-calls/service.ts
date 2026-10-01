@@ -1,4 +1,5 @@
 import {createCallGuard} from '../_shared/call-guard.ts';
+import {withAppCors} from '../_shared/app-cors.ts';
 import { validatePlan, VOICES, type CallPlanInput, type Voice } from '../_shared/scheduling.ts';
 import { equalSecret, fetchDeadline, generateLesson, generateSpeech, lessonTwiml, placeCall, verifyTwilio, type Secrets } from '../_shared/providers.ts';
 import { DEFAULT_PREFERENCES, publicPreferences, sha256, validatePreferences, type MemberPreferences } from '../_shared/member.ts';
@@ -159,7 +160,7 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
     if(part===current.audio_paths.length) { await db(`lesson_jobs?id=eq.${id}`,'PATCH',{lesson_finished:true}); return xml(hangup); }
     return xml(lessonTwiml(await signedAudio(current.audio_paths[part]),`${base}/voice/lesson?job=${id}&part=${part+1}`));
   }
-  return async function handle(request:Request):Promise<Response> {
+  return withAppCors(async function handle(request:Request):Promise<Response> {
     const url=new URL(request.url);
     const path=url.pathname.split('/scheduled-calls')[1]||'/';
     try {
@@ -237,5 +238,5 @@ export function createSchedulingService(env: Secrets, client: typeof fetch = fet
       if(issue instanceof HttpError) return json({error:issue.message},issue.status);
       return json({error:'The service could not complete this request. Please try again.'},503);
     }
-  };
+  },env.SITE_ORIGIN);
 }

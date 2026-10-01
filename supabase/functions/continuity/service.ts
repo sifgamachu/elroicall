@@ -1,4 +1,5 @@
 import { equalSecret,fetchDeadline,type Secrets } from '../_shared/providers.ts';
+import { withAppCors } from '../_shared/app-cors.ts';
 import { sha256 } from '../_shared/member.ts';
 import { NOTE_UUID,validateMemoryNote,type MemorySnapshot } from '../_shared/continuity.ts';
 type Env=Secrets&{VOICE_CONTINUITY_ENABLED?:string};
@@ -22,7 +23,7 @@ export function createContinuityService(env:Env,client:typeof fetch=fetch){
   if(c.sid!==sid||c.account_sid!==env.TWILIO_ACCOUNT_SID||c.status!=='in-progress'||!/^\+[1-9]\d{7,14}$/.test(phone)||phone===env.TWILIO_FROM_NUMBER)throw new Failure(403,'Call from your verified number to share a note.');
   return {sid,phone};
  }
- return async(request:Request):Promise<Response>=>{
+ return withAppCors(async(request:Request):Promise<Response>=>{
   try{
    const path=new URL(request.url).pathname.split('/continuity')[1]||'/';
    if(request.method==='OPTIONS')return json({ok:true});
@@ -79,5 +80,5 @@ export function createContinuityService(env:Env,client:typeof fetch=fetch){
    await limit(`memory-write:${user.id}`,90);
    return json({...await rpc<MemorySnapshot>('member_memory_change',{p_user:user.id,p_action:action,p_revision:body.revision,p_note:note||{}}),phone_ready:phoneReady()});
   }catch(error){return json({error:error instanceof Failure?error.message:'Your notes could not be loaded. Please try again.'},error instanceof Failure?error.status:503);}
- };
+ },env.SITE_ORIGIN);
 }

@@ -40,6 +40,8 @@ Password sign-in uses the existing Supabase account. App study data is owned by 
 
 The native app opens at `/app/`, retains the bottom navigation on existing account/calling pages, handles Android back, and opens external Scripture and policy links in the system browser. Android device backups are disabled so application session data is not included in a routine backup.
 
+The account, calling profile, saved-note, and scheduling services accept the exact native origins used by Capacitor. Their existing token and account ownership checks remain enforced. Live native-origin preflights and unauthenticated-read rejection were verified on all four services.
+
 HTTPS deep links are accepted only for the exact `elroicall.com` host and approved routes. Store signing identities and domain association files must be configured before claiming verified universal-link support. Existing email recovery uses the website; password login remains available in the native app. No unverified third-party sign-in option has been added.
 
 ## Posting videos

@@ -1,6 +1,7 @@
 import { createSchedulingService } from './service.ts';
 import type { Secrets } from '../_shared/providers.ts';
 import { fetchDeadline } from '../_shared/providers.ts';
+import {withAppCors} from '../_shared/app-cors.ts';
 
 const keys: (keyof Secrets)[] = ['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','SUPABASE_ANON_KEY','OPENAI_API_KEY','TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_FROM_NUMBER','SCHEDULER_SECRET','SCHEDULED_CALLS_ENABLED','CONTENT_MODEL','SITE_ORIGIN'];
 const env=Object.fromEntries(keys.map(key=>[key,Deno.env.get(key)||''])) as Secrets;
@@ -8,7 +9,8 @@ env.TWILIO_FROM_NUMBER ||= '+18556197337';
 // The cron token itself stays in Vault. The function receives only its digest.
 let cached:{enabled:boolean;scheduler_secret_sha256:string}|null=null;
 let loadedAt=0;
-Deno.serve(async(request:Request)=>{
+Deno.serve(withAppCors(async(request:Request)=>{
+  if(request.method==='OPTIONS')return new Response(null,{status:204});
   try{
     if(!cached||Date.now()-loadedAt>15000){
       const r=await fetchDeadline(`${env.SUPABASE_URL}/rest/v1/lesson_service_settings?id=eq.true&limit=1`,{headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`}},8000);
@@ -19,4 +21,4 @@ Deno.serve(async(request:Request)=>{
   }catch{
     return new Response(JSON.stringify({error:'Service is temporarily unavailable.'}),{status:503,headers:{'Content-Type':'application/json','Access-Control-Allow-Origin':env.SITE_ORIGIN||'https://elroicall.com','Cache-Control':'no-store'}});
   }
-});
+},env.SITE_ORIGIN));
