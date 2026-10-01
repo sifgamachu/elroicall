@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Elroi Calls</string>
+    <string name="title_activity_main">Elroi Calls</string>
+    <string name="package_name">com.elroicall.app</string>
+    <string name="custom_url_scheme">com.elroicall.app</string>
+</resources>
