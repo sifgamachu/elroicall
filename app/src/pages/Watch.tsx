@@ -7,10 +7,12 @@ import { useDraft } from '@/lib/draft';
 import { CHANNEL_MESSAGES, channelMessage, messageConversationDraft, messagePath, messageScheduleUrl, messageThumbnail, youtubeVideoUrl, YOUTUBE_CHANNEL_URL, type ChannelMessage } from '@/lib/youtube-channel';
 import { readingPassageUrl } from '@/lib/autumn-readings';
 import '@/watch.css';
+import { isNativeApp } from '@/lib/native';
+import { youtubePlayerUrl } from '@/lib/youtube-player';
 
 function VideoPlayer({ message }: { message: ChannelMessage }) {
   const [loaded, setLoaded] = useState(false);
-  return <div className="watch-player">{loaded ? <iframe src={`https://www.youtube-nocookie.com/embed/${message.id}?playsinline=1&rel=0`} title={message.youtubeTitle} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /> : <button type="button" className="watch-player-cover" onClick={() => setLoaded(true)} aria-label={`Load video: ${message.title}`}><img src={messageThumbnail(message)} alt="" width="480" height="360" /><span className="watch-play"><Play size={30} fill="currentColor" /></span><span className="watch-player-label">Open video player <span>{message.duration}</span></span></button>}</div>;
+  return <div className="watch-player">{loaded ? <iframe src={youtubePlayerUrl(message.id, isNativeApp(), window.location.origin)} title={message.youtubeTitle} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /> : <button type="button" className="watch-player-cover" onClick={() => setLoaded(true)} aria-label={`Load video: ${message.title}`}><img src={messageThumbnail(message)} alt="" width="480" height="360" /><span className="watch-play"><Play size={30} fill="currentColor" /></span><span className="watch-player-label">Open video player <span>{message.duration}</span></span></button>}</div>;
 }
 
 export default function Watch() {

@@ -1,6 +1,6 @@
 // Only public app shell assets are cached. Auth, account data, signed media,
 // API responses, and third-party requests never enter this cache.
-const CACHE = 'elroi-app-shell-v1';
+const CACHE = 'elroi-app-shell-v2';
 const SHELL = '/app/';
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.add(SHELL)));

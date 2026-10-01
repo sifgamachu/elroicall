@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router";
 import type { Session } from "@supabase/supabase-js";
 import {
   ArrowLeft,
+  ArrowUpRight,
   BookOpen,
   CalendarDays,
   Check,
@@ -39,12 +40,14 @@ import {
 import { AUTUMN_READINGS } from "@/lib/autumn-readings";
 import { useStudyProgress } from "@/lib/use-study-progress";
 import { PHONE_TEL } from "@/lib/phone";
-import { isAppShell } from "@/lib/native";
+import { isAppShell, isNativeApp } from "@/lib/native";
+import { youtubePlayerUrl, youtubeWatchUrl } from "@/lib/youtube-player";
 import { registerAppShell } from "@/lib/app-install";
 import { useDraft } from "@/lib/draft";
 import AppDock from "@/components/AppDock";
 import AppMembership from "@/components/AppMembership";
 import MediaStudio from "@/components/MediaStudio";
+import AppInstall from "@/components/AppInstall";
 import "@/elroi-app.css";
 
 const navigation = [
@@ -222,6 +225,7 @@ function AppWorkspace({
             ELROI CALLS <span>/</span> {sectionTitle}
           </p>
           <div className="erc-top-actions">
+            <AppInstall />
             <Link className="erc-plus-pill" to="/app/membership/">
               <Crown size={16} /> Elroi Plus
             </Link>
@@ -835,7 +839,7 @@ function MediaDetail({
     try {
       if (item.provider === "youtube")
         setUrl(
-          `https://www.youtube-nocookie.com/embed/${item.youtube_id}?playsinline=1&rel=0`
+          youtubePlayerUrl(item.youtube_id, isNativeApp(), window.location.origin)
         );
       else setUrl(await getMediaPlayback(item.id));
     } catch (issue) {
@@ -878,7 +882,7 @@ function MediaDetail({
                 <iframe
                   title={item.title}
                   src={url}
-                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                   referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 />
@@ -926,6 +930,19 @@ function MediaDetail({
               </>
             )}
           </div>
+          {item.provider === "youtube" && canPlayMedia(item) && (
+            <div className="erc-player-links">
+              <span>Prefer the YouTube app?</span>
+              <a
+                className="erc-link"
+                href={youtubeWatchUrl(item.youtube_id)}
+                target="_blank"
+                rel="noopener"
+              >
+                Watch on YouTube <ArrowUpRight size={15} />
+              </a>
+            </div>
+          )}
           {url && item.provider === "storage" && (
             <button
               className="erc-link"

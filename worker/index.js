@@ -7,6 +7,8 @@
 // Security note: no access tokens belong in this repository. If manual
 // triggering is needed, configure INDEXNOW_TRIGGER_TOKEN as a Worker secret.
 
+import { publicYouTubePlayer } from "./public-youtube-player.mjs";
+
 const KEY = "54a69a9616b3d4daebf14fd26db02f90";
 const HOST = "elroicall.com";
 const URLS = [
@@ -56,6 +58,8 @@ function withSecurityHeaders(response) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const player = publicYouTubePlayer(request);
+    if (player) return player;
 
     if (url.pathname === "/_indexnow") {
       if (request.method !== "POST") {

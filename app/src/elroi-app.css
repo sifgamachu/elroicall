@@ -208,6 +208,100 @@
   align-items: center;
   gap: 26px;
 }
+.erc-install-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: 1px solid var(--erc-line);
+  border-radius: 8px;
+  color: var(--erc-gold);
+  background: #1b3025;
+  font-size: 0.76rem !important;
+}
+.erc-install-dialog {
+  background: #12261f;
+  border: 1px solid #c9d7bb33;
+  border-radius: 18px;
+  padding: 30px;
+  color: #f2f5ea;
+  color-scheme: dark;
+  font-family: Inter, Arial, sans-serif;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+}
+.erc-install-dialog [data-slot="dialog-title"] {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.erc-install-dialog [data-slot="dialog-description"] {
+  color: #b0c0ac;
+  line-height: 1.7;
+}
+.erc-install-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid #e9c77e55;
+  border-radius: 15px;
+  color: #e9c77e;
+}
+.erc-install-steps h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e9c77e;
+  font-size: 0.85rem;
+  margin: 10px 0;
+}
+.erc-install-steps ol {
+  list-style: decimal;
+  padding-left: 22px;
+  margin: 0 0 20px;
+}
+.erc-install-steps :is(li, p) {
+  font-size: 0.8rem;
+  color: #d7e2cd;
+  line-height: 1.7;
+}
+.erc-install-steps li + li { margin-top: 8px; }
+.erc-install-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: #e9c77e;
+  color: #15291e;
+  padding: 13px 18px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.erc-install-action:disabled { opacity: 0.55; cursor: wait; }
+.erc-install-note { font-size: 0.71rem; color: #9cb29e; line-height: 1.65; }
+.erc-install-notice { font-size: 0.78rem; color: #f2d89e; line-height: 1.6; }
+.erc-install-dialog :is(a, button):focus-visible { outline: 2px solid #e9c77e; outline-offset: 4px; }
+.erc-player-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 0 2px;
+  color: var(--erc-muted);
+  font-size: 0.73rem;
+}
+.erc-player-links .erc-link { margin-top: 0; }
+@media (max-width: 600px) {
+  .erc-install-trigger { width: 44px; height: 44px; justify-content: center; }
+  .erc-install-trigger span { display: none; }
+  .erc-install-dialog { padding: 25px; }
+}
 .erc-plus-pill {
   display: flex;
   gap: 8px;
@@ -990,6 +1084,7 @@
   gap: 28px;
 }
 .erc-player {
+  min-height: 200px;
   aspect-ratio: 16/9;
   position: relative;
   overflow: hidden;
