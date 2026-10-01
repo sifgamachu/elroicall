@@ -200,9 +200,14 @@ function AppWorkspace({
               <Library size={17} /> Content studio
             </Link>
           )}
-          <Link to="/" className="erc-side-site">
+          <a
+            href="https://elroicall.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="erc-side-site"
+          >
             Visit elroicall.com
-          </Link>
+          </a>
         </div>
       </aside>
       <div className="erc-workspace">

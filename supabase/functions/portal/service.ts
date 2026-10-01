@@ -1,4 +1,5 @@
 import { fetchDeadline, type Secrets } from '../_shared/providers.ts';
+import { withAppCors } from '../_shared/app-cors.ts';
 import { sha256 } from '../_shared/member.ts';
 import { progressFor } from './legacy-progress.ts';
 type Account={user_id:string;email:string;phone:string|null;phone_verified:boolean;pending_phone:string|null;verify_code:string|null;verify_expires:string|null;created_at:string};
@@ -25,7 +26,7 @@ export function createPortalService(env:Secrets,client:typeof fetch=fetch) {
  const rpc=<T>(name:string,body:unknown)=>db<T>(`rpc/${name}`,'POST',body);
  const account=async(id:string)=>(await db<Account[]>(`portal_accounts?user_id=eq.${id}&limit=1`))[0];
  async function limit(key:string,count:number){if(!await rpc<boolean>('lesson_rate_limit',{p_key:key,p_limit:count}))throw new PortalError(429,'too_many_requests');}
- return async(request:Request):Promise<Response>=>{
+ return withAppCors(async(request:Request):Promise<Response>=>{
   try{
    if(request.method==='OPTIONS')return response({ok:true});
    const authorization=request.headers.get('authorization');
@@ -87,5 +88,5 @@ export function createPortalService(env:Secrets,client:typeof fetch=fetch) {
    if(path==='/schedule'&&request.method==='POST')throw new PortalError(410,'use_schedule_planner');
    throw new PortalError(404,'not_found');
   }catch(error){return response({error:error instanceof PortalError?error.message:'account_unavailable'},error instanceof PortalError?error.status:503);}
- };
+ }, env.SITE_ORIGIN);
 }

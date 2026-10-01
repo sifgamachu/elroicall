@@ -1,4 +1,5 @@
 import {fetchDeadline,type Secrets} from '../_shared/providers.ts';
+import {withAppCors} from '../_shared/app-cors.ts';
 import {hex,pinDigest,validateCallingIdentity,type CallingIdentity} from '../_shared/call-identity.ts';
 type Env=Secrets;
 class Failure extends Error{status:number;constructor(status:number,message:string){super(message);this.status=status;}}
@@ -9,7 +10,7 @@ export function createCallAccessService(env:Env,client:typeof fetch=fetch){
   const r=await fetchDeadline(`${env.SUPABASE_URL}/rest/v1/rpc/${name}`,{method:'POST',headers,body:JSON.stringify(body)},12000,client);
   if(!r.ok){const e=await r.json().catch(()=>({}));if(e.code==='P0001')throw new Failure(409,String(e.message));throw new Failure(503,'Your calling identity could not be saved. Refresh before trying again.');}return r.json();
  }
- return async(req:Request)=>{
+ return withAppCors(async(req:Request)=>{
   try{
    if(req.method==='OPTIONS')return json({ok:true});
    const path=new URL(req.url).pathname.split('/call-access')[1]||'/';
@@ -32,5 +33,5 @@ export function createCallAccessService(env:Env,client:typeof fetch=fetch){
    const digest=await pinDigest(body.pin,salt,user.id,env.SUPABASE_SERVICE_ROLE_KEY);
    return json(await rpc<CallingIdentity>('calling_identity_save',{p_user:user.id,p_nickname:body.nickname.trim(),p_salt:salt,p_digest:digest,p_revision:body.revision}));
   }catch(e){return json({error:e instanceof Failure?e.message:'Your calling identity is unavailable. Please try again.'},e instanceof Failure?e.status:503);}
- };
+ },env.SITE_ORIGIN);
 }
