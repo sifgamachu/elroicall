@@ -47,7 +47,8 @@ import { useDraft } from "@/lib/draft";
 import AppDock from "@/components/AppDock";
 import AppMembership from "@/components/AppMembership";
 import MediaStudio from "@/components/MediaStudio";
-import AppInstall from "@/components/AppInstall";\nimport WalkWithMe from "@/components/WalkWithMe";
+import AppInstall from "@/components/AppInstall";
+import WalkWithMe from "@/components/WalkWithMe";
 import "@/elroi-app.css";
 
 const navigation = [
