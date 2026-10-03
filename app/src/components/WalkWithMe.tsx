@@ -27,8 +27,8 @@ import {
 import "@/walk-with-me.css";
 
 export default function WalkWithMe() {
-  const [settings, setSettings] = useState<AccountabilitySettings>(
-    DEFAULT_ACCOUNTABILITY_SETTINGS
+  const [settings, setSettings] = useState<AccountabilitySettings>(() =>
+    loadAccountabilitySettings()
   );
   const [status, setStatus] = useState<AccountabilityPermissionStatus | null>(
     null
@@ -37,7 +37,6 @@ export default function WalkWithMe() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    setSettings(loadAccountabilitySettings());
     void refreshStatus();
   }, []);
 
