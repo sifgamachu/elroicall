@@ -48,6 +48,7 @@ import AppDock from "@/components/AppDock";
 import AppMembership from "@/components/AppMembership";
 import MediaStudio from "@/components/MediaStudio";
 import AppInstall from "@/components/AppInstall";
+import WalkWithMe from "@/components/WalkWithMe";
 import "@/elroi-app.css";
 
 const navigation = [
@@ -711,7 +712,7 @@ function AppWorkspace({
               </div>
             </>
           )}
-          {tab === "membership" && <AppMembership userId={session?.user.id} />}
+          {tab === "walk" && <WalkWithMe />}\n          {tab === "membership" && <AppMembership userId={session?.user.id} />}
           {tab === "studio" && (
             <MediaStudio session={session} authReady={authReady} />
           )}
