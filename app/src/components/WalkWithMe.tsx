@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import {
   ACCOUNTABILITY_APPS,
-  DEFAULT_ACCOUNTABILITY_SETTINGS,
   gentleAccountabilityMessage,
   loadAccountabilitySettings,
   saveAccountabilitySettings,
