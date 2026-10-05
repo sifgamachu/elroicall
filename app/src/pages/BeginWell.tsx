@@ -17,6 +17,11 @@ type ClaimResponse = { ok: boolean };
 type Stage = "surface" | "listening" | "seen" | "ready";
 
 const NEED_COPY: Record<string, { title: string; prompt: string; placeholder: string }> = {
+  prayer: {
+    title: "You can begin with what you want to bring into prayer.",
+    prompt: "What would you like to place before God right now? You can keep it simple.",
+    placeholder: "I would like prayer for…",
+  },
   grief: {
     title: "You can begin with the loss.",
     prompt: "What happened, and what feels hardest about carrying it today?",
