@@ -14,6 +14,7 @@ import {
   Clock3,
   Crown,
   Home,
+  HeartHandshake,
   Library,
   MessageCircle,
   Phone,
@@ -49,6 +50,7 @@ import AppMembership from "@/components/AppMembership";
 import MediaStudio from "@/components/MediaStudio";
 import AppInstall from "@/components/AppInstall";
 import WalkWithMe from "@/components/WalkWithMe";
+import CinematicFeed from "@/components/CinematicFeed";
 import "@/elroi-app.css";
 
 const navigation = [
@@ -57,6 +59,7 @@ const navigation = [
   { path: "/app/cinema/", label: "Bible Cinema", icon: Clapperboard },
   { path: "/app/study/", label: "Bible study", icon: BookOpen },
   { path: "/app/calls/", label: "Elroi Calls", icon: Phone },
+  { path: "/app/walk/", label: "Walk with me", icon: HeartHandshake },
   { path: "/app/you/", label: "Your space", icon: CircleUserRound },
 ];
 export default function ElroiApp() {
@@ -136,13 +139,15 @@ function AppWorkspace({
   const reading = AUTUMN_READINGS[day - 1];
   const sectionTitle =
     tab === "home"
-      ? "Your daily journey"
+      ? "Scripture in motion"
       : tab === "cinema"
         ? "Bible Cinema"
         : tab === "study"
           ? "Bible study"
           : tab === "calls"
             ? "Elroi Calls"
+            : tab === "walk"
+              ? "Walk with me"
             : tab === "you"
               ? "Your space"
               : tab === "membership"
@@ -152,7 +157,6 @@ function AppWorkspace({
                   : tab === "video"
                     ? "Watch & reflect"
                     : "Watch";
-  const published = media.filter(item => item.status === "published");
   const matching = media.filter(
     item =>
       item.section === (tab === "cinema" ? "cinema" : "watch") &&
@@ -247,112 +251,12 @@ function AppWorkspace({
             </div>
           )}
           {tab === "home" && (
-            <>
-              <div className="erc-welcome">
-                <p className="erc-eyebrow">WATCH. STUDY. TALK.</p>
-                <h1>Make room for wonder.</h1>
-                <p>Enter the story. Let it speak into your day.</p>
-              </div>
-              <div className="erc-home-grid">
-                <section
-                  className="erc-feature"
-                  aria-labelledby="genesis-title"
-                >
-                  <img
-                    src="/images/readings/creation.webp"
-                    alt="Sunlight opens over a river valley in an illustration of creation"
-                    fetchPriority="high"
-                  />
-                  <div className="erc-feature-shade" />
-                  <div className="erc-feature-copy">
-                    <p className="erc-eyebrow">
-                      <Clapperboard size={15} /> BIBLE CINEMA · GENESIS
-                    </p>
-                    <h2 id="genesis-title">
-                      In the
-                      <br />
-                      <em>beginning.</em>
-                    </h2>
-                    <p>
-                      The first story. A world of wonder.
-                      <br />A journey back to where it all began.
-                    </p>
-                    <Link
-                      className="erc-button erc-button-light"
-                      to="/app/cinema/"
-                    >
-                      <Clapperboard size={18} /> Explore Genesis
-                    </Link>
-                    <span className="erc-feature-caption">
-                      Cinematic chapters · films coming soon
-                    </span>
-                  </div>
-                </section>
-                <section className="erc-today">
-                  <div className="erc-today-top">
-                    <span className="erc-icon-box">
-                      <BookOpen size={21} />
-                    </span>
-                    <p className="erc-eyebrow">YOUR DAILY READING</p>
-                    <span>DAY {nextDay}</span>
-                  </div>
-                  <h2>
-                    A little time.
-                    <br />A lasting truth.
-                  </h2>
-                  <p className="erc-today-passage">
-                    {AUTUMN_READINGS[nextDay - 1].passage}
-                  </p>
-                  <p>{AUTUMN_READINGS[nextDay - 1].notice}</p>
-                  <div className="erc-progress">
-                    <div>
-                      <span>84-day Bible journey</span>
-                      <strong>{progress.completed.length}/84</strong>
-                    </div>
-                    <progress value={progress.completed.length} max={84} />
-                  </div>
-                  <Link
-                    className="erc-button erc-button-gold"
-                    to={`/app/study/?day=${nextDay}`}
-                  >
-                    <BookOpen size={18} />{" "}
-                    {progress.completed.length
-                      ? "Continue reading"
-                      : "Begin day 1"}
-                  </Link>
-                  <small>
-                    {session
-                      ? "Progress saved to your account"
-                      : "Progress saved on this device"}
-                  </small>
-                </section>
-              </div>
-              <SectionHeading
-                title="A message for your moment"
-                subtitle="Watch, reflect, and bring what stays with you into a conversation."
-                href="/app/watch/"
-              />
-              <div className="erc-media-grid erc-message-row">
-                {published
-                  .filter(item => item.section === "watch")
-                  .slice(0, 4)
-                  .map(item => (
-                    <MediaCard key={item.id} item={item} />
-                  ))}
-              </div>
-              <div className="erc-talk-banner">
-                <span className="erc-icon-box">
-                  <Phone size={23} />
-                </span>
-                <div>
-                  <h2>Some things are better spoken.</h2>
-                  <p>Continue your reflection with El Roi.</p>
-                </div>
-                <Link className="erc-button erc-button-quiet" to="/app/calls/">
-                  Open Elroi Calls <ChevronRight size={17} />
-                </Link>
-              </div>
-            </>
+            <CinematicFeed
+              items={media}
+              userId={session?.user.id}
+              nextDay={nextDay}
+              completedCount={progress.completed.length}
+            />
           )}
           {(tab === "watch" || tab === "cinema") && (
             <>
@@ -680,6 +584,12 @@ function AppWorkspace({
                     href: "/account/?view=settings",
                   },
                   {
+                    icon: HeartHandshake,
+                    title: "Walk With Me",
+                    text: "Your gentle accountability goals and phone check-ins",
+                    href: "/app/walk/",
+                  },
+                  {
                     icon: Crown,
                     title: "Elroi Plus",
                     text: "Membership and store purchase restoration",
@@ -712,7 +622,8 @@ function AppWorkspace({
               </div>
             </>
           )}
-          {tab === "walk" && <WalkWithMe />}\n          {tab === "membership" && <AppMembership userId={session?.user.id} />}
+          {tab === "walk" && <WalkWithMe />}
+          {tab === "membership" && <AppMembership userId={session?.user.id} />}
           {tab === "studio" && (
             <MediaStudio session={session} authReady={authReady} />
           )}
@@ -723,6 +634,7 @@ function AppWorkspace({
             "video",
             "study",
             "calls",
+            "walk",
             "you",
             "membership",
             "studio",
@@ -760,27 +672,6 @@ function AppWorkspace({
   );
 }
 
-function SectionHeading({
-  title,
-  subtitle,
-  href,
-}: {
-  title: string;
-  subtitle: string;
-  href: string;
-}) {
-  return (
-    <div className="erc-section-heading">
-      <div>
-        <h2>{title}</h2>
-        <p>{subtitle}</p>
-      </div>
-      <Link to={href}>
-        See all <ChevronRight size={16} />
-      </Link>
-    </div>
-  );
-}
 function MediaCard({ item }: { item: MediaItem }) {
   return (
     <Link className="erc-media-card" to={`/app/video/${item.slug}/`}>
