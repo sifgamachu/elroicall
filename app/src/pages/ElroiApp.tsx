@@ -584,6 +584,12 @@ function AppWorkspace({
                     href: "/account/?view=settings",
                   },
                   {
+                    icon: HeartHandshake,
+                    title: "Walk With Me",
+                    text: "Your gentle accountability goals and phone check-ins",
+                    href: "/app/walk/",
+                  },
+                  {
                     icon: Crown,
                     title: "Elroi Plus",
                     text: "Membership and store purchase restoration",
