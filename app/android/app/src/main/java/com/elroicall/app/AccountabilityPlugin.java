@@ -1,43 +1,62 @@
 package com.elroicall.app;
 
+import android.Manifest;
 import android.app.AppOpsManager;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-@CapacitorPlugin(name = "Accountability")
+@CapacitorPlugin(
+    name = "Accountability",
+    permissions = {
+        @Permission(alias = "notifications", strings = { Manifest.permission.POST_NOTIFICATIONS })
+    }
+)
 public class AccountabilityPlugin extends Plugin {
     private boolean hasUsageAccess() {
-        AppOpsManager appOps =
-            (AppOpsManager) getContext().getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
-            getContext().getPackageName()
-        );
-        return mode == AppOpsManager.MODE_ALLOWED;
+        return AccountabilityWorker.hasUsageAccess(getContext());
     }
 
-    @PluginMethod
-    public void getStatus(PluginCall call) {
+    private boolean notificationsGranted() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            getPermissionState("notifications") == PermissionState.GRANTED;
+    }
+
+    private SharedPreferences prefs() {
+        return getContext().getSharedPreferences(
+            AccountabilityWorker.PREFS,
+            Context.MODE_PRIVATE
+        );
+    }
+
+    private void resolveStatus(PluginCall call) {
         JSObject result = new JSObject();
         result.put("platform", "android");
         result.put("supported", true);
         result.put("granted", hasUsageAccess());
+        result.put("notificationsGranted", notificationsGranted());
+        result.put("monitoringEnabled", prefs().getBoolean("enabled", false));
         result.put(
             "detail",
             hasUsageAccess()
@@ -48,10 +67,57 @@ public class AccountabilityPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void getStatus(PluginCall call) {
+        resolveStatus(call);
+    }
+
+    @PluginMethod
     public void openUsageAccessSettings(PluginCall call) {
         Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getContext().startActivity(intent);
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void requestNotifications(PluginCall call) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || notificationsGranted()) {
+            AccountabilityWorker.syncSchedule(getContext());
+            resolveStatus(call);
+            return;
+        }
+        requestPermissionForAlias("notifications", call, "notificationPermissionCallback");
+    }
+
+    @PermissionCallback
+    private void notificationPermissionCallback(PluginCall call) {
+        AccountabilityWorker.syncSchedule(getContext());
+        resolveStatus(call);
+    }
+
+    @PluginMethod
+    public void configure(PluginCall call) {
+        boolean enabled = Boolean.TRUE.equals(call.getBoolean("enabled", false));
+        String intention = call.getString("intention", "");
+        JSArray goals = call.getArray("goals");
+        if (goals == null) {
+            call.reject("goals is required.");
+            return;
+        }
+        prefs().edit()
+            .putBoolean("enabled", enabled)
+            .putString("intention", intention == null ? "" : intention)
+            .putString("goals", goals.toString())
+            .apply();
+        AccountabilityWorker.syncSchedule(getContext());
+        resolveStatus(call);
+    }
+
+    @PluginMethod
+    public void snoozeToday(PluginCall call) {
+        prefs().edit()
+            .putString("snoozed_date", AccountabilityWorker.todayKey())
+            .apply();
         call.resolve();
     }
 
@@ -92,15 +158,25 @@ public class AccountabilityPlugin extends Plugin {
         List<UsageStats> stats =
             manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, now);
 
-        JSObject minutes = new JSObject();
-        for (String packageName : packages) minutes.put(packageName, 0);
-
+        Map<String, Long> totals = new HashMap<>();
+        for (String packageName : packages) totals.put(packageName, 0L);
         if (stats != null) {
             for (UsageStats stat : stats) {
-                if (!packages.contains(stat.getPackageName())) continue;
-                long value = Math.max(0, stat.getTotalTimeInForeground() / 60000L);
-                minutes.put(stat.getPackageName(), value);
+                String packageName = stat.getPackageName();
+                if (!packages.contains(packageName)) continue;
+                long current = totals.containsKey(packageName)
+                    ? totals.get(packageName)
+                    : 0L;
+                totals.put(
+                    packageName,
+                    current + Math.max(0, stat.getTotalTimeInForeground() / 60000L)
+                );
             }
+        }
+
+        JSObject minutes = new JSObject();
+        for (Map.Entry<String, Long> entry : totals.entrySet()) {
+            minutes.put(entry.getKey(), entry.getValue());
         }
 
         JSObject result = new JSObject();
