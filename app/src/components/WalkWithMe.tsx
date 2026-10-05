@@ -434,7 +434,7 @@ function ResetActions({ settings }: { settings: AccountabilitySettings }) {
   return (
     <div className="wwm-actions">
       {settings.replacements.cinema && (
-        <Link className="erc-button erc-button-gold" to="/app/cinema/">
+        <Link className="erc-button erc-button-gold" to="/app/">
           <Clapperboard size={17} /> Watch a Bible story
         </Link>
       )}
