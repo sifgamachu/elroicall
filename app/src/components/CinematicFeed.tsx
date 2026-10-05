@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useDraft } from "@/lib/draft";
 import { getMediaPlayback } from "@/lib/media-library";
+import { selectCinematicFeedItems } from "@/lib/cinematic-feed";
 import {
   canPlayMedia,
   mediaArtwork,
@@ -35,33 +36,14 @@ export default function CinematicFeed({
   const [activeId, setActiveId] = useState("");
   const [sound, setSound] = useState(false);
 
-  const feedItems = useMemo(() => {
-    const releasedCinema = items.filter(
-      item =>
-        item.section === "cinema" &&
-        item.status === "published" &&
-        item.access === "free" &&
-        canPlayMedia(item)
-    );
-    const releasedMessages = items.filter(
-      item =>
-        item.section === "watch" &&
-        item.status === "published" &&
-        item.access === "free" &&
-        canPlayMedia(item)
-    );
-    const upcomingCinema = items.filter(
-      item => item.section === "cinema" && item.status === "coming_soon"
-    );
-    return [...releasedCinema, ...releasedMessages, ...upcomingCinema].slice(0, 14);
-  }, [items]);
-
-  useEffect(() => {
-    if (!feedItems.length) return;
-    setActiveId(current =>
-      feedItems.some(item => item.id === current) ? current : feedItems[0].id
-    );
-  }, [feedItems]);
+  const feedItems = useMemo(
+    () => selectCinematicFeedItems(items),
+    [items]
+  );
+  const effectiveActiveId =
+    activeId && feedItems.some(item => item.id === activeId)
+      ? activeId
+      : feedItems[0]?.id || "";
 
   useEffect(() => {
     const root = feedRef.current;
@@ -112,7 +94,7 @@ export default function CinematicFeed({
           <CinematicSlide
             key={item.id}
             item={item}
-            active={item.id === activeId}
+            active={item.id === effectiveActiveId}
             sound={sound}
             setSound={setSound}
             index={index}
