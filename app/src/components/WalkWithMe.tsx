@@ -1,31 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import {
   BellRing,
+  BookOpen,
   Check,
   ChevronRight,
+  Clapperboard,
   EyeOff,
   HeartHandshake,
+  MessageCircle,
   Pause,
   Smartphone,
   Sparkles,
 } from "lucide-react";
 import {
   ACCOUNTABILITY_APPS,
+  ACCOUNTABILITY_INTENTIONS,
   gentleAccountabilityMessage,
+  isSnoozedToday,
   loadAccountabilitySettings,
+  localDayKey,
   saveAccountabilitySettings,
   type AccountabilitySettings,
 } from "@/lib/accountability";
 import {
   accountabilityPermissionStatus,
+  configureAndroidAccountability,
   getAndroidUsage,
   openAndroidUsageAccess,
+  requestAndroidAccountabilityNotifications,
+  snoozeAndroidAccountabilityToday,
   type AccountabilityPermissionStatus,
 } from "@/lib/accountability-native";
 import "@/walk-with-me.css";
 
 export default function WalkWithMe() {
+  const location = useLocation();
   const [settings, setSettings] = useState<AccountabilitySettings>(() =>
     loadAccountabilitySettings()
   );
@@ -34,9 +44,22 @@ export default function WalkWithMe() {
   );
   const [usage, setUsage] = useState<Record<string, number>>({});
   const [message, setMessage] = useState("");
+  const openedFromCheckIn =
+    new URLSearchParams(location.search).get("checkin") === "1";
 
   useEffect(() => {
-    void refreshStatus();
+    let active = true;
+    const refresh = () => {
+      void accountabilityPermissionStatus().then(next => {
+        if (active) setStatus(next);
+      });
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refresh);
+    };
   }, []);
 
   const selected = useMemo(
@@ -47,10 +70,17 @@ export default function WalkWithMe() {
   function commit(next: AccountabilitySettings) {
     setSettings(next);
     saveAccountabilitySettings(next);
+    void configureAndroidAccountability(next)
+      .then(nextStatus => setStatus(nextStatus))
+      .catch(() => {});
   }
 
   async function refreshStatus() {
-    setStatus(await accountabilityPermissionStatus());
+    let next = await accountabilityPermissionStatus();
+    if (next.platform === "android" && next.granted) {
+      next = await configureAndroidAccountability(settings);
+    }
+    setStatus(next);
   }
 
   async function refreshUsage() {
@@ -59,9 +89,28 @@ export default function WalkWithMe() {
       setMessage("Choose at least one app first.");
       return;
     }
-    const result = await getAndroidUsage(packages);
-    setUsage(result.minutes);
-    setMessage("Today’s usage refreshed on this device.");
+    try {
+      const result = await getAndroidUsage(packages);
+      setUsage(result.minutes);
+      setMessage("Today’s usage refreshed on this device.");
+    } catch {
+      setMessage("Usage could not be checked. Confirm Android Usage Access first.");
+    }
+  }
+
+  async function enableNotifications() {
+    const next = await requestAndroidAccountabilityNotifications();
+    setStatus(next);
+    if (next.notificationsGranted) {
+      setMessage("Gentle background check-ins are allowed on this device.");
+    }
+  }
+
+  function snoozeToday() {
+    const next = { ...settings, snoozedDate: localDayKey() };
+    commit(next);
+    void snoozeAndroidAccountabilityToday();
+    setMessage("No more Walk With Me reminders today.");
   }
 
   const firstOverGoal = selected.find(app => {
@@ -73,29 +122,54 @@ export default function WalkWithMe() {
     ? gentleAccountabilityMessage(
         firstOverGoal.label,
         usage[firstOverGoal.androidPackage] || 0,
-        settings.apps[firstOverGoal.id].dailyMinutes
+        settings.apps[firstOverGoal.id].dailyMinutes,
+        settings.intention
       )
     : null;
+
+  const nativeReady =
+    status?.platform === "android" &&
+    status.granted &&
+    status.notificationsGranted &&
+    settings.enabled &&
+    selected.length > 0;
 
   return (
     <div className="wwm">
       <section className="wwm-hero">
-        <span className="wwm-icon"><HeartHandshake size={24} /></span>
+        <span className="wwm-icon">
+          <HeartHandshake size={24} />
+        </span>
         <div>
           <p className="erc-eyebrow">WALK WITH ME</p>
           <h1>Accountability without judgment.</h1>
           <p>
-            You choose what you want help protecting. Elroi Calls reminds you
-            of your own intention and always leaves the decision with you.
+            You choose the direction. Elroi Calls simply reminds you of what
+            you said mattered and offers an easier way back.
           </p>
         </div>
       </section>
+
+      {openedFromCheckIn && (
+        <section className="wwm-prompt" aria-labelledby="wwm-reset-title">
+          <p className="erc-eyebrow">YOUR RESET IS READY</p>
+          <h2 id="wwm-reset-title">Want to switch gears?</h2>
+          <p>
+            No lecture. No lost streak. Choose what would be useful right now,
+            or keep going with your day.
+          </p>
+          <ResetActions settings={settings} />
+        </section>
+      )}
 
       <section className="wwm-card">
         <div className="wwm-row">
           <div>
             <h2>Gentle accountability</h2>
-            <p>Nothing is watched until you turn this on and choose what matters.</p>
+            <p>
+              Nothing is monitored until you turn this on and choose what you
+              want help with.
+            </p>
           </div>
           <label className="wwm-switch">
             <input
@@ -112,10 +186,37 @@ export default function WalkWithMe() {
 
       <section className="wwm-card">
         <div className="wwm-heading">
+          <HeartHandshake size={20} />
+          <div>
+            <h2>What are you trying to protect?</h2>
+            <p>The reminder should sound like your intention, not our judgment.</p>
+          </div>
+        </div>
+        <select
+          className="wwm-intention"
+          aria-label="Your Walk With Me intention"
+          value={settings.intention}
+          onChange={event =>
+            commit({
+              ...settings,
+              intention: event.target.value as AccountabilitySettings["intention"],
+            })
+          }
+        >
+          {ACCOUNTABILITY_INTENTIONS.map(item => (
+            <option value={item.id} key={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </section>
+
+      <section className="wwm-card">
+        <div className="wwm-heading">
           <Smartphone size={20} />
           <div>
             <h2>Choose what you want help with</h2>
-            <p>These are your goals, not El Roi’s judgment about an app.</p>
+            <p>These are your goals. ELROICALL does not label an app good or bad.</p>
           </div>
         </div>
         <div className="wwm-apps">
@@ -140,7 +241,9 @@ export default function WalkWithMe() {
                   />
                   <span>
                     <strong>{app.label}</strong>
-                    {typeof minutes === "number" && <small>{minutes} min today</small>}
+                    {typeof minutes === "number" && (
+                      <small>{minutes} min today</small>
+                    )}
                   </span>
                 </label>
                 <div className="wwm-limit">
@@ -163,7 +266,9 @@ export default function WalkWithMe() {
                     }
                   >
                     {[10, 15, 20, 30, 45, 60, 90, 120].map(value => (
-                      <option key={value} value={value}>{value} min</option>
+                      <option key={value} value={value}>
+                        {value} min
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -178,7 +283,7 @@ export default function WalkWithMe() {
           <Sparkles size={20} />
           <div>
             <h2>Offer something better, not a lecture</h2>
-            <p>Pick what Elroi Calls should offer when you want to reset.</p>
+            <p>Pick what ELROICALL should offer when you want to reset.</p>
           </div>
         </div>
         <div className="wwm-options">
@@ -192,7 +297,11 @@ export default function WalkWithMe() {
             <label key={key}>
               <input
                 type="checkbox"
-                checked={settings.replacements[key as keyof typeof settings.replacements]}
+                checked={
+                  settings.replacements[
+                    key as keyof typeof settings.replacements
+                  ]
+                }
                 onChange={event =>
                   commit({
                     ...settings,
@@ -214,30 +323,54 @@ export default function WalkWithMe() {
         <div className="wwm-heading">
           <BellRing size={20} />
           <div>
-            <h2>Phone activity permission</h2>
+            <h2>Phone activity & gentle reminders</h2>
             <p>
-              Usage stays on this device in this first version. Elroi Calls
-              does not upload a history of which apps you used.
+              Android checks only the usage totals for apps you selected.
+              Background check-ins are intentionally periodic, not constant.
             </p>
           </div>
         </div>
         <div className="wwm-device">
           <strong>
-            {status?.granted
-              ? "Connected"
-              : status?.platform === "ios"
-                ? "iPhone permission not enabled yet"
-                : "Not connected"}
+            {nativeReady
+              ? "Background check-ins are ready"
+              : status?.granted
+                ? "Usage access connected"
+                : status?.platform === "ios"
+                  ? "iPhone Screen Time permission is not enabled yet"
+                  : "Phone activity is not connected"}
           </strong>
           <p>{status?.detail}</p>
+
           {status?.platform === "android" && !status.granted && (
             <button
               className="erc-button erc-button-gold"
-              onClick={() => void openAndroidUsageAccess().then(refreshStatus)}
+              onClick={() => void openAndroidUsageAccess()}
             >
-              Open Android usage access
+              Open Android Usage Access
             </button>
           )}
+
+          {status?.platform === "android" &&
+            status.granted &&
+            !status.notificationsGranted && (
+              <button
+                className="erc-button erc-button-gold"
+                onClick={() => void enableNotifications()}
+              >
+                Allow gentle notifications
+              </button>
+            )}
+
+          {status?.platform === "android" && status.granted && (
+            <button
+              className="erc-button erc-button-quiet"
+              onClick={() => void refreshStatus()}
+            >
+              Refresh permission status
+            </button>
+          )}
+
           {status?.platform === "android" && status.granted && (
             <button
               className="erc-button erc-button-quiet"
@@ -246,34 +379,36 @@ export default function WalkWithMe() {
               Check today’s usage
             </button>
           )}
+
+          {nativeReady && (
+            <p className="wwm-ready">
+              <Check size={16} /> ELROICALL may send one quiet background
+              check-in after a selected daily goal is reached. It will not
+              repeatedly nag you throughout the day.
+            </p>
+          )}
         </div>
       </section>
 
-      {prompt && settings.enabled && !settings.quietUntilTomorrow && (
+      {prompt && settings.enabled && !isSnoozedToday(settings) && (
         <section className="wwm-prompt" aria-live="polite">
           <p className="erc-eyebrow">A GENTLE CHECK-IN</p>
           <h2>{prompt.title}</h2>
           <p>{prompt.body}</p>
-          <div className="wwm-actions">
-            {settings.replacements.cinema && (
-              <Link className="erc-button erc-button-gold" to="/app/cinema/">
-                Watch a story <ChevronRight size={17} />
-              </Link>
-            )}
-            {settings.replacements.talk && (
-              <Link className="erc-button erc-button-quiet" to="/begin/">
-                Talk with El Roi
-              </Link>
-            )}
-            <button
-              className="erc-button erc-button-quiet"
-              onClick={() =>
-                commit({ ...settings, quietUntilTomorrow: true })
-              }
-            >
-              <Pause size={16} /> Don’t remind me again today
-            </button>
-          </div>
+          <ResetActions settings={settings} />
+          <button
+            className="erc-button erc-button-quiet"
+            onClick={snoozeToday}
+          >
+            <Pause size={16} /> Don’t remind me again today
+          </button>
+        </section>
+      )}
+
+      {isSnoozedToday(settings) && (
+        <section className="wwm-snoozed">
+          <Pause size={18} />
+          <span>Walk With Me is quiet for the rest of today.</span>
         </section>
       )}
 
@@ -282,13 +417,40 @@ export default function WalkWithMe() {
         <div>
           <strong>You stay in control.</strong>
           <p>
-            Continue anyway is always allowed. Turn the feature off at any time.
-            This first foundation does not inspect messages, audio, photos, or
-            the content inside another app.
+            Continue anyway is always allowed. Turn the feature off at any
+            time. Walk With Me does not inspect messages, audio, photos, search
+            terms, or the content inside another app.
           </p>
         </div>
       </section>
-      <p role="status" className="erc-muted">{message}</p>
+      <p role="status" className="erc-muted">
+        {message}
+      </p>
+    </div>
+  );
+}
+
+function ResetActions({ settings }: { settings: AccountabilitySettings }) {
+  return (
+    <div className="wwm-actions">
+      {settings.replacements.cinema && (
+        <Link className="erc-button erc-button-gold" to="/app/cinema/">
+          <Clapperboard size={17} /> Watch a Bible story
+        </Link>
+      )}
+      {settings.replacements.scripture && (
+        <Link className="erc-button erc-button-quiet" to="/app/study/">
+          <BookOpen size={17} /> Read today’s Scripture
+        </Link>
+      )}
+      {(settings.replacements.prayer || settings.replacements.talk) && (
+        <Link className="erc-button erc-button-quiet" to="/begin/">
+          <MessageCircle size={17} /> Talk with El Roi
+        </Link>
+      )}
+      <Link className="wwm-continue" to="/app/">
+        Continue without changing anything <ChevronRight size={16} />
+      </Link>
     </div>
   );
 }
