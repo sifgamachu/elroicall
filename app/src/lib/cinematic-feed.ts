@@ -1,4 +1,4 @@
-import { canPlayMedia, type MediaItem } from "./media-model";
+import { canPlayMedia, type MediaItem } from "./media-model.ts";
 
 export function selectCinematicFeedItems(items: MediaItem[], limit = 14) {
   const releasedCinema = items.filter(
