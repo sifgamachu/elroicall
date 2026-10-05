@@ -36,3 +36,18 @@ test("quiet prayer opens a dedicated prayer entry prompt", () => {
   assert.match(begin, /what you want to bring into prayer/i);
   assert.match(begin, /I would like prayer for/);
 });
+
+
+test("cinematic Ask El Roi never silently truncates a conversation draft", () => {
+  assert.match(cinematic, /next\.length > 2000/);
+  assert.doesNotMatch(cinematic, /next\.slice\(0, 2000\)/);
+  assert.match(cinematic, /none of your words are lost/i);
+});
+
+test("Walk With Me is represented by You in the mobile dock", () => {
+  const dock = readFileSync(
+    new URL("../src/components/AppDock.tsx", import.meta.url),
+    "utf8"
+  );
+  assert.match(dock, /pathname\.startsWith\("\/app\/walk"\)/);
+});
