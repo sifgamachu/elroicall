@@ -25,6 +25,7 @@ export default function AppDock() {
                   pathname.startsWith("/begin"))) ||
               (title === "You" &&
                 (pathname.startsWith("/account") ||
+                  pathname.startsWith("/app/walk") ||
                   pathname.startsWith("/app/membership") ||
                   pathname.startsWith("/app/studio")));
         return (
