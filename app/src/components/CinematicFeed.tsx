@@ -130,6 +130,7 @@ function CinematicSlide({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [videoError, setVideoError] = useState("");
+  const [handoffError, setHandoffError] = useState("");
   const navigate = useNavigate();
   const { draft, setDraft, setPrivateDraft } = useDraft();
   const playableStorage =
@@ -167,14 +168,17 @@ function CinematicSlide({
   function askElRoi() {
     const reflection = `I’m watching “${item.title}” (${item.passage}). Help me understand this story and what it means in its biblical context.`;
     const next = [draft.trim(), reflection].filter(Boolean).join("\n\n");
-    if (userId) setPrivateDraft(next.slice(0, 2000), userId);
-    else setDraft(next.slice(0, 2000));
+    if (next.length > 2000) {
+      setHandoffError(
+        "Your existing conversation draft is full. Open it first so none of your words are lost."
+      );
+      return;
+    }
+    setHandoffError("");
+    if (userId) setPrivateDraft(next, userId);
+    else setDraft(next);
     navigate("/begin/");
   }
-
-  const studyHref = item.study_day
-    ? `/app/study/?day=${item.study_day}`
-    : "/app/study/";
 
   return (
     <article
@@ -238,11 +242,17 @@ function CinematicSlide({
         <h2>{item.title}</h2>
         <p>{item.synopsis}</p>
         {videoError && <small role="status">{videoError}</small>}
+        {handoffError && <small role="alert">{handoffError}</small>}
 
         <div className="erc-feed-actions">
-          <Link className="erc-feed-primary" to={studyHref}>
+          <a
+            className="erc-feed-primary"
+            href={`https://www.biblegateway.com/passage/?search=${encodeURIComponent(item.passage)}&version=KJV`}
+            target="_blank"
+            rel="noreferrer"
+          >
             <BookOpen size={18} /> Read Scripture
-          </Link>
+          </a>
           <button type="button" onClick={askElRoi}>
             <MessageCircle size={18} /> Ask El Roi
           </button>

@@ -291,7 +291,6 @@ export default function WalkWithMe() {
             ["cinema", "A Bible Cinema story"],
             ["scripture", "A short Scripture reading"],
             ["prayer", "A quiet prayer moment"],
-            ["worship", "Worship music"],
             ["talk", "Talk with El Roi"],
           ].map(([key, label]) => (
             <label key={key}>
@@ -443,7 +442,12 @@ function ResetActions({ settings }: { settings: AccountabilitySettings }) {
           <BookOpen size={17} /> Read today’s Scripture
         </Link>
       )}
-      {(settings.replacements.prayer || settings.replacements.talk) && (
+      {settings.replacements.prayer && (
+        <Link className="erc-button erc-button-quiet" to="/begin/?need=prayer">
+          <MessageCircle size={17} /> Quiet prayer moment
+        </Link>
+      )}
+      {settings.replacements.talk && (
         <Link className="erc-button erc-button-quiet" to="/begin/">
           <MessageCircle size={17} /> Talk with El Roi
         </Link>
