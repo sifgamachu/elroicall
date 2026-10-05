@@ -172,10 +172,6 @@ function CinematicSlide({
     navigate("/begin/");
   }
 
-  const studyHref = item.study_day
-    ? `/app/study/?day=${item.study_day}`
-    : "/app/study/";
-
   return (
     <article
       className="erc-cinematic-slide"
@@ -240,9 +236,14 @@ function CinematicSlide({
         {videoError && <small role="status">{videoError}</small>}
 
         <div className="erc-feed-actions">
-          <Link className="erc-feed-primary" to={studyHref}>
+          <a
+            className="erc-feed-primary"
+            href={`https://www.biblegateway.com/passage/?search=${encodeURIComponent(item.passage)}&version=KJV`}
+            target="_blank"
+            rel="noreferrer"
+          >
             <BookOpen size={18} /> Read Scripture
-          </Link>
+          </a>
           <button type="button" onClick={askElRoi}>
             <MessageCircle size={18} /> Ask El Roi
           </button>
