@@ -14,6 +14,7 @@ import {
   Clock3,
   Crown,
   Home,
+  HeartHandshake,
   Library,
   MessageCircle,
   Phone,
@@ -58,6 +59,7 @@ const navigation = [
   { path: "/app/cinema/", label: "Bible Cinema", icon: Clapperboard },
   { path: "/app/study/", label: "Bible study", icon: BookOpen },
   { path: "/app/calls/", label: "Elroi Calls", icon: Phone },
+  { path: "/app/walk/", label: "Walk with me", icon: HeartHandshake },
   { path: "/app/you/", label: "Your space", icon: CircleUserRound },
 ];
 export default function ElroiApp() {
@@ -144,6 +146,8 @@ function AppWorkspace({
           ? "Bible study"
           : tab === "calls"
             ? "Elroi Calls"
+            : tab === "walk"
+              ? "Walk with me"
             : tab === "you"
               ? "Your space"
               : tab === "membership"
@@ -612,7 +616,8 @@ function AppWorkspace({
               </div>
             </>
           )}
-          {tab === "walk" && <WalkWithMe />}\n          {tab === "membership" && <AppMembership userId={session?.user.id} />}
+          {tab === "walk" && <WalkWithMe />}
+          {tab === "membership" && <AppMembership userId={session?.user.id} />}
           {tab === "studio" && (
             <MediaStudio session={session} authReady={authReady} />
           )}
@@ -623,6 +628,7 @@ function AppWorkspace({
             "video",
             "study",
             "calls",
+            "walk",
             "you",
             "membership",
             "studio",
@@ -660,27 +666,6 @@ function AppWorkspace({
   );
 }
 
-function SectionHeading({
-  title,
-  subtitle,
-  href,
-}: {
-  title: string;
-  subtitle: string;
-  href: string;
-}) {
-  return (
-    <div className="erc-section-heading">
-      <div>
-        <h2>{title}</h2>
-        <p>{subtitle}</p>
-      </div>
-      <Link to={href}>
-        See all <ChevronRight size={16} />
-      </Link>
-    </div>
-  );
-}
 function MediaCard({ item }: { item: MediaItem }) {
   return (
     <Link className="erc-media-card" to={`/app/video/${item.slug}/`}>
