@@ -22,6 +22,7 @@ test('expired or unavailable subscriptions fail closed',async()=>{
 });
 test('valid store entitlement permits a private link with no caching',async()=>{
  const permitted=setup();const response=await permitted.call({Authorization:'Bearer token',Origin:'https://elroicall.com'});assert.equal(response.status,200);assert.equal(permitted.signed(),1);assert.equal(response.headers.get('cache-control'),'no-store');assert.equal(response.headers.get('access-control-allow-origin'),'https://elroicall.com');
+ const appDomain=setup();const appResponse=await appDomain.call({Authorization:'Bearer token',Origin:'https://elroicall.app'});assert.equal(appResponse.status,200);assert.equal(appResponse.headers.get('access-control-allow-origin'),'https://elroicall.app');
 });
 test('drafts, upcoming films, unknown access, and unsafe file paths cannot play',async()=>{
  for (const patch of [{status:'draft'},{status:'coming_soon'},{storage_path:'../private.mp4'},{access:'unexpected'}]) {
@@ -44,6 +45,7 @@ test('store entitlement expiry is verified precisely, including lifetime purchas
 test('deep links accept only public Elroi Calls routes, never outside credentials or origins',()=>{
  assert.equal(appLinkPath('https://elroicall.com/app/cinema/?book=Genesis'),'/app/cinema/?book=Genesis');
  assert.equal(appLinkPath('https://elroicall.com/auth/confirm#token_hash=abc'),'/auth/confirm#token_hash=abc');
+ assert.equal(appLinkPath('https://elroicall.app/app/walk/?checkin=1'),'/app/walk/?checkin=1');
  for(const url of ['javascript:alert(1)','https://evil.test/app/','https://elroicall.com.evil.test/app/','https://user:pass@elroicall.com/app/','https://elroicall.com:123/app/','https://elroicall.com/account-evil','http://elroicall.com/app/'])assert.equal(appLinkPath(url),null);
 });
 test('coming-soon catalog cards cannot become misleading play buttons',()=>{
