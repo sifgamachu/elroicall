@@ -130,6 +130,7 @@ function CinematicSlide({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [videoError, setVideoError] = useState("");
+  const [videoRefreshes, setVideoRefreshes] = useState(0);
   const [handoffError, setHandoffError] = useState("");
   const navigate = useNavigate();
   const { draft, setDraft, setPrivateDraft } = useDraft();
@@ -153,7 +154,7 @@ function CinematicSlide({
     return () => {
       alive = false;
     };
-  }, [active, item.id, playableStorage, videoError, videoUrl]);
+  }, [active, item.id, playableStorage, videoError, videoRefreshes, videoUrl]);
 
   useEffect(() => {
     const player = videoRef.current;
@@ -204,6 +205,17 @@ function CinematicSlide({
           playsInline
           preload={active ? "auto" : "metadata"}
           aria-label={`Preview of ${item.title}`}
+          onError={() => {
+            if (videoRefreshes < 1) {
+              setVideoRefreshes(value => value + 1);
+              setVideoError("");
+              setVideoUrl("");
+            } else {
+              setVideoError(
+                "This film could not preview here. Open the full story to try again."
+              );
+            }
+          }}
         />
       )}
 
