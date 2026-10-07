@@ -66,3 +66,12 @@ test("Android accountability stops background work after permission removal", ()
   );
   assert.match(worker, /!hasUsageAccess\(context\)[\s\S]*cancelUniqueWork\(WORK_NAME\)/);
 });
+
+
+test("elroicall.app is trusted by shared app API CORS", () => {
+  const cors = readFileSync(
+    new URL("../../supabase/functions/_shared/app-cors.ts", import.meta.url),
+    "utf8"
+  );
+  assert.match(cors, /https:\/\/elroicall\.app/);
+});
