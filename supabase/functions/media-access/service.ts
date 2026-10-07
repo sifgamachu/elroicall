@@ -5,7 +5,7 @@ type Dependencies = {
   verifyMembership: (userId: string) => Promise<boolean>;
   signVideo: (path: string) => Promise<string>;
 };
-const ORIGINS = new Set(['https://elroicall.com', 'https://localhost', 'capacitor://localhost', 'http://localhost', 'http://127.0.0.1:3000', 'http://localhost:3000']);
+const ORIGINS = new Set(['https://elroicall.com', 'https://elroicall.app', 'https://localhost', 'capacitor://localhost', 'http://localhost', 'http://127.0.0.1:3000', 'http://localhost:3000']);
 export function membershipActive(payload: unknown, now = Date.now()): boolean {
   if (!payload || typeof payload !== 'object') return false;
   const subscriber = (payload as { subscriber?: { entitlements?: Record<string, { expires_date?: string | null; grace_period_expires_date?: string | null }> } }).subscriber;

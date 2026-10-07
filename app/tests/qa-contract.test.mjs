@@ -51,3 +51,27 @@ test("Walk With Me is represented by You in the mobile dock", () => {
   );
   assert.match(dock, /pathname\.startsWith\("\/app\/walk"\)/);
 });
+
+
+test("cinematic previews retry one expired signed URL without looping", () => {
+  assert.match(cinematic, /videoRefreshes < 1/);
+  assert.match(cinematic, /setVideoUrl\(""/);
+  assert.match(cinematic, /setVideoRefreshes/);
+});
+
+test("Android accountability stops background work after permission removal", () => {
+  const worker = readFileSync(
+    new URL("../android/app/src/main/java/com/elroicall/app/AccountabilityWorker.java", import.meta.url),
+    "utf8"
+  );
+  assert.match(worker, /!hasUsageAccess\(context\)[\s\S]*cancelUniqueWork\(WORK_NAME\)/);
+});
+
+
+test("elroicall.app is trusted by shared app API CORS", () => {
+  const cors = readFileSync(
+    new URL("../../supabase/functions/_shared/app-cors.ts", import.meta.url),
+    "utf8"
+  );
+  assert.match(cors, /https:\/\/elroicall\.app/);
+});

@@ -3,6 +3,7 @@
 const APP_ORIGINS = [
   'https://elroicall.com',
   'https://www.elroicall.com',
+  'https://elroicall.app',
   'capacitor://localhost',
   'http://localhost',
   'https://localhost',

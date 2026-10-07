@@ -11,7 +11,7 @@ export function appLinkPath(raw: string): string | null {
     const url = new URL(raw);
     if (
       url.protocol !== "https:" ||
-      url.hostname !== "elroicall.com" ||
+      !["elroicall.com", "elroicall.app"].includes(url.hostname) ||
       url.port ||
       url.username ||
       url.password
