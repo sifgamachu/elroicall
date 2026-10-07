@@ -80,7 +80,10 @@ public class AccountabilityWorker extends Worker {
     public Result doWork() {
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        if (!prefs.getBoolean("enabled", false) || !hasUsageAccess(context)) return Result.success();
+        if (!prefs.getBoolean("enabled", false) || !hasUsageAccess(context)) {
+            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME);
+            return Result.success();
+        }
 
         String today = todayKey();
         if (today.equals(prefs.getString("snoozed_date", ""))) return Result.success();
