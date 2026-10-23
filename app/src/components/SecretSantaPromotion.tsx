@@ -1,10 +1,23 @@
 import { ArrowUpRight, Gift, Heart, ListChecks, Shuffle } from 'lucide-react';
-import { HATPULL_HOME_URL } from '@/lib/hatpull';
+import { HATPULL_BANNER_URL, HATPULL_HOME_URL } from '@/lib/hatpull';
 import '@/secret-santa-promotion.css';
+
+export function SecretSantaNotice() {
+  return (
+    <aside className="elroi-secret-santa-notice" aria-label="Secret Santa gift exchange">
+      <a href={HATPULL_BANNER_URL} target="_blank" rel="noopener noreferrer">
+        <Gift size={21} aria-hidden="true" />
+        <span><strong>Secret Santa Gift Exchange</strong><span className="elroi-secret-santa-notice-detail"> · Free with Hatpull</span></span>
+        <span className="elroi-secret-santa-notice-cta">Start your exchange <ArrowUpRight size={16} aria-hidden="true" /></span>
+        <span className="sr-only"> (opens Hatpull in a new tab)</span>
+      </a>
+    </aside>
+  );
+}
 
 export default function SecretSantaPromotion() {
   return (
-    <aside className="elroi-container elroi-secret-santa" aria-labelledby="secret-santa-title">
+    <aside id="secret-santa" className="elroi-container elroi-secret-santa" aria-labelledby="secret-santa-title">
       <div className="elroi-secret-santa-mark" aria-hidden="true">
         <Gift size={40} strokeWidth={1.5} />
       </div>
